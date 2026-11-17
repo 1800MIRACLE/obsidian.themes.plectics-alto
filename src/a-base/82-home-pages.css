@@ -1,0 +1,454 @@
+/* ==========================================================================
+   82 · HOME PAGES — page themes for the vault's front matter
+     .plx-home    Homepage: a journal title-and-contents page
+     .plx-news    News (and News Archive): a "Notes and News" column
+     .plx-board   Notice Board, Stigmergy: a lab bulletin
+     .type-profile  author profiles: an author card (extends 80-page-types)
+   Applied by `cssclasses:` in each note. Reading view is the designed view
+   (the Homepage plugin opens it that way); Live Preview stays readable.
+   Page content keeps the textbook feel: rules, small caps, type; no widgets.
+   ========================================================================== */
+
+/* the type kicker ("NOTE") is wrong for these pages */
+:is(.plx-home, .plx-news, .plx-board) { --plx-kicker: none; }
+
+/* ======================= HOME ======================= */
+.markdown-preview-view.plx-home {
+  --plx-home-measure: 46rem;
+  background-color: var(--plx-paper);
+  background-image:
+    linear-gradient(180deg, var(--plx-grad-a) 0, var(--plx-grad-b) 170px, transparent 360px),
+    linear-gradient(var(--plx-grid-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--plx-grid-major) 1px, transparent 1px),
+    linear-gradient(var(--plx-grid-minor) 1px, transparent 1px),
+    linear-gradient(90deg, var(--plx-grid-minor) 1px, transparent 1px);
+  background-size: 100% 360px, 60px 60px, 60px 60px, 12px 12px, 12px 12px;
+  background-repeat: no-repeat, repeat, repeat, repeat, repeat;
+  background-position: 0 0, -1px -1px, -1px -1px, -1px -1px, -1px -1px;
+  background-attachment: local;
+}
+/* masthead: Obsidian does not render a leading "# Name" next to an inline
+   title, so the inline title itself carries the wordmark. The name is one
+   variable; the dateline above it is the kicker slot. Set your own in a CSS
+   snippet: .markdown-preview-view.plx-home { --plx-home-name: "My vault"; } */
+.markdown-preview-view.plx-home {
+  --plx-home-name: "Notebook";
+  --plx-home-dateline: "Notebook \00B7  Encyclopedia";
+}
+.markdown-preview-view.plx-home .inline-title {
+  font-size: 0 !important;
+  color: transparent;
+  text-align: center;
+  margin: 0.6em 0 0 !important;
+  padding: 0;
+  border: 0;
+  border-top: 3px solid var(--plx-ink);
+  border-bottom: 1px solid var(--plx-ink);
+}
+.markdown-preview-view.plx-home .inline-title::before {
+  content: var(--plx-home-dateline) !important;
+  display: block;
+  margin: 0 auto;
+  padding: 6px 0 0;
+  width: auto;
+  background: transparent;
+  clip-path: none;
+  color: var(--plx-ink-3);
+  font-family: var(--plx-ui-cond);
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-align: center;
+}
+.markdown-preview-view.plx-home .inline-title::after {
+  content: var(--plx-home-name);
+  position: static;
+  display: block;
+  border: 0;
+  padding: 0.02em 0 0.12em;
+  color: var(--plx-ink);
+  font-family: var(--plx-display);
+  font-size: 64px;
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+}
+/* the front page shows no properties panel in reading view */
+.markdown-preview-view.plx-home .metadata-container { display: none; }
+
+/* masthead: the name, centred, between a heavy and a hairline rule */
+.markdown-preview-view.plx-home .markdown-preview-section > div:has(> h1):nth-child(1 of :has(> h1)) > h1 {
+  margin: 0.4em 0 0.15em;
+  padding: 0.25em 0 0.2em;
+  text-align: center;
+  font-family: var(--plx-display);
+  font-size: 3.4em;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  border-top: 3px solid var(--plx-ink);
+  border-bottom: 1px solid var(--plx-ink);
+}
+.markdown-preview-view.plx-home .markdown-preview-section > div:has(> h1):nth-child(1 of :has(> h1)) > h1::after { display: none; }
+/* the standfirst under it: centred, narrower, a little larger */
+.markdown-preview-view.plx-home .markdown-preview-section > div.el-p:nth-child(1 of .el-p) > p {
+  max-width: 36rem;
+  margin: 0.9em auto 1.2em;
+  text-align: center;
+  font-size: 1.04em;
+  line-height: 1.55;
+  color: var(--plx-ink-2);
+  hyphens: manual;
+}
+/* section heads: contents-page small caps between two hairlines */
+.markdown-preview-view.plx-home h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  margin: 1.9em 0 0.8em;
+  padding: 0;
+  border: 0;
+  font-family: var(--plx-serif);
+  font-size: 1.02em;
+  font-weight: 600;
+  font-variant: small-caps;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  color: var(--plx-ink-2);
+}
+.markdown-preview-view.plx-home h2::before,
+.markdown-preview-view.plx-home h2::after {
+  content: "";
+  flex: 1 1 0;
+  height: 0;
+  border-top: 1px solid var(--plx-rule);
+}
+.markdown-preview-view.plx-home h2 a { color: inherit; text-decoration: none; }
+.markdown-preview-view.plx-home h2 .heading-collapse-indicator { display: none; }
+
+/* "Where things are": the four catalogue cards sit two by two. Inline blocks,
+   not a grid: Obsidian lays out the reading-view sizer itself (virtualised
+   rendering), and display:grid there blanks the page. */
+.markdown-preview-view.plx-home .markdown-preview-section > div:has(> .callout:is([data-callout="abstract"], [data-callout="note"], [data-callout="example"], [data-callout="info"])) {
+  display: inline-flex;
+  vertical-align: top;
+  width: calc(50% - 7px);
+}
+.markdown-preview-view.plx-home .markdown-preview-section > div:nth-child(odd of :has(> .callout:is([data-callout="abstract"], [data-callout="note"], [data-callout="example"], [data-callout="info"]))) {
+  margin-inline-end: 14px;
+}
+.markdown-preview-view.plx-home .callout:is([data-callout="abstract"], [data-callout="note"], [data-callout="example"], [data-callout="info"], [data-callout="tip"]) {
+  flex: 1 1 auto;
+  margin: 0 0 14px;
+  padding: 0;
+  background: var(--plx-plate);
+  border: 1px solid var(--plx-rule-soft);
+  border-top: 2px solid var(--plx-ink-2);
+  border-radius: 0;
+  box-shadow: none;
+}
+.markdown-preview-view.plx-home .callout:is([data-callout="abstract"], [data-callout="note"], [data-callout="example"], [data-callout="info"], [data-callout="tip"]) > .callout-title {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 8px 12px 2px;
+  font-family: var(--plx-serif);
+  font-variant: small-caps;
+  text-transform: lowercase;
+  font-size: 1.05em;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--plx-ink);
+}
+.markdown-preview-view.plx-home .callout:is([data-callout="abstract"], [data-callout="note"], [data-callout="example"], [data-callout="info"], [data-callout="tip"]) > .callout-title > .callout-icon { display: none; }
+.markdown-preview-view.plx-home .callout:is([data-callout="abstract"], [data-callout="note"], [data-callout="example"], [data-callout="info"], [data-callout="tip"]) > .callout-content {
+  padding: 2px 12px 10px;
+  font-size: 0.93em;
+  line-height: 1.5;
+}
+.markdown-preview-view.plx-home .callout > .callout-content ul { padding-inline-start: 1.1em; }
+.markdown-preview-view.plx-home .callout > .callout-content li { margin-block: 0.18em; }
+
+/* "Most wanted": a ledger, not a spreadsheet */
+.markdown-preview-view.plx-home :is(.bases-table, .bases-view) { --bases-table-border-color: var(--plx-rule-soft); }
+.markdown-preview-view.plx-home .block-language-base { border-top: 2px solid var(--plx-ink-2); border-bottom: 1px solid var(--plx-rule); }
+
+/* recent-activity folds: quiet ruled rows */
+.markdown-preview-view.plx-home .callout.is-collapsible:is(.is-collapsed, :not(.is-collapsed)) {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dotted var(--plx-rule);
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+}
+.markdown-preview-view.plx-home .callout.is-collapsible > .callout-title { background: transparent; border: 0; box-shadow: none; }
+
+/* colophon line at the foot */
+.markdown-preview-view.plx-home hr { margin: 2.2em 0 0.6em; border-top: 1px solid var(--plx-rule); }
+.markdown-preview-view.plx-home .markdown-preview-section > div:has(> hr) ~ div:last-child > p {
+  text-align: center;
+  font-size: 0.86em;
+  color: var(--plx-ink-3);
+}
+
+/* narrow panes: one column */
+@container (max-width: 640px) {
+  .markdown-preview-view.plx-home .markdown-preview-section > div { width: auto !important; display: block !important; margin-inline-end: 0 !important; }
+}
+
+/* ======================= NEWS ======================= */
+.markdown-preview-view.plx-news .inline-title {
+  text-align: center;
+  font-size: 2.8em;
+  border-bottom: 0;
+}
+.markdown-preview-view.plx-news .inline-title::after {
+  left: 0; right: 0; bottom: -6px;
+  border-bottom: 3px double var(--plx-ink-2);
+}
+.markdown-preview-view.plx-news > :is(h1) { display: none; }
+.markdown-preview-view.plx-news .markdown-preview-section > div:has(> h1) { display: none; }
+/* the editorial note under the title: a small centred standfirst */
+.markdown-preview-view.plx-news .markdown-preview-section > div:has(> p):nth-child(1 of :has(> p)) > p {
+  max-width: 34rem; margin: 1.2em auto; text-align: center; font-size: 0.95em; color: var(--plx-ink-2);
+}
+.markdown-preview-view.plx-news .markdown-preview-section > div:has(> p):nth-child(2 of :has(> p)) > p {
+  max-width: 34rem; margin: 0 auto 1.4em; text-align: center; font-size: 0.84em; color: var(--plx-ink-3);
+}
+.markdown-preview-view.plx-news h2 {
+  font-family: var(--plx-serif);
+  font-variant: small-caps;
+  text-transform: lowercase;
+  letter-spacing: 0.08em;
+  font-size: 1.05em;
+  text-align: center;
+  border: 0;
+  color: var(--plx-ink-2);
+}
+.markdown-preview-view.plx-news h2::after { display: none; }
+/* each item is a dispatch: dateline on its own line (the text before the
+   bold headline), headline set as a display line, then the report */
+.markdown-preview-view.plx-news ul:not(ul ul) {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.markdown-preview-view.plx-news ul:not(ul ul) > li {
+  padding: 0.9em 0 1em;
+  border-top: 1px solid var(--plx-rule);
+  line-height: 1.55;
+}
+.markdown-preview-view.plx-news ul:not(ul ul) > li > .list-bullet { display: none; }
+.markdown-preview-view.plx-news ul:not(ul ul) > li::first-line {
+  font-family: var(--plx-mono);
+  font-size: 0.78em;
+  letter-spacing: 0.04em;
+  color: var(--plx-teal);
+}
+.markdown-preview-view.plx-news ul:not(ul ul) > li > strong:first-of-type,
+.markdown-preview-view.plx-news ul:not(ul ul) > li > p:first-of-type > strong:first-of-type {
+  display: block;
+  margin: 0.25em 0 0.2em;
+  font-family: var(--plx-display);
+  font-size: 1.42em;
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--plx-ink);
+}
+
+/* News, like the front page, shows no properties panel in reading view */
+.markdown-preview-view.plx-news .metadata-container { display: none; }
+
+/* ======================= BOARD (Notice Board, Stigmergy) ======================= */
+.markdown-preview-view.plx-board .inline-title {
+  font-family: var(--plx-ui-cond);
+  font-weight: 700;
+  font-size: 1.9em;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-kerning: none;
+  border-bottom: 2px solid var(--plx-ink);
+}
+.markdown-preview-view.plx-board .inline-title::after { border-bottom-style: dashed; bottom: -5px; }
+.markdown-preview-view.plx-board .markdown-preview-section > div:has(> h1) { display: none; }
+/* the posting rules: a ruled standfirst in the reading face */
+.markdown-preview-view.plx-board .markdown-preview-section > div:has(> p):nth-child(-n + 4 of :has(> p)) > p { color: var(--plx-ink-2); }
+/* section heads as bulletin labels */
+.markdown-preview-view.plx-board :is(h2, h3) {
+  font-family: var(--plx-ui-cond);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.82em;
+  font-weight: 700;
+  font-kerning: none;
+  color: var(--plx-ink-2);
+  border-bottom: 1px solid var(--plx-rule);
+  padding-bottom: 3px;
+  margin-top: 1.8em;
+}
+.markdown-preview-view.plx-board :is(h2, h3)::after { display: none; }
+/* notices and list items: pinned slips on a ruled sheet */
+.markdown-preview-view.plx-board ul:not(ul ul) > li {
+  padding: 0.35em 0 0.4em;
+  border-bottom: 1px dotted var(--plx-rule);
+}
+/* the numbered loop: big step numerals in the margin */
+.markdown-preview-view.plx-board ol:not(ol ol) {
+  list-style: none;
+  counter-reset: plx-step;
+  padding-inline-start: 2.6em;
+}
+.markdown-preview-view.plx-board ol:not(ol ol) > li {
+  counter-increment: plx-step;
+  position: relative;
+  margin: 0 0 0.75em;
+}
+.markdown-preview-view.plx-board ol:not(ol ol) > li::before {
+  content: counter(plx-step, decimal-leading-zero);
+  position: absolute;
+  inset-inline-start: -2.6em;
+  top: 0.05em;
+  font-family: var(--plx-mono);
+  font-size: 0.82em;
+  color: var(--plx-teal);
+}
+.markdown-preview-view.plx-board ol:not(ol ol) > li > .list-number,
+.markdown-preview-view.plx-board ol:not(ol ol) > li::marker { color: transparent; }
+/* vocabulary chips (CLAIM · RELEASE …) read as stamped keys */
+.markdown-preview-view.plx-board p > code {
+  font-family: var(--plx-ui-cond);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-size: 0.78em;
+  border: 1px solid var(--plx-rule-strong);
+  background: transparent;
+}
+.markdown-preview-view.plx-board table { border-top: 2px solid var(--plx-ink-2); }
+
+/* ======================= PROFILE: a retro personal page =======================
+   Request: "get inspired by like myspace or something retro". The profile is a
+   framed page on a tiled background, with filled title bars in ChicagoFLF
+   (the classic-Mac face the theme already loads), boxed sections and a hard
+   one-step drop shadow. Colours stay inside the palette: teal identity bars,
+   slate sub-bars, paper boxes. Profiles are the vault's personal pages, so
+   this is the one place the page is allowed to look like software. */
+.markdown-preview-view.type-profile {
+  --plx-sp-bar: var(--plx-teal);
+  --plx-sp-bar-ink: var(--plx-paper);
+  --plx-sp-sub: var(--plx-slate-2);
+  --plx-sp-sub-ink: var(--plx-slate-ink);
+  --plx-sp-tile-a: color-mix(in srgb, var(--plx-teal) 9%, var(--plx-case-hi));
+  --plx-sp-tile-b: var(--plx-case-hi);
+  background-color: var(--plx-sp-tile-b);
+  background-image:
+    repeating-conic-gradient(var(--plx-sp-tile-a) 0 25%, transparent 0 50%),
+    linear-gradient(90deg, color-mix(in srgb, var(--plx-teal) 10%, transparent) 1px, transparent 1px),
+    linear-gradient(color-mix(in srgb, var(--plx-teal) 10%, transparent) 1px, transparent 1px);
+  background-size: 8px 8px, 32px 32px, 32px 32px;
+  background-attachment: local;
+}
+.theme-dark .markdown-preview-view.type-profile {
+  --plx-sp-bar-ink: #061213;
+  --plx-sp-tile-a: color-mix(in srgb, var(--plx-teal) 7%, var(--plx-case));
+  --plx-sp-tile-b: var(--plx-case);
+}
+/* the profile body: one framed page with a hard shadow */
+.markdown-preview-view.type-profile .markdown-preview-sizer {
+  background: var(--plx-paper);
+  border: 2px solid var(--plx-ink-2);
+  box-shadow: 6px 6px 0 color-mix(in srgb, var(--plx-ink) 55%, transparent);
+  padding: 18px 26px 28px !important;
+  margin-top: 22px !important;
+  margin-bottom: 40px !important;
+}
+.markdown-preview-view.type-profile .inline-title {
+  font-family: "ChicagoFLF", var(--plx-ui);
+  font-size: 2.1em;
+  font-weight: 400;
+  letter-spacing: 0;
+  border-bottom: 0;
+  padding-bottom: 0.1em;
+}
+.markdown-preview-view.type-profile .inline-title::after { display: none; }
+.markdown-preview-view.type-profile .inline-title::before { background: var(--plx-sp-sub); color: var(--plx-sp-sub-ink); }
+/* greeting: the big "Hi, I am …" status line */
+.markdown-preview-view.type-profile .markdown-preview-section > div:has(> p):nth-child(1 of :has(> p)) > p {
+  font-family: "ChicagoFLF", var(--plx-ui);
+  font-size: 1.25em;
+  margin: 0.3em 0 0.9em;
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--plx-teal) 8%, var(--plx-paper));
+  border: 1px dashed var(--plx-teal);
+}
+.markdown-preview-view.type-profile .markdown-preview-section > div:has(> p):nth-child(1 of :has(> p)) > p > strong { font-weight: 400; color: var(--plx-teal); }
+/* h1 = filled title bar ("Who Am I?", "My Contributions") */
+.markdown-preview-view.type-profile h1 {
+  margin: 1.3em 0 0.6em;
+  padding: 4px 10px 3px;
+  background: var(--plx-sp-bar);
+  color: var(--plx-sp-bar-ink);
+  font-family: "ChicagoFLF", var(--plx-ui);
+  font-variant: normal;
+  font-size: 1.05em;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  border: 0;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 30%, transparent), 0 2px 0 color-mix(in srgb, var(--plx-ink) 35%, transparent);
+}
+.markdown-preview-view.type-profile h1::after { display: none; }
+/* h2 / h3 = box headers */
+.markdown-preview-view.type-profile :is(h2, h3) {
+  margin: 1.1em 0 0.45em;
+  padding: 3px 8px 2px;
+  background: var(--plx-sp-sub);
+  color: var(--plx-sp-sub-ink);
+  font-family: "ChicagoFLF", var(--plx-ui);
+  font-size: 0.95em;
+  font-weight: 400;
+  border: 0;
+}
+.markdown-preview-view.type-profile :is(h2, h3)::after { display: none; }
+.markdown-preview-view.type-profile :is(h1, h2, h3) .heading-collapse-indicator { display: none; }
+/* h5 = small "Details" labels */
+.markdown-preview-view.type-profile :is(h4, h5) {
+  font-family: "ChicagoFLF", var(--plx-ui);
+  text-transform: none;
+  font-size: 0.85em;
+  letter-spacing: 0;
+  color: var(--plx-teal);
+  margin: 0.9em 0 0.2em;
+  border-bottom: 1px dotted var(--plx-rule);
+}
+/* musings: each dated entry is a little blog post box */
+.markdown-preview-view.type-profile .markdown-preview-section > div:has(> h2) ~ div > p:has(> strong:first-child) {
+  padding: 8px 12px;
+  border: 1px solid var(--plx-rule);
+  border-inline-start: 4px solid var(--plx-sp-sub);
+  background: var(--plx-plate);
+}
+.markdown-preview-view.type-profile .markdown-preview-section > div:has(> h2) ~ div > p > strong:first-child {
+  display: block;
+  margin-bottom: 0.25em;
+  font-family: "ChicagoFLF", var(--plx-ui);
+  font-weight: 400;
+  font-variant: normal;
+  color: var(--plx-ink);
+}
+/* lists: square retro bullets */
+.markdown-preview-view.type-profile ul > li { margin-block: 0.25em; }
+.markdown-preview-view.type-profile ul > li > .list-bullet::after {
+  width: 6px; height: 6px; border-radius: 0;
+  background: var(--plx-teal);
+}
+/* the properties panel = the "Details" box */
+.markdown-preview-view.type-profile .metadata-container {
+  border: 1px solid var(--plx-ink-3) !important;
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--plx-ink) 30%, transparent);
+}
+.markdown-preview-view.type-profile .metadata-property:is([data-property-key="identity_id"], [data-property-key="created_utc"]) .metadata-property-value :is(input, .metadata-input-longtext) {
+  font-family: var(--plx-mono) !important;
+  font-size: 12px !important;
+  color: var(--plx-ink-2) !important;
+}

@@ -1,0 +1,169 @@
+/* ==========================================================================
+   89 · REFINE — polish pass, rev 0.4 (2026-11-06)
+   Request: "I liked some of the older versions" (early graph controls, early
+   specimen) + "I like the textbook feel". The early look was lighter and finer:
+   thin slider tracks, quiet section labels, regular-weight tree, a framed
+   properties panel. This layer brings that finesse back over the current
+   system. Kept in one file so it can be reviewed or reverted as a unit.
+   Backup of everything before this pass: backups/2026-11-06-pre-polish/.
+   ========================================================================== */
+
+/* ---------- 1 · Fine slider (default) ----------
+   Thin framed track, slimmer teal fill, small key thumb. Obsidian exposes the
+   fill position (--slider-fill-position on input.slider), so the fill is drawn
+   honestly as a background instead of the thumb-shadow trick. The chunky LCD
+   bar remains as Style Settings → "Segmented sliders". */
+body:not(.plx-slider-segmented) {
+  --plx-sl-h: 14px;        /* hit area = thumb height */
+  --plx-sl-track: 5px;     /* framed track */
+  --plx-sl-fill: 3px;      /* fill inside the track */
+}
+body:not(.plx-slider-segmented) input[type="range"],
+body:not(.plx-slider-segmented) input[type="range"].slider {
+  height: var(--plx-sl-h);
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background:
+    linear-gradient(var(--plx-teal), var(--plx-teal)) 1px center / calc(var(--slider-fill-position, 0px) - 1px) var(--plx-sl-fill) no-repeat,
+    linear-gradient(var(--plx-well), var(--plx-well)) center / calc(100% - 2px) calc(var(--plx-sl-track) - 2px) no-repeat,
+    linear-gradient(var(--plx-rule-strong), var(--plx-rule-strong)) center / 100% var(--plx-sl-track) no-repeat;
+  background-color: transparent;
+}
+body:not(.plx-slider-segmented) input[type="range"]::-webkit-slider-runnable-track { height: var(--plx-sl-h); }
+body:not(.plx-slider-segmented) input[type="range"]::-webkit-slider-thumb {
+  width: 9px;
+  height: var(--plx-sl-h);
+  border-radius: 1px;
+  background: var(--plx-key-face);
+  box-shadow: inset 0 0 0 1px var(--plx-rule-strong), inset 0 2px 0 var(--plx-hl), 0 1px 1px rgba(0, 0, 0, 0.18);
+}
+body:not(.plx-slider-segmented) input[type="range"]:focus-visible { box-shadow: none; }
+body:not(.plx-slider-segmented) input[type="range"]:focus-visible::-webkit-slider-thumb {
+  box-shadow: inset 0 0 0 1px var(--plx-teal), 0 0 0 1px var(--plx-teal);
+}
+.setting-item-control input[type="range"], .graph-controls input[type="range"] { --plx-sl-h: 13px; }
+
+/* ---------- 2 · Quiet section labels (graph controls, settings groups) ---------- */
+.graph-control-section-header {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--plx-ink-3);
+}
+.graph-control-section > .tree-item-self { min-height: 24px; }
+.graph-controls .setting-item-name { font-size: 12.5px; }
+
+/* ---------- 3 · Tree: regular weight, the library glyph marks the divisions ---------- */
+.nav-files-container > div > .nav-folder > .nav-folder-title { font-weight: 500; }
+
+/* ---------- 4 · Properties: PANEL layout (default) ----------
+   The early look: a framed panel on the page, a
+   PROPERTIES label band, small uppercase keys in the caps face, values in the
+   UI sans, list values as boxed chips (× only on hover), hairline rows.
+   Other layouts stay in Style Settings → Properties layout. The rules read
+   body:not(<every other layout class>), so Panel also holds with no class
+   at all (Style Settings not installed); same specificity as the old
+   body.plx-props-panel gate. */
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-container {
+  --plx-prop-row: 25px;
+  --plx-prop-key-w: 9.5em;
+  margin: 0.5rem 0 1.6rem !important;
+  margin-inline: 0 !important;   /* align with the text column (was 4px left) */
+  border: 1px solid var(--plx-rule-soft);
+  border-radius: var(--plx-r);
+  background: var(--plx-plate);
+  font-family: var(--plx-ui);
+  overflow: hidden;
+}
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-container.is-collapsed { border-bottom: 1px solid var(--plx-rule-soft); }
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-properties-heading {
+  display: flex; align-items: center;
+  min-height: 24px;
+  padding: 0 !important;
+  background: var(--plx-paper-2);
+  border-bottom: 1px solid var(--plx-rule-soft);
+}
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-container.is-collapsed .metadata-properties-heading { border-bottom: 0; }
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-properties-title {
+  background: transparent !important;
+  clip-path: none;
+  padding: 0 8px !important;
+  height: 24px;
+  display: flex !important;
+  align-items: center;
+  line-height: 1 !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1em;
+  color: var(--plx-ink-2) !important;
+}
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-properties-heading:hover .metadata-properties-title { color: var(--plx-teal) !important; }
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-properties-heading .collapse-indicator { margin-inline-start: 8px; }
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-content { padding: 0; }
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-property {
+  padding: 0 8px !important;
+  border-top: 1px solid var(--plx-rule-soft);
+}
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-property:first-child { border-top: 0; }
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-property-key-input {
+  font-family: var(--plx-ui-cond) !important;
+  font-size: 10.5px !important;
+  font-style: normal;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-kerning: none;
+  color: var(--plx-ink-3) !important;
+}
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-property-icon { color: var(--plx-ink-4); margin-inline-end: 4px; }
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) :is(.metadata-property-value input:not([type="date"]):not([type="datetime-local"]):not([type="number"]), .metadata-property-value .metadata-input-longtext, .metadata-property-value .metadata-input-text:not(.mod-date):not(.mod-datetime), .multi-select-input) {
+  font-family: var(--plx-ui) !important;
+  font-size: 13.5px !important;
+}
+/* list values: boxed chips */
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .multi-select-container { gap: 4px; padding: 2px 0 !important; flex-wrap: wrap; }
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .multi-select-pill {
+  height: 19px;
+  padding: 0 6px !important;
+  border: 1px solid var(--plx-rule) !important;
+  border-radius: 1px !important;
+  background: var(--plx-paper) !important;
+  font-family: var(--plx-ui) !important;
+  font-size: 12.5px !important;
+  line-height: 17px;
+}
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .multi-select-pill:has(+ .multi-select-pill)::after { content: none !important; }
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-property[data-property-key="tags"] .multi-select-pill { font-family: var(--plx-mono) !important; font-size: 11.5px !important; }
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .multi-select-pill:hover { border-color: var(--plx-teal) !important; color: var(--plx-teal) !important; background: var(--plx-teal-wash) !important; }
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-add-button { padding: 3px 8px !important; border-top: 1px solid var(--plx-rule-soft); width: 100%; justify-content: flex-start; }
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-property-value :is(input[type="number"]) {
+  font-family: var(--plx-mono) !important;
+  font-size: 12.5px !important;
+}
+/* dates keep 50-properties' face (Berkeley Mono collided with the picker key) */
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-add-button { min-height: 22px; }
+/* the ⊟/⊞ key sits inside the panel band (it hung outside and got clipped) */
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-properties-heading .collapse-indicator {
+  position: static !important;
+  order: 0;
+  margin: 0 -2px 0 8px !important;
+  transform: translateY(-1px) !important;   /* optical: level with the caps */
+}
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-properties-title { order: 1; }
+/* the "+ add property" key lives in the PROPERTIES band (right end), so the
+   panel ends with its last row instead of an empty reserved strip */
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-container { position: relative; }
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-add-button {
+  position: absolute !important;
+  top: 0; right: 0;
+  width: auto !important;
+  height: 24px; min-height: 0;
+  padding: 0 10px !important;
+  border-top: 0 !important;
+  align-items: center;
+}
+/* dark: row hairlines one step stronger (rule-soft vanished on the lifted plate) */
+body.theme-dark:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-property { border-top-color: var(--plx-rule); }
+body.theme-dark:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-properties-heading { border-bottom-color: var(--plx-rule); }

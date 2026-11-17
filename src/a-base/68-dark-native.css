@@ -1,0 +1,122 @@
+/* ==========================================================================
+   68 · DARK NATIVE — the dark instrument's own idioms (see 00-tokens §3)
+   Light shows state with filled LCD cells and dark slate labels.
+   Dark shows state with LAMPS: a lit edge or a glowing legend on black.
+   The :not(.plx-dark-lab) guards are always true now (Alto has no Lab
+   palette); they stay only to keep these rules' specificity unchanged.
+   ========================================================================== */
+body.theme-dark:not(.plx-dark-lab) { -webkit-font-smoothing: antialiased; }
+
+/* ---- lamps: the active thing lights up, nothing turns into a light slab ---- */
+.theme-dark :is(.nav-files-container, .workspace-leaf-content[data-type="bookmarks"]) .tree-item-self.is-active {
+  box-shadow: -4px 0 8px -5px var(--plx-teal);
+}
+.theme-dark .workspace-tab-header.is-active .workspace-tab-header-inner-icon,
+.theme-dark .clickable-icon:is(.is-active, .mod-active) svg,
+.theme-dark .nav-action-button.is-active svg,
+.theme-dark .workspace-split:not(.mod-root) .workspace-tab-header.is-active .workspace-tab-header-inner-icon svg {
+  color: var(--plx-teal);
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--plx-teal) 55%, transparent));
+}
+.theme-dark .workspace-split:not(.mod-root) .workspace-tab-header.is-active,
+.theme-dark .clickable-icon:is(.is-active, .mod-active),
+.theme-dark .nav-action-button.is-active {
+  background: var(--plx-key-face-down);
+}
+/* the root tab: a lit glass tab on the black strip, with its lamp line */
+.theme-dark .mod-root .workspace-tabs.mod-active .workspace-tab-header.is-active {
+  box-shadow: inset 0 2px 0 var(--plx-teal), 0 -2px 8px -4px var(--plx-teal);
+}
+
+/* ---- keys: printed legends on black; a pressed key lights its legend ---- */
+.theme-dark .checkbox-container.is-enabled { box-shadow: inset 0 1px 2px rgba(0,0,0,0.6), var(--plx-lamp-glow); }
+
+/* ---- black strips: bands and labels are dark, with a thin printed edge ---- */
+.theme-dark .metadata-properties-heading,
+.theme-dark .markdown-rendered pre::before,
+.theme-dark :is(.markdown-rendered, .markdown-source-view) .callout > .callout-title > .callout-title-inner::before {
+  box-shadow: 0 0 0 1px var(--plx-rule);
+}
+
+/* ---- canvas: signage is a black strip with a printed legend ---- */
+body.theme-dark {
+  --plx-cv-sign: #08090a;
+  --plx-cv-sign-ink: #e6e8ea;
+  --plx-cv-wall: var(--plx-paper);
+  --plx-cv-bezel: rgba(8, 9, 10, 0.55);
+  --plx-cv-bezel-edge: rgba(255, 255, 255, 0.08);
+}
+.theme-dark .canvas-node-group > .canvas-group-label { box-shadow: inset 0 -1px 0 var(--plx-rule) !important; }
+
+/* Page content stays TEXTBOOK in dark (user: "textbook formatting feel …
+   rather than computer-GUI-like, which becomes cluttered"). Instrument idioms —
+   lamps, black keys, phosphor readouts — belong to the CHROME only. Inside a
+   note, formal tabs, callout chips and headers keep their typeset look. */
+
+/* ==========================================================================
+   rev 0.3b — pushed further
+   ========================================================================== */
+body.theme-dark:not(.plx-dark-lab) {
+  --plx-phos:      #f2b445;                    /* amber phosphor (same as 67-displays) */
+  --plx-phos-bg:   #110d07;
+  --plx-phos-glow: 0 0 4px rgba(242, 180, 69, 0.45);
+  --plx-lamp-wash: color-mix(in srgb, var(--plx-teal) 12%, transparent);
+}
+
+/* ---- the page is glass seated in the bezel: a dark lip on top, a faint
+        light edge where glass meets metal ---- */
+body.theme-dark:not(.plx-dark-lab) .workspace-split.mod-root .workspace-leaf-content > .view-content {
+  box-shadow: inset 0 10px 12px -12px rgba(0, 0, 0, 0.95), inset 1px 0 0 rgba(255, 255, 255, 0.03), inset -1px 0 0 rgba(255, 255, 255, 0.03);
+}
+body.theme-dark:not(.plx-dark-lab) .workspace-split.mod-root .view-header {
+  background: var(--plx-case);
+  border-bottom: 1px solid #000;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* ---- callouts: plates are lighter than the page (a sheet laid on it); the
+        header is the plate's own tint, as in light mode ---- */
+:where(body.theme-dark:not(.plx-dark-lab)) .callout > .callout-title { /* :where → loses to bare-title callouts (quote, abstract, formal objects) */
+  background: linear-gradient(var(--plx-co-wash), var(--plx-co-wash)), color-mix(in srgb, var(--plx-plate) 70%, var(--plx-paper));
+}
+
+/* ---- readouts glow: the status line is a phosphor strip, counts are digits ---- */
+body.theme-dark:not(.plx-dark-lab) .status-bar {
+  background: var(--plx-phos-bg);
+  border-top-color: #000 !important;
+  border-inline-start-color: #000 !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+body.theme-dark:not(.plx-dark-lab) .status-bar-item {
+  color: var(--plx-phos);
+  text-shadow: var(--plx-phos-glow);
+  border-inline-start-color: rgba(242, 180, 69, 0.14);
+}
+body.theme-dark:not(.plx-dark-lab) .status-bar-item .svg-icon { color: var(--plx-phos); filter: drop-shadow(0 0 2px rgba(242, 180, 69, 0.45)); }
+body.theme-dark:not(.plx-dark-lab) .status-bar-item.mod-clickable:hover { background: rgba(242, 180, 69, 0.10); color: #ffd88a; }
+body.theme-dark:not(.plx-dark-lab) .oz-explorer-root-nav-folder-title {
+  background: var(--plx-band);
+  border-color: #000;
+}
+body.theme-dark:not(.plx-dark-lab) .oz-explorer-root-nav-folder-title[data-count]::after {
+  color: var(--plx-phos);
+  text-shadow: var(--plx-phos-glow);
+}
+
+/* ---- menus, palettes, suggestions: the chosen row lights its lamp ---- */
+body.theme-dark:not(.plx-dark-lab) :is(.menu-item.selected, .menu-item:hover):not(.is-disabled):not(.is-label),
+body.theme-dark:not(.plx-dark-lab) .suggestion-item.is-selected {
+  background: var(--plx-lamp-wash);
+  box-shadow: inset 2px 0 0 var(--plx-teal);
+  color: var(--plx-lcd-ink);
+}
+body.theme-dark:not(.plx-dark-lab) :is(.menu-item.selected, .menu-item:hover):not(.is-disabled) .menu-item-icon { color: var(--plx-teal); }
+body.theme-dark:not(.plx-dark-lab) :is(.menu, .suggestion-container, .modal, .popover) {
+  border-color: #000;
+  box-shadow: var(--plx-float);
+}
+
+/* ---- inputs: recessed into the black; focus lights a lamp ring ---- */
+body.theme-dark:not(.plx-dark-lab) :is(input[type="text"], input[type="search"], input[type="number"], textarea, .prompt-input):focus {
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--plx-teal), var(--plx-lamp-glow) !important;
+}

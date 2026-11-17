@@ -1,0 +1,7 @@
+/* ==========================================================================
+   66 · DARK PALETTE VARIANTS: removed in Plectics Alto (2026-11-17)
+   Alto has one dark palette, Blue-steel (b-layer/64-dark-y2k.css), always on
+   in dark mode. The main-Plectics variants (Charcoal, Deck, Ink, Lab) and the
+   "Dark palette" option are gone; Blue-steel variations ship as separate
+   themes. The Graphite tokens in 00-tokens stay: Blue-steel overrides them.
+   ========================================================================== */

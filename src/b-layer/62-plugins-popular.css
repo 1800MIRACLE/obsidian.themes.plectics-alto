@@ -1,0 +1,789 @@
+/* ==========================================================================
+   PLECTICS ALTO · 62 · POPULAR PLUGINS
+   Support for the most-downloaded community plugins (obsidianstats.com).
+   Every rule is scoped to the plugin's own classes or view type. Keys,
+   wells, plates and labels follow 10-workspace / 30-reading / 60-plugins.
+   Semiotics: teal = here / would go here, amber = caution / due today,
+   red = error / overdue only, dashed = provisional / not yet existing,
+   hatched = absent (empty result), mono = data, dates, counts, scores.
+
+   Class names were read from each plugin's shipped styles.css and source:
+     Dataview          blacksmithgu/obsidian-dataview      0.5.68 (HEAD 5ad0994)
+     Tasks             obsidian-tasks-group/obsidian-tasks 8.6.0  (HEAD aa65a5b)
+     Templater         SilentVoid13/Templater              2.27.0 (HEAD 006dc61)
+     Kanban            mgmeyers/obsidian-kanban            2.0.51 (now community-archive, HEAD 5134c05)
+     Calendar          liamcain/obsidian-calendar-plugin   1.5.10 → obsidian-calendar-ui 0.3.12 (npm)
+     Git               Vinzent03/obsidian-git              2.43.0 (HEAD 8d1144a)
+     Advanced Tables   tgrosinger/advanced-tables-obsidian 0.23.2 (HEAD 1a22239)
+     Copilot           logancyang/obsidian-copilot         4.0.20 (HEAD 4df2268)
+     Smart Connections brianpetro/obsidian-smart-connections 4.7.2 (HEAD 3bfe2b2)
+     TaskNotes         callumalpass/tasknotes              4.18.3 (HEAD 554df20)
+     QuickAdd          chhoumann/quickadd                  2.33.1 (HEAD 0760a4a)
+     Omnisearch        scambier/obsidian-omnisearch        1.32.0 (HEAD e4a51ab)
+     Editing Toolbar   PKM-er/obsidian-editing-toolbar     4.1.12 (HEAD 2317ac4; cMenu* ids are now editingToolbar*)
+     Outliner          vslinko/obsidian-outliner           4.12.0 (HEAD 9ce2778)
+   ========================================================================== */
+
+
+/* ---------- Dataview ---------- */
+/* Result tables: the core wikitable, also outside .markdown-rendered (Live Preview). */
+table.table-view-table {
+  border-collapse: collapse;
+  border: 1px solid var(--plx-rule-strong);
+  background: var(--plx-paper);
+  font-size: 0.88em;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+table.table-view-table > thead > tr > th {
+  background: var(--plx-paper-2);
+  font-family: var(--plx-ui-cond);
+  font-size: 0.94em;
+  font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--plx-track);
+  line-height: 1.3;
+  vertical-align: bottom;
+  color: var(--plx-ink);
+  border: 1px solid var(--plx-rule);
+  border-bottom: 2px solid var(--plx-rule-strong);
+  padding: 4px 9px;
+}
+table.table-view-table > tbody > tr > td {
+  border: 1px solid var(--plx-rule);
+  padding: 4px 9px; line-height: 1.45;
+}
+table.table-view-table > tbody > tr:hover { background: var(--plx-teal-wash); }
+
+/* result count: "(12)" after the first column head and group headings */
+body .dataview.small-text {
+  font-family: var(--plx-mono);
+  font-size: 0.82em;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  font-variant-numeric: tabular-nums; color: var(--plx-ink-3);
+}
+
+/* list / task results */
+.dataview.list-view-ul > li, .dataview-result-list-li { margin-block: 1px; }
+body .dataview.result-group { padding-inline-start: 10px; border-inline-start: 1px solid var(--plx-rule-soft); }
+body .dataview.task-list-item:hover, body .dataview.task-list-basic-item:hover {
+  background-color: var(--plx-teal-wash);
+  box-shadow: none;
+}
+
+/* inline fields: a key chip (instrument label) + a mono value */
+body .dataview.inline-field-key {
+  padding: 0.1em 0.45em;
+  font-family: var(--plx-ui-cond);
+  font-size: 0.72em;
+  font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--plx-track);
+  vertical-align: 0.08em;
+  background-color: var(--plx-label-bg);
+  color: var(--plx-label-ink);
+  border: 1px solid var(--plx-label-bg);
+  border-radius: var(--plx-r) 0 0 var(--plx-r);
+}
+body .dataview.inline-field-value,
+body .dataview.inline-field-standalone-value {
+  padding: 0 0.45em;
+  font-family: var(--plx-mono);
+  font-size: 0.86em;
+  font-variant-numeric: tabular-nums;
+  background-color: var(--plx-paper-2);
+  color: var(--plx-ink);
+  border: 1px solid var(--plx-rule-soft);
+  border-inline-start: none;
+  border-radius: 0 var(--plx-r) var(--plx-r) 0;
+}
+body .dataview.inline-field-standalone-value { border-inline-start: 1px solid var(--plx-rule-soft); border-radius: var(--plx-r); }
+
+/* "No results" is not an error: an empty (hatched) frame, dashed */
+body div.dataview-error-box {
+  min-height: 0;
+  padding: 14px 10px;
+  border: 1px dashed var(--plx-rule);
+  border-radius: var(--plx-r);
+  background: var(--plx-hatch);
+}
+body .dataview-error-message {
+  margin: 0;
+  font-family: var(--plx-ui-cond); font-size: var(--plx-fs-label);
+  text-transform: uppercase; letter-spacing: var(--plx-track);
+  color: var(--plx-ink-3);
+}
+/* a real query/parse error: red plate with an ERROR legend */
+pre.dataview.dataview-error {
+  position: relative;
+  padding: 1.7em 1em 0.8em;
+  font-family: var(--plx-mono);
+  font-size: 0.84em;
+  white-space: pre-wrap;
+  color: var(--plx-red);
+  background: var(--plx-red-wash) !important;   /* 30-reading paints every pre with !important */
+  border: 1px solid var(--plx-red);
+  border-radius: var(--plx-r);
+}
+pre.dataview.dataview-error::before {
+  content: "error";
+  position: absolute; top: 0; left: 0;
+  padding: 1px 10px 1px 8px;
+  font-family: var(--plx-ui-cond);
+  font-size: 9.5px; letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--plx-paper);
+  background: var(--plx-red);
+}
+
+
+/* ---------- Tasks ---------- */
+/* group headings (h4/h5/h6) become instrument labels with a mono count */
+body :is(h4, h5, h6).tasks-group-heading {
+  margin: 1.1em 0 0.3em;
+  padding-bottom: 2px;
+  font-family: var(--plx-ui-cond);
+  font-size: var(--plx-fs-small);
+  font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--plx-track);
+  font-variant: normal;
+  color: var(--plx-ink-2);
+  border-bottom: 1px solid var(--plx-rule-soft);
+}
+body .tasks-group-count, .task-count {
+  font-family: var(--plx-mono);
+  font-size: var(--plx-fs-small);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums; color: var(--plx-ink-3);
+}
+.task-count { margin-top: 4px; }
+.plugin-tasks-list-item .tasks-backlink { font-size: 0.85em; color: var(--plx-ink-3); }
+body .tasks-urgency {
+  font-family: var(--plx-mono);
+  font-variant-numeric: tabular-nums;
+  background: var(--plx-paper-2);
+  border: 1px solid var(--plx-rule-soft); border-radius: var(--plx-r);
+  color: var(--plx-ink-2);
+}
+
+/* field chips: priority, dates, recurrence */
+.plugin-tasks-list-item :is(.task-priority, .task-recurring, .task-due, .task-scheduled,
+                            .task-start, .task-created, .task-done, .task-cancelled) {
+  display: inline-block;
+  margin-inline-start: 0.3em;
+  padding: 0 0.4em;
+  font-family: var(--plx-mono);
+  font-size: 0.78em;
+  line-height: 1.4;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  vertical-align: 0.06em;
+  color: var(--plx-ink-2);
+  background: var(--plx-paper-2);
+  border: 1px solid var(--plx-rule-soft); border-radius: var(--plx-r);
+}
+.plugin-tasks-list-item .task-recurring { color: var(--plx-ink-3); }
+.plugin-tasks-list-item .task-priority:is([data-task-priority="highest"], [data-task-priority="high"]) {
+  color: var(--plx-amber); border-color: var(--plx-amber);
+}
+.plugin-tasks-list-item .task-priority:is([data-task-priority="low"], [data-task-priority="lowest"]) { color: var(--plx-ink-4); }
+/* due today = caution; overdue = red (only while the task is still open) */
+.plugin-tasks-list-item:not(.is-checked) .task-due[data-task-due="today"] {
+  color: var(--plx-amber); background: var(--plx-amber-wash); border-color: var(--plx-amber);
+}
+.plugin-tasks-list-item:not(.is-checked) .task-due[data-task-due^="past-"] {
+  color: var(--plx-red); background: var(--plx-red-wash); border-color: var(--plx-red);
+}
+/* done: everything muted */
+.plugin-tasks-list-item .task-done,
+.plugin-tasks-list-item.is-checked :is(.task-priority, .task-recurring, .task-due, .task-scheduled, .task-start, .task-created, .task-cancelled) {
+  color: var(--plx-ink-4);
+  background: transparent;
+  border-color: var(--plx-rule-soft);
+}
+
+/* "explain": a code plate with a legend */
+pre.plugin-tasks-query-explanation {
+  position: relative;
+  padding: 1.7em 1em 0.8em;
+  font-family: var(--plx-mono);
+  font-size: 0.84em;
+  border: 1px solid var(--plx-rule); border-top-color: var(--plx-rule-strong);
+  border-radius: var(--plx-r); box-shadow: var(--plx-recessed);
+}
+pre.plugin-tasks-query-explanation::before {
+  content: "explain";
+  position: absolute; top: 0; left: 0;
+  padding: 1px 14px 1px 8px;
+  font-family: var(--plx-ui-cond);
+  font-size: 9.5px; letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--plx-slate-ink);
+  background: var(--plx-slate-2);
+}
+
+/* edit-task modal */
+.tasks-modal :is(.tasks-modal-priority-section, .tasks-modal-dates-section, .tasks-modal-dependencies-section) > label,
+.tasks-modal .tasks-modal-description-section > label {
+  font-family: var(--plx-ui-cond); font-size: var(--plx-fs-label);
+  font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--plx-track);
+  color: var(--plx-ink-3);
+}
+.tasks-modal hr { border-color: var(--plx-rule-soft); }
+.tasks-modal .tasks-modal-date-input { font-family: var(--plx-mono); font-variant-numeric: tabular-nums; }
+body .tasks-modal .tasks-modal-parsed-date { font-family: var(--plx-mono); font-size: var(--plx-fs-small); color: var(--plx-ink-3); }
+.tasks-modal-priority-section .task-modal-priority-option-container input + label { border: 1px solid transparent; }
+body .tasks-modal-priority-section .task-modal-priority-option-container input:checked + label {
+  background: var(--plx-lcd);
+  color: var(--plx-lcd-ink);
+  border-color: var(--plx-rule);
+}
+/* the plugin marks invalid fields with `border: 1px solid red !important` */
+body .tasks-modal .tasks-modal-error { border-color: var(--plx-red) !important; }
+.tasks-modal-button-section { border-top: 1px solid var(--plx-rule-soft); }
+
+
+/* ---------- Templater ---------- */
+/* <% %> commands are text that does not exist yet: amber tags and edge, dashed inline frame */
+body .cm-s-obsidian .templater-command-bg {
+  background-color: var(--plx-paper-2);
+  box-shadow: inset 2px 0 0 var(--plx-amber);
+}
+.cm-s-obsidian .cm-templater-command { font-family: var(--plx-mono); }
+body .cm-s-obsidian .templater-inline .cm-templater-command {
+  background-color: var(--plx-paper-2);
+  border-block: 1px dashed var(--plx-rule);
+}
+body .cm-s-obsidian .cm-templater-command:is(.cm-templater-opening-tag, .cm-templater-closing-tag) { color: var(--plx-amber); }
+body .cm-s-obsidian .cm-templater-command.cm-error { border-bottom-color: var(--plx-red); }
+/* prompt / suggester modals */
+.templater-prompt-div, .templater-multisuggester-div { gap: 6px; }
+body .templater-button-div { margin-top: 10px; }
+.templater-multisuggester-list .templater-multisuggester-list-item {
+  padding: 3px 6px;
+  border-bottom: 1px solid var(--plx-rule-soft);
+}
+
+
+/* ---------- Kanban (deepens 60-plugins.css) ---------- */
+.kanban-plugin__board { background: var(--plx-case); }
+body .kanban-plugin__search-wrapper { background: var(--plx-case); border-bottom: 1px solid var(--plx-rule); }
+/* lane header: a label strip, title as an instrument label, count as a readout */
+body .kanban-plugin__lane-header-wrapper { background: var(--plx-case); padding-block: 6px; }
+.kanban-plugin__lane-title-text {
+  font-size: var(--plx-fs-small);
+  font-weight: 700;
+  color: var(--plx-ink-2);
+}
+body div.kanban-plugin__lane-title-count {
+  padding: 2px 5px;
+  font-family: var(--plx-mono); font-size: 10.5px;
+  font-variant-numeric: tabular-nums; color: var(--plx-ink-2);
+  background: var(--plx-paper-2);
+  border: 1px solid var(--plx-rule-soft); border-radius: var(--plx-r);
+}
+body div.kanban-plugin__lane-title-count.wip-exceeded {   /* over the WIP limit: caution */
+  color: var(--plx-amber);
+  background: var(--plx-amber-wash);
+  border-color: var(--plx-amber);
+}
+.kanban-plugin__lane-title-count-limit { color: var(--plx-ink-3); }
+
+/* cards */
+body .kanban-plugin__item-title-wrapper { background: var(--plx-paper); }
+body .kanban-plugin__item-title-wrapper:not(:only-child) { border-bottom-color: var(--plx-rule-soft); }
+body .kanban-plugin__item-metadata-wrapper:not(:empty) { background: var(--plx-paper-2); }
+body .kanban-plugin__item-metadata:not(:empty) { font-size: 11.5px; color: var(--plx-ink-3); }
+:is(.kanban-plugin__item-metadata-date, .kanban-plugin__item-metadata-time,
+    .kanban-plugin__item-metadata-date-relative, .kanban-plugin__preview-date, .kanban-plugin__preview-time) {
+  font-family: var(--plx-mono);
+  font-variant-numeric: tabular-nums;
+}
+.kanban-plugin__item.is-today:not(.is-complete) .kanban-plugin__item-metadata-date { color: var(--plx-amber); }
+.kanban-plugin__item.is-past:not(.is-complete) .kanban-plugin__item-metadata-date { color: var(--plx-red); }
+.kanban-plugin__item.is-complete .kanban-plugin__item-title { color: var(--plx-ink-3); }
+body .kanban-plugin__item-task-inline-metadata-item {
+  padding-inline: 4px;
+  background: var(--plx-paper);
+  border: 1px solid var(--plx-rule-soft); border-radius: var(--plx-r);
+}
+.kanban-plugin__item-task-inline-metadata-item-key {
+  font-family: var(--plx-ui-cond); font-size: var(--plx-fs-label);
+  text-transform: uppercase; letter-spacing: var(--plx-track);
+  color: var(--plx-ink-3);
+}
+.kanban-plugin__item-task-inline-metadata-item-value { font-family: var(--plx-mono); }
+
+/* "+ Add a card": a key with a dashed edge (the card does not exist yet).
+   Same :not() chain as the core key rule in 10-workspace, so this wins by order. */
+.kanban-plugin button.kanban-plugin__new-item-button:not(.clickable-icon):not(.checkbox-container):not(.callout-copy-button) {
+  width: 100%;
+  text-align: start;
+  color: var(--plx-ink-2);
+  border: 1px dashed var(--plx-rule-strong);
+}
+.kanban-plugin button.kanban-plugin__new-item-button:not(.clickable-icon):not(.checkbox-container):not(.callout-copy-button):hover { color: var(--plx-teal); border-color: var(--plx-teal); }
+/* submit keys = the EXE key */
+.kanban-plugin button:is(.kanban-plugin__item-action-add, .kanban-plugin__lane-action-add):not(.clickable-icon):not(.checkbox-container):not(.callout-copy-button) {
+  color: var(--text-on-accent);
+  background: linear-gradient(180deg, var(--plx-teal-bright), var(--plx-teal));
+  border-color: var(--plx-teal-deep);
+}
+/* input wells for new cards / lanes */
+body .kanban-plugin__item-form .kanban-plugin__item-input-wrapper,
+body .kanban-plugin__lane-input {
+  background: var(--plx-well);
+  border: 1px solid var(--plx-rule); border-top-color: var(--plx-rule-strong);
+  border-radius: var(--plx-r); box-shadow: var(--plx-recessed);
+}
+body .kanban-plugin__lane-form-wrapper {
+  background: var(--plx-case-hi);
+  border: 1px solid var(--plx-rule-strong);
+  border-radius: var(--plx-r);
+  box-shadow: var(--plx-float);
+}
+/* archive keys stay the neutral core key (archiving is not destructive);
+   delete keys get red legends. Same :not() chain as the core key rule. */
+.kanban-plugin button:is(.kanban-plugin__delete-lane-button, .kanban-plugin__item-button-delete):not(.clickable-icon):not(.checkbox-container):not(.callout-copy-button) {
+  color: var(--plx-red);
+  border-color: var(--plx-red);
+}
+
+/* drag & drop: dashed teal = "would go here". 60-plugins.css sets lane and card
+   borders/backgrounds with !important, so these overrides need it too. */
+.kanban-plugin__drag-container .kanban-plugin__item,
+.kanban-plugin__drag-container .kanban-plugin__lane {
+  border: 1px dashed var(--plx-teal) !important;
+  box-shadow: var(--plx-float) !important;
+}
+.is-dropping > .kanban-plugin__lane {
+  background: var(--plx-teal-wash) !important;
+  border: 1px dashed var(--plx-teal) !important;
+  outline: none;
+}
+body .kanban-plugin__lane-items > .kanban-plugin__placeholder:only-child {
+  border: 1px dashed var(--plx-rule);
+  border-radius: var(--plx-r);
+}
+body .is-sorting .kanban-plugin__lane-items > .kanban-plugin__placeholder:only-child {
+  border-color: var(--plx-teal);
+  background: var(--plx-teal-wash);
+}
+
+
+/* ---------- Calendar (deepens 60-plugins.css) ---------- */
+/* The calendar-ui reads its colours from these variables (set on .container). */
+body #calendar-container {
+  --color-dot: var(--plx-ink-3);
+  --color-arrow: var(--plx-ink-2);
+  --color-button: var(--plx-ink-2);
+  --color-text-title: var(--plx-ink);
+  --color-text-heading: var(--plx-ink-3);
+  --color-text-day: var(--plx-ink);
+  --color-text-today: var(--plx-teal);
+  --color-text-weeknum: var(--plx-ink-3);
+  --color-background-weekend: color-mix(in srgb, var(--plx-ink) 3%, transparent);
+}
+#calendar-container .month { font-family: var(--plx-serif); font-weight: 600; }
+#calendar-container .year {
+  font-family: var(--plx-mono);
+  font-size: 0.7em;
+  font-variant-numeric: tabular-nums; color: var(--plx-ink-3);
+  margin-inline-start: 0.3em;
+}
+/* weekday heads: instrument labels */
+#calendar-container .calendar th {
+  font-family: var(--plx-ui-cond); font-size: var(--plx-fs-label);
+  font-weight: 700;
+  letter-spacing: var(--plx-track);
+  padding: 3px 2px;
+  border-bottom: 1px solid var(--plx-rule-soft);
+}
+#calendar-container .day, #calendar-container .week-num { border-radius: var(--plx-r); font-variant-numeric: tabular-nums; }
+#calendar-container .adjacent-month { opacity: 0.4; }
+/* active cell is an LCD wash (60-plugins), so dots must take the LCD ink, not white */
+#calendar-container .active .filled, #calendar-container .active.filled { fill: var(--plx-lcd-ink); }
+#calendar-container .active .hollow, #calendar-container .active.hollow { stroke: var(--plx-lcd-ink); }
+/* nav arrows and "today" as keys */
+#calendar-container .arrow,
+#calendar-container .reset-button {
+  height: 22px;
+  min-width: 24px;
+  padding: 0 4px;
+  margin-inline-start: 2px;
+  background: var(--plx-key-face);
+  border: 1px solid var(--plx-rule); border-bottom-color: var(--plx-rule-strong);
+  border-radius: var(--plx-r-key); box-shadow: var(--plx-raised);
+}
+#calendar-container .reset-button {
+  font-family: var(--plx-ui-cond); font-size: var(--plx-fs-label);
+  font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--plx-track);
+}
+#calendar-container .arrow:active,
+#calendar-container .reset-button.active:active { background: var(--plx-key-face-down); box-shadow: var(--plx-pressed); }
+
+
+/* ---------- Git ---------- */
+/* plugin defines its diff colours as raw hex on .theme-light/.theme-dark */
+body.theme-light, body.theme-dark {
+  --git-insert: var(--plx-green);
+  --git-delete: var(--plx-red);
+  --git-change: var(--plx-amber);
+  --git-move: var(--plx-blue);
+  --git-selected: var(--plx-blue);
+  --git-insert-bg: var(--plx-green-wash);
+  --git-delete-bg: var(--plx-red-wash);
+  --git-change-bg: var(--plx-amber-wash);
+  --git-insert-hl: color-mix(in srgb, var(--plx-green) 28%, transparent);
+  --git-delete-hl: color-mix(in srgb, var(--plx-red) 28%, transparent);
+}
+/* commit message: a well, in mono (commit text is data) */
+body .workspace-leaf-content[data-type="git-view"] .git-commit-msg .commit-msg-input {
+  font-family: var(--plx-mono);
+  font-size: 12px;
+  background: var(--plx-well);
+  border: 1px solid var(--plx-rule); border-top-color: var(--plx-rule-strong);
+  border-radius: var(--plx-r); box-shadow: var(--plx-recessed);
+}
+body .workspace-leaf-content[data-type="git-view"] .commit-action-group {
+  border-color: var(--plx-rule-strong);
+  border-radius: var(--plx-r-key);
+  background: var(--plx-key-face);
+  box-shadow: var(--plx-raised);
+}
+.workspace-leaf-content[data-type="git-view"] .files-count {
+  font-family: var(--plx-mono); font-size: 10.5px;
+  font-variant-numeric: tabular-nums; color: var(--plx-ink-3);
+}
+/* status letters: small mono chips */
+.workspace-leaf-content[data-type="git-view"] .git-tools .type {
+  width: auto;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 2px;
+  margin-inline-start: 4px;
+  font-family: var(--plx-mono);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--plx-ink-2);
+  border: 1px solid var(--plx-rule);
+  border-radius: var(--plx-r);
+}
+.workspace-leaf-content[data-type="git-view"] .git-tools .type[data-type="M"] { color: var(--plx-amber); border-color: var(--plx-amber); }
+.workspace-leaf-content[data-type="git-view"] .git-tools .type[data-type="A"] { color: var(--plx-teal); border-color: var(--plx-teal); }
+.workspace-leaf-content[data-type="git-view"] .git-tools .type[data-type="D"] { color: var(--plx-red); border-color: var(--plx-red); background: var(--plx-red-wash); }
+.workspace-leaf-content[data-type="git-view"] .git-tools .type[data-type="U"] { border-style: dashed; }   /* untracked: not yet in the repo */
+.workspace-leaf-content[data-type="git-view"] .git-tools .type[data-type="R"] { color: var(--plx-blue); border-color: var(--plx-blue); }
+/* history view */
+.workspace-leaf-content[data-type="git-history-view"] .git-ref {
+  display: inline-block;
+  padding: 0 4px;
+  font-family: var(--plx-mono); font-size: 10.5px;
+  color: var(--plx-teal);
+  border: 1px solid var(--plx-teal);
+  border-radius: var(--plx-r);
+}
+.workspace-leaf-content[data-type="git-history-view"] .git-author { color: var(--plx-ink-2); font-size: 11.5px; }
+.workspace-leaf-content[data-type="git-history-view"] .git-date {
+  font-family: var(--plx-mono); font-size: 10.5px;
+  font-variant-numeric: tabular-nums; color: var(--plx-ink-3);
+}
+
+
+/* ---------- Advanced Tables ---------- */
+body .advanced-tables-buttons > div > .title {
+  font-family: var(--plx-ui-cond); font-size: var(--plx-fs-label);
+  font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--plx-track);
+  text-decoration: none;
+  color: var(--plx-ink-3);
+}
+.advanced-tables-row-label {
+  font-family: var(--plx-ui-cond); font-size: var(--plx-fs-label);
+  text-transform: uppercase; letter-spacing: var(--plx-track);
+  color: var(--plx-ink-3);
+}
+body [data-type="advanced-tables-toolbar"] .nav-buttons-container .nav-action-button {
+  background: var(--plx-key-face);
+  border: 1px solid var(--plx-rule); border-bottom-color: var(--plx-rule-strong);
+  border-radius: var(--plx-r-key); box-shadow: var(--plx-raised);
+  color: var(--plx-ink);
+}
+body [data-type="advanced-tables-toolbar"] .nav-buttons-container .nav-action-button:active {
+  background: var(--plx-key-face-down);
+  box-shadow: var(--plx-pressed);
+}
+
+
+/* ---------- Copilot ---------- */
+/* Messages are Tailwind-built; user vs assistant is told apart only by the
+   user bubble's tw-border class (ChatSingleMessage.tsx at 4df2268). */
+.workspace-leaf-content[data-type="copilot-chat-view"] .tw-group.tw-border:has(> div > .message-content) {
+  border-color: var(--plx-rule);
+  border-inline-start: 2px solid var(--plx-teal);
+  border-radius: var(--plx-r);
+}
+.workspace-leaf-content[data-type="copilot-chat-view"] .tw-group:not(.tw-border):has(> div > .message-content) {
+  border-radius: 0;
+  border-bottom: 1px solid var(--plx-rule-soft);
+}
+/* input box: a well */
+.workspace-leaf-content[data-type="copilot-chat-view"] .tw-border:has([contenteditable="true"]) {
+  background: var(--plx-well);
+  border-color: var(--plx-rule);
+  border-top-color: var(--plx-rule-strong);
+  border-radius: var(--plx-r); box-shadow: var(--plx-recessed);
+}
+.workspace-leaf-content[data-type="copilot-chat-view"] .tw-border:has([contenteditable="true"]:focus) {
+  border-color: var(--plx-teal);
+  box-shadow: var(--plx-recessed), 0 0 0 1px var(--plx-teal);
+}
+.workspace-leaf-content[data-type="copilot-chat-view"] .message-content pre {
+  background: var(--plx-paper-2);
+  border: 1px solid var(--plx-rule); border-top-color: var(--plx-rule-strong);
+  border-radius: var(--plx-r); box-shadow: var(--plx-recessed);
+}
+.workspace-leaf-content[data-type="copilot-chat-view"] .message-content th {
+  font-family: var(--plx-ui-cond);
+  text-transform: uppercase; letter-spacing: var(--plx-track);
+  border-bottom: 2px solid var(--plx-rule-strong);
+}
+.workspace-leaf-content[data-type="copilot-chat-view"] .message-content pre .copy-code-button {
+  background: var(--plx-key-face);
+  border-color: var(--plx-rule);
+  border-radius: 0 var(--plx-r) 0 var(--plx-r-key);
+}
+body .copilot-sources {
+  border: 1px solid var(--plx-rule);
+  border-radius: var(--plx-r);
+  background: var(--plx-paper-2);
+}
+body .copilot-sources__summary {
+  font-family: var(--plx-ui-cond); font-size: var(--plx-fs-label);
+  text-transform: uppercase; letter-spacing: var(--plx-track);
+  color: var(--plx-ink-3);
+}
+body :is(.copilot-sources__index, .copilot-citation-ref, .copilot-citation-group) {
+  font-family: var(--plx-mono);
+  font-variant-numeric: tabular-nums;
+}
+body :is(.copilot-citation-ref, .copilot-citation-group) {
+  background: var(--plx-paper-2);
+  border: 1px solid var(--plx-rule-soft); border-radius: var(--plx-r);
+}
+
+
+/* ---------- Smart Connections ---------- */
+.workspace-leaf-content[data-type="smart-connections-view"] .sc-result:not(.sc-result-plaintext) { border-radius: 0; }
+/* score: a small mono readout */
+body .sc-result a.sc-result-file-title > small.sc-score {
+  height: auto;
+  padding: 0 4px;
+  line-height: 1.5;
+  font-family: var(--plx-mono); font-size: 10.5px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums; color: var(--plx-ink-2);
+  background: var(--plx-paper-2);
+  border: 1px solid var(--plx-rule-soft); border-radius: var(--plx-r);
+}
+body a.sc-result-file-title > small.sc-title { text-decoration: none; color: var(--plx-ink); }
+body a.sc-result-file-title > .sc-breadcrumb:not(.sc-title, .sc-score) { font-style: normal; color: var(--plx-ink-3); }
+body .sc-list .sc-result.sc-result-plaintext {
+  background: var(--plx-paper);
+  box-shadow: 0 0 0 1px var(--plx-rule-soft);
+  border-radius: var(--plx-r);
+}
+
+
+/* ---------- TaskNotes ---------- */
+/* TaskNotes themes itself through --tn-* tokens on .tasknotes-plugin: map them. */
+body .tasknotes-plugin {
+  --tn-color-error: var(--plx-red);
+  --tn-color-overdue: var(--plx-red);
+  --tn-color-warning: var(--plx-amber);
+  --tn-color-success: var(--plx-green);
+  --tn-color-info: var(--plx-steel);
+  --tn-radius-xs: var(--plx-r);
+  --tn-radius-sm: var(--plx-r-key);
+  --tn-radius-md: var(--plx-r-key);
+  --tn-radius-lg: 3px;
+  --tn-radius-xl: 4px;
+}
+/* marks (semiotic): hollow square = open, filled square = done */
+body .tasknotes-plugin .task-card__status-dot:not(.task-card__status-dot--icon) {
+  width: 13px;
+  height: 13px;
+  border-width: 1px;
+  border-color: var(--plx-rule-strong);
+  border-radius: 1px;
+}
+body .tasknotes-plugin .task-card__priority-dot:not(.task-card__priority-dot--icon) { width: 7px; height: 7px; border-radius: 0; }
+body .tasknotes-plugin .task-card__metadata { font-size: 11.5px; color: var(--plx-ink-3); }
+body .tasknotes-plugin .task-card__metadata-date { font-family: var(--plx-mono); font-variant-numeric: tabular-nums; border-radius: var(--plx-r); }
+body .tasknotes-plugin .task-card--completed > .task-card__main-row .task-card__title { color: var(--plx-ink-3); }
+/* agenda */
+body .tasknotes-plugin .agenda-view__day-header { border-bottom-color: var(--plx-rule); }
+body .tasknotes-plugin .agenda-view__day-name {
+  font-family: var(--plx-ui-cond);
+  text-transform: uppercase; letter-spacing: var(--plx-track);
+  font-weight: 700;
+}
+body .tasknotes-plugin .agenda-view__day-name--today { color: var(--plx-teal); }
+body .tasknotes-plugin :is(.agenda-view__day-date, .agenda-view__item-count) {
+  font-family: var(--plx-mono);
+  font-variant-numeric: tabular-nums; color: var(--plx-ink-3);
+}
+/* calendar views: the bundled calendar reads --tnc-theme-* */
+body .advanced-calendar-view .tnc {
+  --tnc-theme-bg: var(--plx-paper);
+  --tnc-theme-bg-2: var(--plx-paper-2);
+  --tnc-theme-bg-3: var(--plx-lcd-2);
+  --tnc-theme-line: var(--plx-rule-soft);
+  --tnc-theme-line-strong: var(--plx-rule);
+  --tnc-theme-accent: var(--plx-teal);
+  --tnc-theme-now: var(--plx-teal);      /* the "now" line is you-are-here, not an error */
+  --tnc-theme-warn: var(--plx-amber);
+  --tnc-theme-amber: var(--plx-amber);
+  --tnc-theme-ok: var(--plx-green);
+  --tnc-radius: var(--plx-r);
+}
+
+
+/* ---------- QuickAdd ---------- */
+body .quickadd-choice-icon { color: var(--plx-ink-3); }
+body .qa-highlight {
+  background: transparent;
+  color: var(--plx-teal);
+  font-weight: 600;
+  text-decoration: underline 1px var(--plx-teal);
+  text-underline-offset: 2px;
+}
+/* file suggester: selection is the core slate bar, not an accent fill */
+body .qaFileSuggestionItem { border-radius: 0; }
+body .qaFileSuggestionItem.is-selected {
+  background-color: var(--plx-slate);
+  color: var(--plx-slate-ink);
+  box-shadow: none;
+}
+body .qaFileSuggestionItem .suggestion-sub-text { font-family: var(--plx-mono); font-size: 10.5px; }
+body .qaFileSuggestionItem.is-selected .suggestion-sub-text { color: var(--plx-slate-ink); }
+body .qa-suggestion-pill {
+  font-family: var(--plx-ui-cond);
+  letter-spacing: var(--plx-track);
+  border: 1px solid currentColor;
+  border-radius: var(--plx-r);
+}
+body .qa-suggest-exact::before      { background: var(--plx-teal); }
+body .qa-suggest-alias::before      { background: var(--plx-steel); }
+body .qa-suggest-heading::before,
+body .qa-suggest-block::before      { background: var(--plx-ink-3); }
+body .qa-suggest-unresolved::before { background: repeating-linear-gradient(180deg, var(--plx-red) 0 3px, transparent 3px 5px); }  /* dashed: not yet existing */
+.qaFileSuggestionItem.is-selected .qa-highlight,
+.quickadd-choice-suggestion.is-selected .qa-highlight { color: inherit; text-decoration-color: currentColor; }
+
+
+/* ---------- Omnisearch ---------- */
+.omnisearch-result__title { font-weight: 600; }
+body .omnisearch-result__folder-path,
+body .omnisearch-result__extension {
+  font-family: var(--plx-mono); font-size: 10.5px;
+  color: var(--plx-ink-3);
+}
+body .omnisearch-result__counter {
+  padding: 0 4px;
+  font-family: var(--plx-mono); font-size: 10.5px;
+  font-variant-numeric: tabular-nums; color: var(--plx-ink-2);
+  border: 1px solid var(--plx-rule-soft); border-radius: var(--plx-r);
+}
+body .omnisearch-result__body {
+  margin-top: 2px;
+  font-family: var(--plx-small);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--plx-ink-2);
+}
+.omnisearch-highlight.omnisearch-default-highlight {
+  color: var(--plx-teal);
+  font-weight: 600;
+  text-decoration: underline 1px var(--plx-teal);
+  text-underline-offset: 2px;
+}
+.omnisearch-result.is-selected .omnisearch-result__body,
+.omnisearch-result.is-selected :is(.omnisearch-result__folder-path, .omnisearch-result__extension, .omnisearch-result__counter) {
+  color: var(--plx-slate-ink);
+  border-color: currentColor;
+}
+.omnisearch-result.is-selected .omnisearch-highlight.omnisearch-default-highlight {
+  color: inherit;
+  text-decoration-color: currentColor;
+}
+
+
+/* ---------- Editing Toolbar ---------- */
+/* The plugin uses #id selectors (specificity 1,2,0); body + :not() keep ours
+   just above. The user's "Custom" aesthetic is left alone. */
+body #editingToolbarModalBar:is(.editingToolbarDefaultAesthetic, .editingToolbarTinyAesthetic, .editingToolbarGlassAesthetic) {
+  padding: 3px;
+  background: var(--plx-case-hi);
+  border: 1px solid var(--plx-rule-strong);
+  border-radius: var(--plx-r);
+  box-shadow: var(--plx-float);
+  backdrop-filter: none;
+
+}
+body #editingToolbarModalBar.top:is(.editingToolbarDefaultAesthetic, .editingToolbarTinyAesthetic, .editingToolbarGlassAesthetic) {
+  box-shadow: none;
+  border-width: 0 0 1px;
+}
+body :is(#editingToolbarModalBar, #editingToolbarPopoverBar):not(.editingToolbarCustomAesthetic) :is(.editingToolbarCommandItem, button[class^="editingToolbarCommandsubItem"]):not(.editingToolbar-Divider-Line) {
+  min-width: 26px;
+  height: 26px;
+  margin: 1px;
+  color: var(--plx-ink);
+  background: var(--plx-key-face);
+  border: 1px solid var(--plx-rule); border-bottom-color: var(--plx-rule-strong);
+  border-radius: var(--plx-r-key); box-shadow: var(--plx-raised);
+}
+body :is(#editingToolbarModalBar, #editingToolbarPopoverBar):not(.editingToolbarCustomAesthetic) :is(.editingToolbarCommandItem, button[class^="editingToolbarCommandsubItem"]):not(.editingToolbar-Divider-Line):hover {
+  border-color: var(--plx-rule-strong);
+  box-shadow: var(--plx-raised), inset 0 0 0 100px color-mix(in srgb, var(--plx-key-top) 30%, transparent);
+}
+body :is(#editingToolbarModalBar, #editingToolbarPopoverBar):not(.editingToolbarCustomAesthetic) :is(.editingToolbarCommandItem, button[class^="editingToolbarCommandsubItem"]):not(.editingToolbar-Divider-Line):active {
+  background: var(--plx-key-face-down);
+  box-shadow: var(--plx-pressed);
+}
+body:is(.theme-light, .theme-dark) :is(#editingToolbarModalBar, #editingToolbarPopoverBar) button.editingToolbar-Divider-Line {
+  width: 1px;
+  min-height: 0;
+  height: 20px;
+  margin: 0 3px;
+  border: 0;
+  box-shadow: none;
+  opacity: 1;
+  background: var(--plx-rule);
+}
+
+
+/* ---------- Outliner ---------- */
+/* vertical list guides drawn like the file-tree connectors: thin, solid */
+body .outliner-plugin-list-line {
+  background-image: linear-gradient(to right, var(--plx-tree-line) 1px, transparent 1px);
+}
+body .outliner-plugin-list-line:hover {
+  background: transparent;
+  background-image: linear-gradient(to right, var(--plx-tree-line-path) 1px, transparent 1px);
+  background-position-x: 2px;
+  background-repeat: no-repeat;
+}
+/* drag and drop: dashed teal = would go here */
+body .outliner-plugin-drop-zone {
+  height: 0;
+  background: transparent;
+  border-top: 2px dashed var(--plx-teal);
+}
+body .outliner-plugin-dropping-line { background-color: var(--plx-teal-wash); }
+body .outliner-plugin-dragging-line { background-color: var(--plx-lcd-2); }

@@ -1,0 +1,321 @@
+/* ==========================================================================
+   50 · PROPERTIES — small mono spec sheet
+   Base: monospaced, ~10.5px, 18px rows. Five variants (Style Settings →
+   "Properties layout", body classes):
+     (default)            LEDGER  — two-column mono table, dotted rules
+     .plx-props-strip     STRIP   — one wrapped metadata line under the title
+     .plx-props-margin    MARGIN  — narrow card floated right (reading view)
+     .plx-props-lcd       LCD     — recessed Casio display panel
+     .plx-props-tucked    TUCKED  — only the label line until hovered/focused
+   ========================================================================== */
+
+body {
+  --plx-prop-fs: 11.5px;
+  --plx-prop-row: 21px;
+  --plx-prop-key-w: 9em;
+}
+
+/* ---------- Base (LEDGER) ---------- */
+.metadata-container {
+  --metadata-label-width: var(--plx-prop-key-w);
+  margin: 0.35rem 0 1.4rem !important;
+  padding: 0 !important;
+  border: none;
+  border-top: 1px solid var(--plx-rule-soft);
+  border-bottom: 1px solid var(--plx-rule-soft);
+  border-radius: 0;
+  background: transparent;
+  font-family: var(--plx-mono);
+  font-size: var(--plx-prop-fs);
+  line-height: 1.35;
+  color: var(--plx-ink-2);
+}
+
+.metadata-properties-heading {
+  margin: 0 !important;
+  padding: 1px 2px !important;
+  gap: 3px;
+  min-height: 0;
+  cursor: pointer;
+  border-radius: 0;
+}
+.metadata-properties-heading:hover { background: var(--plx-lcd-2); }
+.metadata-properties-title {
+  font-size: 9.5px !important;
+  font-weight: 400 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--plx-ink-3) !important;
+}
+.metadata-container[data-property-count] .metadata-properties-title::after {
+  content: " [" attr(data-property-count) "]";
+  letter-spacing: 0;
+  color: var(--plx-ink-4);
+}
+.metadata-properties-heading .collapse-indicator { color: var(--plx-ink-4); --icon-size: 9px; width: 10px; }
+.metadata-container.is-collapsed { border-bottom: none; }
+
+.metadata-content { padding: 0 0 2px; }
+.metadata-properties { gap: 0; }
+.metadata-property {
+  padding: 0 2px !important;
+  min-height: var(--plx-prop-row);
+  border-radius: 0 !important;
+  align-items: center;
+  gap: 0;
+  border-top: 1px dotted var(--plx-rule-soft);
+}
+.metadata-property:hover { background: var(--plx-lcd-2) !important; }
+.metadata-property:focus-within { background: var(--plx-lcd) !important; box-shadow: inset 2px 0 0 var(--plx-teal); }
+
+.metadata-property-key { border: none !important; background: transparent !important; align-items: center; min-height: var(--plx-prop-row); }
+.metadata-property-icon { color: var(--plx-ink-4); --icon-size: 10px; min-width: 14px; width: 14px; padding: 0 !important; }
+.metadata-property-key-input {
+  font-size: var(--plx-prop-fs) !important;
+  color: var(--plx-ink-3) !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 4px 0 2px !important;
+  height: var(--plx-prop-row);
+  min-height: 0;
+  text-transform: none;
+}
+.metadata-property-value { border: none !important; background: transparent !important; min-height: var(--plx-prop-row); }
+.metadata-property-value input,
+.metadata-property-value .metadata-input-longtext,
+.metadata-property-value .metadata-input-text {
+  font-size: var(--plx-prop-fs) !important;
+  color: var(--plx-ink) !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 3px !important;
+  min-height: var(--plx-prop-row);
+  height: auto;
+  line-height: var(--plx-prop-row);
+  font-variant-numeric: tabular-nums;
+}
+.metadata-property-value input:focus,
+.metadata-property-value .metadata-input-longtext:focus {
+  background: var(--plx-well) !important;
+  box-shadow: inset 0 0 0 1px var(--plx-teal) !important;
+}
+.metadata-property-value input[type="date"]::-webkit-calendar-picker-indicator,
+.metadata-property-value input[type="datetime-local"]::-webkit-calendar-picker-indicator { opacity: 0.35; width: 10px; height: 10px; }
+.metadata-property-value .metadata-input-checkbox { width: 11px; height: 11px; margin-inline-start: 3px; }
+
+/* list values → bracketed tokens, not pills */
+.multi-select-container { gap: 0 4px; padding: 0 2px !important; border: none !important; background: transparent !important; box-shadow: none !important; min-height: var(--plx-prop-row); }
+.multi-select-pill {
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--plx-ink) !important;
+  padding: 0 !important;
+  height: var(--plx-prop-row);
+  font-size: var(--plx-prop-fs) !important;
+  box-shadow: none !important;
+}
+.multi-select-pill::after { content: ","; color: var(--plx-ink-4); }
+.multi-select-pill:last-of-type::after { content: none; }
+.metadata-property[data-property-key="tags"] .multi-select-pill-content::before { content: "#"; color: var(--plx-ink-4); }
+.multi-select-pill:hover { color: var(--plx-teal) !important; background: var(--plx-teal-wash) !important; }
+.multi-select-pill-remove-button { display: none; --icon-size: 9px; }
+.multi-select-pill:hover .multi-select-pill-remove-button { display: flex; color: var(--plx-red) !important; }
+.multi-select-input { font-size: var(--plx-prop-fs) !important; min-width: 2em; }
+.metadata-property-value .internal-link,
+.metadata-link-inner { color: var(--plx-teal) !important; text-decoration: underline dotted; text-underline-offset: 2px; }
+.metadata-input-longtext:empty::before, .metadata-property-value input::placeholder { color: var(--plx-ink-4) !important; font-style: normal; content: "—"; }
+
+.metadata-add-button {
+  margin: 0 !important; padding: 0 4px !important;
+  font-size: 9.5px !important; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--plx-ink-4) !important;
+  opacity: 0; transition: opacity 120ms; border-radius: 0 !important;
+  min-height: 16px;
+  --icon-size: 9px;
+}
+.metadata-container:hover .metadata-add-button,
+.metadata-container:focus-within .metadata-add-button { opacity: 1; }
+.metadata-add-button:hover { color: var(--plx-teal) !important; background: var(--plx-lcd-2) !important; }
+
+/* ---------- STRIP — one wrapped line: key value · key value ---------- */
+body.plx-props-strip .metadata-container { border-bottom: none; border-top: none; margin-top: 0.1rem !important; }
+body.plx-props-strip .metadata-properties-heading { display: none; }
+body.plx-props-strip .metadata-container.is-collapsed .metadata-content { display: block !important; }
+body.plx-props-strip .metadata-properties { display: flex; flex-wrap: wrap; gap: 0 14px; }
+body.plx-props-strip .metadata-property { border: none; width: auto; padding: 0 !important; }
+body.plx-props-strip .metadata-property-icon { display: none; }
+body.plx-props-strip .metadata-property-key { width: auto !important; min-width: 0; }
+body.plx-props-strip .metadata-property-key-input { width: auto; field-sizing: content; color: var(--plx-ink-4) !important; padding-inline-end: 3px !important; }
+body.plx-props-strip .metadata-property-key-input::after { content: ":"; }
+body.plx-props-strip .metadata-property-value { flex: 0 1 auto; width: auto; }
+body.plx-props-strip .metadata-property-value input { field-sizing: content; width: auto; max-width: 22em; }
+body.plx-props-strip .metadata-add-button { display: none; }
+body.plx-props-strip .metadata-container:hover .metadata-add-button { display: flex; }
+
+/* ---------- MARGIN — right-floated narrow card (reading view) ---------- */
+body.plx-props-margin .markdown-reading-view .metadata-container {
+  float: right;
+  width: 16rem;
+  margin: 0.2rem 0 1rem 1.5rem !important;
+  border: 1px solid var(--plx-rule);
+  background: var(--plx-paper-2);
+  position: relative;
+  z-index: 1;
+}
+body.plx-props-margin .markdown-reading-view .metadata-properties-heading {
+  background: var(--plx-band);
+  padding: 2px 6px !important;
+}
+body.plx-props-margin .markdown-reading-view .metadata-properties-title,
+body.plx-props-margin .markdown-reading-view .metadata-properties-heading .collapse-indicator { color: var(--plx-slate-ink) !important; }
+body.plx-props-margin .markdown-reading-view .metadata-container { --plx-prop-key-w: 6.5em; }
+body.plx-props-margin .markdown-reading-view .metadata-property { padding: 0 5px !important; }
+body.plx-props-margin .markdown-reading-view .metadata-property-icon { display: none; }
+
+/* ---------- LCD — Casio display panel ---------- */
+body.plx-props-lcd .metadata-container {
+  border: 1px solid var(--plx-rule-strong);
+  border-radius: var(--plx-r);
+  background: var(--plx-eink);
+  box-shadow: var(--plx-recessed);
+  padding: 2px 6px 3px !important;
+  color: var(--plx-eink-ink);
+}
+body.plx-props-lcd .metadata-property { border-top: 1px solid color-mix(in srgb, var(--plx-lcd-ink) 10%, transparent); }
+body.plx-props-lcd .metadata-property:hover { background: color-mix(in srgb, var(--plx-lcd-ink) 6%, transparent) !important; }
+body.plx-props-lcd .metadata-property-value input,
+body.plx-props-lcd .metadata-property-value .metadata-input-longtext,
+body.plx-props-lcd .multi-select-pill { color: var(--plx-lcd-ink) !important; }
+body.plx-props-lcd .metadata-property-key-input,
+body.plx-props-lcd .metadata-properties-title { color: color-mix(in srgb, var(--plx-lcd-ink) 60%, transparent) !important; }
+
+/* ---------- TUCKED — label line only until hover / focus ---------- */
+body.plx-props-tucked .metadata-container:not(:hover):not(:focus-within) .metadata-content { display: none; }
+body.plx-props-tucked .metadata-container:not(:hover):not(:focus-within) { border-bottom: none; }
+body.plx-props-tucked .metadata-properties-title::before { content: "▸ "; color: var(--plx-ink-4); }
+body.plx-props-tucked .metadata-container:hover .metadata-properties-title::before { content: "▾ "; }
+
+/* ---------- other options ---------- */
+body.plx-properties-hide-add .metadata-add-button { display: none !important; }
+body.plx-properties-reading-hidden .markdown-reading-view .metadata-container { display: none; }
+
+/* File-properties side pane, all-properties pane */
+.workspace-leaf-content[data-type="file-properties"] .metadata-container { border-top: none; }
+.workspace-leaf-content[data-type="all-properties"] .tree-item-self { font-family: var(--plx-mono); font-size: 11px; }
+.workspace-leaf-content[data-type="all-properties"] .tree-item-flair { font-family: var(--plx-mono); }
+
+/* frontmatter in source mode */
+.cm-hmd-frontmatter, .HyperMD-frontmatter { font-family: var(--plx-mono); font-size: 0.8em; color: var(--plx-ink-2); }
+.HyperMD-frontmatter { background: var(--plx-paper-2); }
+
+/* ---------- Label chip: the "PROPERTIES [n]" tab with an angled corner ---------- */
+.metadata-properties-heading { padding: 0 !important; }
+.metadata-properties-heading:hover { background: transparent; }
+.metadata-properties-heading .collapse-indicator { margin-inline-start: 2px; }
+.metadata-properties-title {
+  background: var(--plx-case);
+  color: var(--plx-ink-2) !important;
+  padding: 1px 14px 1px 6px;
+  border-radius: 0 0 0 var(--plx-r);
+  clip-path: var(--plx-clip-br);
+}
+.metadata-properties-heading:hover .metadata-properties-title { background: var(--plx-lcd); color: var(--plx-lcd-ink) !important; }
+body.plx-props-lcd .metadata-properties-title { background: transparent; clip-path: none; padding-inline: 0; }
+
+/* sizing fixes: Obsidian sizes rows from --input-height */
+.metadata-container { --input-height: var(--plx-prop-row); }
+.metadata-property-key, .metadata-property-value { height: auto; }
+/* list separators only between items */
+.multi-select-pill::after { content: none !important; }
+.multi-select-pill:has(+ .multi-select-pill)::after { content: "," !important; color: var(--plx-ink-4); }
+/* strip: horizontal flow */
+body.plx-props-strip .metadata-properties { flex-direction: row; align-items: baseline; }
+body.plx-props-strip .metadata-property { flex: 0 0 auto; }
+body.plx-props-strip .metadata-property-key-input { min-width: 0; }
+
+/* count readout not possible from CSS (attribute lives on the parent) */
+.metadata-container[data-property-count] .metadata-properties-title::after { content: none; }
+/* margin card: keep key + value on one line, readable title chip */
+body.plx-props-margin .markdown-reading-view .metadata-property { flex-wrap: nowrap; }
+body.plx-props-margin .markdown-reading-view .metadata-property-key { width: 6.5em !important; min-width: 6.5em; }
+body.plx-props-margin .markdown-reading-view .metadata-property-value { min-width: 0; }
+body.plx-props-margin .markdown-reading-view .metadata-properties-title { background: transparent; clip-path: none; padding-inline: 0; }
+body.plx-props-margin .markdown-reading-view .metadata-properties-heading:hover .metadata-properties-title { background: transparent; color: var(--plx-slate-ink) !important; }
+
+
+/* ==========================================================================
+   Readability pass (rev. 2): the small-text serif for keys and values,
+   mono only for numbers/dates; uniform 23px rows; square focus; no bubbles.
+   ========================================================================== */
+body { --plx-prop-fs: 13px; --plx-prop-key-fs: 12px; --plx-prop-row: 23px; --plx-prop-key-w: 8.5em; }
+.metadata-container { font-family: var(--plx-small); font-size: var(--plx-prop-fs); }
+.metadata-properties-title { font-family: var(--plx-ui-cond) !important; font-size: 10px !important; letter-spacing: 0.1em; }
+.metadata-property-key-input {
+  font-family: var(--plx-small) !important;
+  font-size: var(--plx-prop-key-fs) !important;
+  font-style: italic;
+  color: var(--plx-ink-3) !important;
+  letter-spacing: 0.01em;
+}
+.metadata-property-value input,
+.metadata-property-value .metadata-input-longtext,
+.metadata-property-value .metadata-input-text,
+.multi-select-pill, .multi-select-input {
+  font-family: var(--plx-small) !important;
+  font-size: var(--plx-prop-fs) !important;
+}
+/* numbers, dates, tags: mono so they align */
+.metadata-property[data-property-type="number"] input,
+.metadata-property-value input[type="number"],
+.metadata-property-value input[type="date"],
+.metadata-property-value input[type="datetime-local"],
+.metadata-property[data-property-key="tags"] .multi-select-pill,
+.metadata-property[data-property-key="cssclasses"] .multi-select-pill {
+  font-family: var(--plx-mono) !important;
+  font-size: 11.5px !important;
+}
+/* one row height for every value type */
+.metadata-property, .metadata-property-key, .metadata-property-value { min-height: var(--plx-prop-row); }
+.metadata-property-value { align-items: center; }
+.metadata-property-value input[type="date"], .metadata-property-value input[type="datetime-local"],
+.metadata-property-value input[type="number"] { height: var(--plx-prop-row) !important; line-height: var(--plx-prop-row); }
+.metadata-property-value:has(.metadata-input-checkbox) { display: flex; align-items: center; padding-inline-start: 3px; }
+.metadata-property-icon { --icon-size: 11px; color: var(--plx-ink-4); }
+/* list items: plain text with thin separators; square focus, no rounded bubble */
+.multi-select-pill { line-height: var(--plx-prop-row); height: var(--plx-prop-row); }
+.multi-select-pill:focus, .multi-select-pill:focus-visible, .multi-select-pill.is-active {
+  outline: none !important;
+  border-radius: 0 !important;
+  background: var(--plx-lcd) !important;
+  box-shadow: inset 0 -1px 0 var(--plx-teal) !important;
+}
+.multi-select-pill:has(+ .multi-select-pill)::after { content: " ·" !important; color: var(--plx-ink-4); }
+.multi-select-container:focus-within { box-shadow: none !important; }
+.metadata-property:focus-within { box-shadow: inset 2px 0 0 var(--plx-teal) !important; }
+/* the same face for other small text */
+.markdown-rendered section.footnotes, .footnotes li,
+.setting-item-description, .callout[data-callout="figure"] .callout-title-inner,
+.image-embed::after { font-family: var(--plx-small); }
+
+/* checkbox values: a real square, not caught by the value-input reset */
+.metadata-property-value input.metadata-input-checkbox {
+  width: 13px !important; height: 13px !important; min-height: 0 !important;
+  margin: 0 0 0 3px; padding: 0 !important;
+  border: 1px solid var(--plx-rule-strong) !important;
+  border-radius: 1px !important;
+  background: var(--plx-well) !important;
+  box-shadow: var(--plx-recessed) !important;
+}
+.metadata-property-value input.metadata-input-checkbox:checked {
+  background-color: var(--plx-teal) !important;
+  border-color: color-mix(in srgb, var(--plx-teal) 60%, black) !important;
+}
+/* dates: Berkeley Mono collides in Chrome's date field; use Plex Mono there */
+.metadata-property-value input[type="date"], .metadata-property-value input[type="datetime-local"] {
+  font-family: "IBM Plex Mono", "JetBrains Mono", Consolas, monospace !important;
+  font-size: 11.5px !important;
+  width: auto; field-sizing: content;
+}

@@ -1,0 +1,391 @@
+/* ==========================================================================
+   91 · QA FIXES — merged from the interaction QA agents (2026-11-06)
+   Each rule was injected in an isolated Obsidian 1.15 instance and verified
+   with real mouse/keyboard input. Reports: research/qa/*.md.
+   Order: overlays → controls → content. Later rules win on ties.
+   ========================================================================== */
+
+/* ######## OVERLAYS, MENUS, SETTINGS (research/qa/overlays.md) ######## */
+
+/* F1 menu gutter: 1.15 wraps items in .menu-scroll (6px) inside the theme's 3px menu padding → 9px gutter, separators stopped 6px short of both edges, submenus opened 8px low */
+.menu > .menu-scroll { padding: 0; }
+
+/* F2 date property: the native picker key sat ON the first digit (theme zeroed the input's left padding; app.css pins the key at left:4px) → move it after the value */
+.metadata-property-value input:is([type="date"], [type="datetime-local"])::-webkit-calendar-picker-indicator { left: auto !important; right: 3px; }
+.metadata-property-value input:is([type="date"], [type="datetime-local"]) { padding-inline-end: 18px !important; position: relative; }
+
+/* F3 list chips: the hover × widened the chip by 11px and shoved every following chip right → overlay the × on the chip's end instead (no reflow) */
+.metadata-property-value .multi-select-pill { position: relative; }
+.metadata-property-value .multi-select-pill .multi-select-pill-remove-button {
+  display: flex !important; visibility: hidden; position: absolute; inset-block: 0; inset-inline-end: 0;
+  width: 16px; padding-inline-end: 3px; justify-content: flex-end; align-items: center;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--plx-teal) 8%, var(--plx-paper)) 7px);
+}
+.metadata-property-value .multi-select-pill:hover .multi-select-pill-remove-button { visibility: visible; }
+
+/* F4 wrapped property values: key on the FIRST line (was centred on a 3-line value) and text leading 19px instead of the 25px row pitch */
+.metadata-property:has(.metadata-input-longtext) { align-items: flex-start; }
+.metadata-property:has(.metadata-input-longtext) .metadata-property-key { align-self: flex-start; height: var(--plx-prop-row); }
+.metadata-property-value .metadata-input-longtext { line-height: 19px !important; padding-block: 3px !important; min-height: var(--plx-prop-row); }
+
+/* F5 settings rows: 1.15 also draws inset ::before dividers at top:-1px; with the theme's border-top, some rows (sub-pixel dependent) showed two hairlines */
+.setting-items > .setting-item::before { content: none !important; }
+
+/* F6 settings rows: 1.15 top-aligns; a single-line label sat 4.2px above its 26px control's centre (Canvas, Web viewer, Recent Files…) */
+.setting-item:not(.setting-item-heading):has(> .setting-item-info > .setting-item-name:not(:empty)):has(> .setting-item-control > *):not(:has(> .setting-item-info > .setting-item-description:not(:empty))) { align-items: center; }
+
+/* F7 Style Settings: nested ⊞ hangs at margin-left:-17px and 1.15's .setting-item-name{overflow:hidden} clipped it → sub-sections had no fold mark */
+.style-settings-container .style-settings-collapse-indicator { margin-left: 0 !important; }
+
+/* F8 Style Settings: collapsed sub-sections were 39px rows with 31px of casing and two rules between them → one ruled list */
+.style-settings-container .style-settings-heading { margin-top: 0 !important; border-top: 0 !important; }
+
+/* F9 Style Settings: rows were separate case-grey cards (1.15 card + 8px gap) with text flush on the card edge → one paper panel with hairline rows, like core settings */
+.style-settings-container > .setting-item:not(.setting-item-heading) {
+  background: var(--plx-paper) !important; margin: 0 !important; border-radius: 0 !important;
+  padding: 9px 12px !important; border: 1px solid var(--plx-rule) !important; border-block: 0 !important;
+  box-shadow: inset 0 1px 0 var(--plx-rule-soft);
+}
+.style-settings-container > .style-settings-heading + .setting-item,
+.style-settings-container > .setting-item:not(.setting-item-heading):first-child { box-shadow: inset 0 1px 0 var(--plx-rule); }
+.style-settings-container > .setting-item:not(.setting-item-heading):is(:last-child, :has(+ .style-settings-heading)) { border-bottom: 1px solid var(--plx-rule) !important; margin-bottom: 12px !important; }
+/* F10 (slider focus) superseded by the controls set below */
+
+
+/* ######## CONTROLS & STATES (research/qa/controls.md) ######## */
+
+/* ---- 1 · Fine slider: focus, hover, press (P1) ---- */
+/* slider: no box ring around the 13px hit area on focus (the wells' input:focus ring leaked onto range inputs) */
+body:not(.plx-slider-segmented) input[type="range"]:is(:focus, :focus-visible) { border-color: transparent !important; box-shadow: none !important; }
+/* slider thumb keeps its frame when focused by mouse/drag (Obsidian's :focus thumb shadow erased it) */
+body:not(.plx-slider-segmented):not(.is-mobile) input[type="range"]:focus::-webkit-slider-thumb {
+  box-shadow: inset 0 0 0 1px var(--plx-rule-strong), inset 0 2px 0 var(--plx-hl), 0 1px 1px rgba(0, 0, 0, 0.18);
+}
+/* hover: frame darkens one step — the key acknowledges the pointer */
+body:not(.plx-slider-segmented):not(.is-mobile) input[type="range"]:hover::-webkit-slider-thumb {
+  box-shadow: inset 0 0 0 1px var(--plx-ink-2), inset 0 2px 0 var(--plx-hl), 0 1px 1px rgba(0, 0, 0, 0.18);
+}
+/* pressed / dragging: the key goes down (pressed face, no lift shadow) */
+body:not(.plx-slider-segmented):not(.is-mobile) input[type="range"]:active::-webkit-slider-thumb,
+body:not(.plx-slider-segmented):not(.is-mobile) input[type="range"]::-webkit-slider-thumb:active {
+  background: var(--plx-key-face-down);
+  box-shadow: inset 0 0 0 1px var(--plx-ink-2), var(--plx-pressed);
+}
+/* keyboard focus: the thumb alone lights (teal frame + 1px ring) */
+body:not(.plx-slider-segmented):not(.is-mobile) input[type="range"]:focus-visible::-webkit-slider-thumb {
+  box-shadow: inset 0 0 0 1px var(--plx-teal), 0 0 0 1px var(--plx-teal);
+}
+/* dark: ink-2 frame read as a lit outline on black; one step quieter */
+body.theme-dark:not(.plx-slider-segmented):not(.is-mobile) input[type="range"]:is(:hover, :active)::-webkit-slider-thumb { box-shadow: inset 0 0 0 1px var(--plx-ink-3), var(--plx-pressed); }
+body.theme-dark:not(.plx-slider-segmented):not(.is-mobile) input[type="range"]:hover:not(:active)::-webkit-slider-thumb { box-shadow: inset 0 0 0 1px var(--plx-ink-3), inset 0 2px 0 var(--plx-hl), 0 1px 1px rgba(0, 0, 0, 0.18); }
+
+/* ---- 2 · Toggle press (P1) and settings-row focus ring (P2) ---- */
+/* toggle: the knob no longer balloons on press (Obsidian's iOS stretch drew it 23×22 in an 18px slot); the key goes down instead */
+:is(.modal, body) .checkbox-container.checkbox-container.checkbox-container:where(:not(.is-disabled)):active::after { width: var(--toggle-thumb-width); height: var(--toggle-thumb-height); margin-top: var(--toggle-border-width); left: 0; opacity: 1; background: var(--plx-key-face-down); }
+:is(.modal, body) :is(.checkbox-container.mod-small, .setting-group.mod-list .checkbox-container).checkbox-container.checkbox-container:where(:not(.is-disabled)):active::after { width: var(--toggle-s-thumb-width); height: var(--toggle-s-thumb-height); margin-top: var(--toggle-s-border-width); }
+/* keyboard focus on a settings row: one teal cursor (theme) — drop Obsidian's second, gray inset ring */
+.setting-item.setting-item:focus-visible::after { display: none; }
+
+/* ---- 3 · Key caps: hover + press (P1) ---- */
+/* key caps: hover and press never showed — the base key rule (5 :not()s, spec 0,5,1) out-ranked :hover/:active (0,4,1). Same selector + state. */
+button:not(.clickable-icon):not(.checkbox-container):not([class*="iconize"]):not(.callout-copy-button):not(.excalidraw *):hover { border-color: var(--plx-rule-strong); }
+body.theme-dark button:not(.clickable-icon):not(.checkbox-container):not([class*="iconize"]):not(.callout-copy-button):not(.excalidraw *):hover:not(:active) { box-shadow: var(--plx-raised), inset 0 0 0 100px rgba(255, 255, 255, 0.05); }
+button:not(.clickable-icon):not(.checkbox-container):not([class*="iconize"]):not(.callout-copy-button):not(.excalidraw *):not(:disabled):active {
+  background: var(--plx-key-face-down); box-shadow: var(--plx-pressed);
+}
+/* EXE / destructive keys: same travel — a flat face and an inset shadow while held */
+button:is(.mod-cta, .mod-warning, .mod-destructive):not(:disabled):hover { filter: brightness(1.07) saturate(1.05); }
+button:is(.mod-cta, .mod-warning, .mod-destructive):not(:disabled):active { filter: brightness(0.92); box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35) !important; }
+
+/* ---- 4 · Back / forward keys (P2) ---- */
+/* back/forward keys: their key-cap rule (0,3,0) out-ranked .clickable-icon:hover/:active, so they never acknowledged hover or press */
+.view-header-nav-buttons .clickable-icon:not(.is-disabled):not([aria-disabled="true"]):hover { border-color: var(--plx-rule-strong); color: var(--plx-ink); }
+.view-header-nav-buttons .clickable-icon:not(.is-disabled):not([aria-disabled="true"]):active { background: var(--plx-key-face-down); box-shadow: var(--plx-pressed); }
+/* 1.15 marks an unavailable key with aria-disabled, not .is-disabled: draw it unraised (no key to press), not a dimmed raised key */
+.view-header-nav-buttons .clickable-icon[aria-disabled="true"] { background: transparent; border-color: transparent; box-shadow: none; }
+
+/* ---- 5 · Scrollbar arrows and states (P1/P2) ---- */
+/* scrollbar arrows pointed the wrong way (▼ on the top button, ▲ on the bottom) and were two half-triangles with a seam; one conic wedge each */
+body.styled-scrollbars ::-webkit-scrollbar-button:single-button:vertical:decrement,
+body:not(.native-scrollbars) ::-webkit-scrollbar-button:single-button:vertical:decrement {
+  background-image: conic-gradient(from 135deg at 50% 0, var(--plx-ink-3) 0 90deg, transparent 0);
+  background-size: 8px 4px; background-position: center calc(50% - 0.5px);
+}
+body.styled-scrollbars ::-webkit-scrollbar-button:single-button:vertical:increment,
+body:not(.native-scrollbars) ::-webkit-scrollbar-button:single-button:vertical:increment {
+  background-image: conic-gradient(from -45deg at 50% 100%, var(--plx-ink-3) 0 90deg, transparent 0);
+  background-size: 8px 4px; background-position: center calc(50% + 0.5px);
+}
+/* arrow keys acknowledge hover and press (they had no states) */
+body.styled-scrollbars ::-webkit-scrollbar-button:single-button:vertical:hover,
+body:not(.native-scrollbars) ::-webkit-scrollbar-button:single-button:vertical:hover { background-color: var(--plx-lcd-2); }
+body.styled-scrollbars ::-webkit-scrollbar-button:single-button:vertical:active,
+body:not(.native-scrollbars) ::-webkit-scrollbar-button:single-button:vertical:active { background-color: var(--plx-case-lo); }
+/* thumb: pressed = darkest step (was identical to hover); keep the 1px corner (Obsidian rounded it to --scrollbar-radius while dragging) */
+body.styled-scrollbars ::-webkit-scrollbar-thumb:active,
+body:not(.native-scrollbars) ::-webkit-scrollbar-thumb:active { background: var(--plx-ink-2); border-radius: 1px; }
+/* the floating status line covered the main pane's ▼ arrow key; stand it clear of the 14px scrollbar */
+body:not(.is-mobile):not(.native-scrollbars) .status-bar { right: 14px; }
+
+/* ---- 6 · One control height in settings rows (P2) ---- */
+/* one control height: text wells were 30px beside 26px dropdowns and keys in the same settings column */
+.setting-item-control :is(input[type="text"], input[type="search"], input[type="number"], input[type="password"], input[type="email"], input[type="url"]) { height: 26px; }
+
+
+/* ######## CONTENT, EDITOR, VIEWS (research/qa/content.md) ######## */
+/* LP headings: rule 2px under the text, then the same p-spacing gap RV has */
+.markdown-source-view.mod-cm6 .cm-line:is(.HyperMD-header-1, .HyperMD-header-2) {
+  border-bottom: 0 !important;
+  padding-bottom: calc(3px + var(--p-spacing)) !important;
+  background: linear-gradient(var(--plx-rule), var(--plx-rule)) no-repeat left bottom var(--p-spacing) / 100% 1px;
+}
+.markdown-source-view.mod-cm6 .cm-line.HyperMD-header-2 { background-image: linear-gradient(var(--plx-rule-soft), var(--plx-rule-soft)); }
+.markdown-source-view.mod-cm6 .cm-line:is(.HyperMD-header-3, .HyperMD-header-4, .HyperMD-header-6) { padding-bottom: var(--p-spacing) !important; }
+.markdown-source-view.mod-cm6 .cm-line.HyperMD-header-5 { padding-bottom: 0.2em !important; }
+/* h5/h6: one size in both views (RV used 0.9/0.84em, LP fell back to the 0.82/0.76 tokens) */
+body:is(.theme-light, .theme-dark) { --h5-size: 0.9em; --h6-size: 0.84em; }
+/* LP table widget: same 40% minimum width as the reading-view wikitable */
+.markdown-source-view.mod-cm6 .cm-table-widget .table-wrapper { min-width: 40%; }
+.markdown-source-view.mod-cm6 .cm-table-widget table { min-width: 100%; }
+/* LP code language label = the reading-view slate chip, top-left (it stays Obsidian's click-to-copy key) */
+.markdown-source-view.mod-cm6 .HyperMD-codeblock-begin .code-block-flair {
+  top: 0; inset-inline-start: 0; inset-inline-end: auto;
+  padding: 2px 14px 2px 8px; border-radius: var(--plx-r) 0 0 0;
+  font-size: 9.5px; letter-spacing: 0.1em; line-height: 1;
+  color: var(--plx-slate-ink); background: var(--plx-slate-2);
+  clip-path: var(--plx-clip-br); text-box: trim-both cap alphabetic; cursor: var(--cursor-link, pointer);
+}
+.markdown-source-view.mod-cm6 .HyperMD-codeblock-begin .code-block-flair:hover { background: var(--plx-teal); color: var(--plx-paper); }
+/* RV code chip: 2px vertical padding like the embed and PROPERTIES chips (1px pinched the caps) */
+.markdown-rendered pre[class*="language-"]::before { padding-block: 2px; }
+/* embed title chip: beat Obsidian's `.inline-embed > .markdown-embed-title {padding: var(--embed-padding)}`;
+   seat it on the frame's top edge (block, not inline-block on a text baseline); no empty stub */
+.internal-embed.markdown-embed > .markdown-embed-title {
+  display: block !important; width: fit-content !important;
+  padding: 2px 16px 2px 10px; margin: 0;
+}
+.internal-embed.markdown-embed > .markdown-embed-title:empty { display: none !important; }
+/* RV heading fold ⊟: centre on the heading's first line (was pinned to the top of the 12px box, ~5px high on h2) */
+.markdown-rendered :is(h1, h2, h3, h4, h5, h6) > .heading-collapse-indicator { height: 1lh; align-items: center; }
+/* dark: transparent figures (PNG/SVG diagrams) sit on a printed-paper plate, as Wikipedia's night mode does;
+   opaque photos are unaffected. Without it, black labels vanish and alpha fills turn muddy. */
+.theme-dark :is(.markdown-rendered, .markdown-source-view) .image-embed img,
+.theme-dark .markdown-rendered img:not(.emoji) { background-color: #e9ecea; }
+/* canvas cards: the 6px card scrollbar keeps the 14px Casio arrow boxes, squashed into broken ▼ shapes — drop them, as the sidebars do */
+.canvas-node ::-webkit-scrollbar-button { display: none !important; }
+/* canvas group ⊟/⊞ key: 1 canvas-px low in its signage band at every zoom — centre it */
+.canvas-node-group > .collapse-button { top: calc(-3px * var(--zoom-multiplier) - 1px) !important; }
+
+
+/* ######## WORKSPACE & NAVIGATION (research/qa/workspace.md) ######## */
+
+/* W1 · active tab merges with its view header: light header was paper (Obsidian's focused-header var) under a case-hi tab */
+.theme-light { --file-header-background: var(--plx-case-hi); --file-header-background-focused: var(--plx-case-hi); }
+/* W1 · let the active tab's 1px foot cover the strip rule (Obsidian clips at --tab-curve×2 = 0) */
+.workspace .mod-root .workspace-tabs:not(.mod-stacked) .workspace-tab-header-container-inner { overflow-clip-margin: 1px; }
+
+/* W2 · narrow tabs: icon instead of a 1–2px title sliver ("|") — active / non-markdown tabs below 56px */
+@container tab-header (max-width: 56px) {
+  .workspace-tab-header:is(.is-active, :not([data-type="markdown"])) .workspace-tab-header-inner-title { display: none; }
+  .workspace-tab-header.is-active .workspace-tab-header-inner-icon { display: flex !important; }
+}
+/* W2 · every tab below 36px (no room for even "A…") */
+@container tab-header (max-width: 36px) {
+  .workspace-tab-header-inner-title { display: none; }
+  .workspace-tab-header-inner-icon { display: flex !important; }
+}
+
+/* W3 (scroll arrows) superseded by the controls set above */
+
+/* W4 · tree spine hangs from the ⊟ box (was a 7px gap between the marker and the first child's line) */
+:is(.nav-files-container, .workspace-leaf-content[data-type="bookmarks"], .workspace-leaf-content[data-type="outline"], .workspace-leaf-content[data-type="tag"]) .tree-item-children > :first-child + .tree-item:is(*, *)::before,
+:is(.nav-files-container, .workspace-leaf-content[data-type="bookmarks"], .workspace-leaf-content[data-type="outline"], .workspace-leaf-content[data-type="tag"]) .tree-item-children > :first-child + .tree-item:is(*, *)::after { top: -7px; }
+:is(.nav-files-container, .workspace-leaf-content[data-type="bookmarks"], .workspace-leaf-content[data-type="outline"], .workspace-leaf-content[data-type="tag"]) .tree-item-children > :first-child + .tree-item:is(*, *)::after { height: calc(var(--plx-tree-mid) + 7.5px); }
+
+/* W5 · dark active row: the outer glow was clipped at the left and only bled 4px above/below onto neighbours; glow inside the row */
+.theme-dark :is(.nav-files-container, .workspace-leaf-content[data-type="bookmarks"]) .tree-item-self.is-active { box-shadow: inset 10px 0 8px -8px color-mix(in srgb, var(--plx-teal) 35%, transparent); }
+
+/* W6 · keyboard focus / rename: drop Obsidian's 2px ring (clipped into two bars) — the dotted frame / the well is the indicator */
+:is(body, body:not(.is-phone) .workspace-leaf.mod-active) :is(.nav-files-container, .workspace-leaf-content[data-type="bookmarks"], .workspace-leaf-content[data-type="outline"], .workspace-leaf-content[data-type="tag"]) .tree-item-self:is(.has-focus, .is-being-renamed):is(*, :focus-within) { box-shadow: none; }
+/* W6 · rename: no dotted row frame around the well (one frame, not three) */
+:is(.nav-files-container, .workspace-leaf-content[data-type="bookmarks"]) .tree-item-self.is-being-renamed { outline: none; }
+/* W6 · rename well: text stays put (-3px = its padding) and the teal ring survives the global contenteditable outline:none */
+.nav-files-container .tree-item-self.is-being-renamed .tree-item-inner { margin-inline-start: -3px; box-shadow: var(--plx-recessed), 0 0 0 1px var(--plx-teal); }
+
+/* W7 · VAULT strip: full-bleed panel label, no 15px dead band, no double rule with the toolbar's bottom edge */
+.nav-header > .oz-explorer-root-folder { margin: 6px -6px -4px; }
+/* W7 · its count right-aligns with the folder counts (row padding 8px; no reserved gutter) */
+.nav-header .oz-explorer-root-nav-folder-title { border-bottom: 0; padding-inline-end: 8px; }
+/* W7 · no permanent scrollbar gutter (request: "why the gap" — an empty 9px band beside the counts). The scrollbar takes its space only when the tree scrolls. */
+.nav-files-container { scrollbar-gutter: auto; }
+
+/* W8 · left-sidebar toggle key: 28px key hung 4px across the strip rule; same 24px key row as the sidebar tabs */
+.workspace-ribbon .sidebar-toggle-button.mod-left { margin-top: 0; padding: 0; height: var(--header-height); align-items: center; }
+.workspace-ribbon .sidebar-toggle-button.mod-left .clickable-icon { height: 24px; }
+
+/* W9 · root pane gutter: 3px solid bar + border → 1px hairline at rest; the 3px hit area and teal hover stay */
+.workspace-split.mod-root .workspace-leaf-resize-handle:not(:hover) { background: linear-gradient(var(--plx-rule), var(--plx-rule)) center / 1px 100% no-repeat; border: 0 !important; }
+
+/* W10 · Backlinks / Outgoing headings: Obsidian hides their fold marker — a collapsed "LINKS 3" showed no list and no ⊞ */
+:is(.backlink-pane, .outgoing-link-pane) > .tree-item-self .collapse-icon { display: flex; }
+:is(.backlink-pane, .outgoing-link-pane) > .tree-item-self { padding-inline-start: 21px; }
+:is(.backlink-pane, .outgoing-link-pane) > .tree-item-self > .collapse-icon::before { content: var(--plx-mark-open); }
+:is(.backlink-pane, .outgoing-link-pane) > .tree-item-self.is-collapsed > .collapse-icon::before { content: var(--plx-mark-closed); }
+/* W10 · heading count in regular weight like every other count readout */
+:is(.backlink-pane, .outgoing-link-pane) > .tree-item-self .tree-item-flair { font-weight: 400; }
+
+/* W11 · wrapped backlink file titles: ⊟ and count sit on the first line, not centred on the block */
+.backlink-pane .search-result-file-title { align-items: flex-start; }
+.backlink-pane .search-result-file-title > .collapse-icon { margin-top: 2.5px; }
+.backlink-pane .search-result-file-title > .tree-item-flair-outer { margin-top: 3px; }
+
+
+/* ######## TYPOGRAPHY (research/qa/typography.md) ######## */
+/* T1 sup/sub (footnote markers) no longer open the leading: line pitch 20.28 → 19.42 px like every other line */
+.markdown-rendered :is(sup, sub) { line-height: 0; }
+
+/* T2 right-aligned (numeric) cells: same size as the rest of their row (were 0.95em of the 0.88em table = 10.03px beside 12px cells) */
+.markdown-rendered :is(td[align="right"], td[style*="right"]) { font-size: var(--table-text-size); }
+
+/* T3 Live Preview nested bullets hollow, as in reading view (the 1.15 DOM never matched `.cm-formatting-list-ul + *`) */
+.markdown-source-view.mod-cm6 .HyperMD-list-line:not(.HyperMD-list-line-1) .cm-formatting-list-ul .list-bullet::after { background: transparent; border: 1px solid var(--plx-ink-3); width: 4px; height: 4px; }
+
+/* T4 status line: every count is a readout in one face and size (backlinks/properties were Nimbus 11.5px beside Berkeley Mono 10.5px) */
+.status-bar-item:is(.plugin-backlink, .plugin-properties) { font-family: var(--plx-mono); font-size: 10.5px; letter-spacing: 0; }
+
+/* T5 light text selection uses the selection blue (STANDARD §3, tokens header), as dark mode already does; it was identity teal */
+.theme-light { --text-selection: rgba(52, 98, 138, 0.20); }
+
+/* T6 abstract / references heads keep the typed case (87-wysiwyg): small caps, not ALL small caps */
+.callout:is([data-callout="abstract"], [data-callout="references"], [data-callout="refs"], [data-callout="bibliography"]) > .callout-title { font-variant-caps: small-caps; }
+
+/* T7 code language chip 9.5px → 10px, the floor of the label scale (pairs with content.css 2px padding: chip 11px, caps centred ±0) */
+.markdown-rendered pre[class*="language-"]::before { font-size: 10px; }
+
+/* T8 inline code: text optically centred in its box (sat 1.18px low; Berkeley Mono's ascent > descent) */
+.markdown-rendered :not(pre) > code { padding-block: 0 0.1em; }
+
+/* T9 "References" is a section head: same face/size as h2 (was EB Garamond 13.9px under Apple Garamond 19.8px h2s) */
+.markdown-rendered section.footnotes::before { font-family: var(--plx-display); font-weight: var(--plx-display-weight); font-size: calc(1.65em / 0.86); letter-spacing: -0.005em; line-height: 1.2; }
+
+
+/* ---------- W12 · code-block labels ----------
+   Request: "doesnt look good at all dont display this for plain block and when a
+   programming language utilized use something else also use some other font
+   thats maybe narrow or condensed or ultracondensed in caps".
+   - Language blocks: no black tab. The language is a quiet engraved legend in
+     the block's top-left corner, set in a narrow face in spaced capitals
+     (Archivo ExtraCondensed, then Univers Ultra Condensed, then the condensed
+     UI face).
+   - Plain blocks: no tab. In editing view Obsidian's copy marker becomes a small
+     copy key in the top-right that appears when you point at the block's first
+     line (click-to-copy still works). Reading view keeps Obsidian's copy key,
+     top-right, on hover. */
+body { --plx-code-legend-font: "Archivo ExtraCondensed", "Univers LT Std 49 Light UltraCn", var(--plx-ui-cond); }
+.markdown-rendered pre[class*="language-"]::before,
+.markdown-source-view.mod-cm6 .HyperMD-codeblock-begin .code-block-flair,
+.cm-s-obsidian .HyperMD-codeblock .code-block-flair {
+  font-family: var(--plx-code-legend-font);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--plx-ink-3);
+  background: none !important;
+  clip-path: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+.markdown-rendered pre[class*="language-"]::before { top: 0; left: 0; padding: 7px 0 0 var(--plx-code-inset) !important; }
+/* the legend gets its own line: code starts below it, not against it */
+.markdown-rendered pre[class*="language-"] { padding-top: 26px !important; }
+/* one left edge for the legend and the code (request: "just needs to be more aligned") */
+body { --plx-code-inset: 14px; }
+.markdown-rendered pre { padding-inline: var(--plx-code-inset) !important; }
+.markdown-source-view.mod-cm6 .HyperMD-codeblock-begin .code-block-flair { top: 2px; inset-inline: 4px auto; padding: 3px 6px !important; }
+.markdown-source-view.mod-cm6 .HyperMD-codeblock-begin .code-block-flair:hover { background: none !important; color: var(--plx-teal); }
+/* plain block in editing view: the marker holds only a copy icon */
+.markdown-source-view.mod-cm6 .HyperMD-codeblock-begin .code-block-flair:has(svg) {
+  inset-inline: auto 4px;
+  padding: 2px 4px !important;
+  color: var(--plx-ink-3);
+  background: var(--plx-key-face) !important;
+  border: 1px solid var(--plx-rule);
+  border-radius: var(--plx-r-key);
+  box-shadow: var(--plx-raised);
+  opacity: 0;
+}
+.markdown-source-view.mod-cm6 .HyperMD-codeblock-begin:hover .code-block-flair:has(svg) { opacity: 1; }
+.markdown-source-view.mod-cm6 .HyperMD-codeblock-begin .code-block-flair:has(svg):hover { color: var(--plx-teal); }
+
+/* ---------- W13 · long tags wrap inside their chip (request: "please fix this") ----------
+   A tag longer than the value column (#author/long-name/with-parts) wrapped
+   onto a second line but the chip kept its fixed 19 px height, so the second
+   line hung out of the box. The chip now grows with its text: a min-height
+   instead of a height, the text breaks at / or - where it can, and wrapped
+   lines keep the same left edge as the first. */
+.metadata-property-value .multi-select-pill,
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .multi-select-pill {
+  height: auto !important;
+  min-height: 19px;
+  max-width: 100%;
+  align-items: flex-start;
+  white-space: normal;
+}
+.metadata-property-value .multi-select-pill .multi-select-pill-content {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  line-height: 17px;
+  padding-block: 0;
+  min-width: 0;
+}
+/* W13 · in tags the wrapped line hangs under the text, not under the "#" (mono: 1ch = one glyph) */
+.metadata-property[data-property-key="tags"] .metadata-property-value .multi-select-pill .multi-select-pill-content {
+  padding-inline-start: 1ch;
+  text-indent: -1ch;
+}
+/* ---------- W14 · tag families differ by COLOUR, never by border shape ----------
+   "they get different colors (text or border) but border is the same".
+   Every tag has the same 1 px solid border; the family is read from the hue,
+   at matched lightness (35-tags):
+     TOPIC teal · TYPE blue-violet · STATUS amber (stable green, empty/trash rose)
+     META slate gray · AUTHOR copper (new)
+   Inline tags are matched by href (35-tags already colours them; author added
+   here). Chips in the Properties box are matched by data-tag-kind, which the
+   companion plugin "Typed Pages" adds, because Obsidian gives those chips
+   no per-tag hook. Without the plugin they stay neutral. */
+.theme-light { --plx-tagc-author: #a3542a; }
+.theme-dark  { --plx-tagc-author: #f0a17a; }
+/* chips: text and border in the family hue; same solid 1 px border for all */
+.multi-select-pill:is([data-tag="status/empty" i], [data-tag="status/trash" i]) { --plx-k: var(--plx-tagc-absent); }
+.metadata-property[data-property-key="tags"] .multi-select-pill[data-tag-kind] {
+  color: var(--plx-k) !important;
+  border: 1px solid color-mix(in srgb, var(--plx-k) 50%, transparent) !important;
+  background: color-mix(in srgb, var(--plx-k) 8%, transparent) !important;
+}
+.metadata-property[data-property-key="tags"] .multi-select-pill[data-tag-kind] .multi-select-pill-content::before { color: color-mix(in srgb, var(--plx-k) 70%, transparent) !important; }
+.metadata-property[data-property-key="tags"] .multi-select-pill[data-tag-kind]:hover {
+  border-color: var(--plx-k) !important;
+  background: color-mix(in srgb, var(--plx-k) 16%, transparent) !important;
+}
+
+/* ---------- W15 · Settings sidebar: the list lines up, the selected item is a closed key ----------
+   Request ("none of the plectics prs have fixed this on the left"):
+   the selected item was drawn as a side tab with an open right edge (meant to
+   join the content pane), but the scroll box's 12 px right padding and its
+   scrollbar sit in between, so the tab stopped short in mid-air, and the list
+   was narrower than the search box above it. Now the list runs to the
+   scrollbar (its right edge = the search box's right edge) and the selected
+   item is a closed, square key with a 1 px border on all four sides. */
+.vertical-tab-header-group-container { padding-inline-end: 3px !important; }
+.modal.mod-settings .vertical-tab-header .search-input-container { margin-inline-end: 4px !important; }  /* its box already clears the scrollbar; +4 px = the list's 3 px gap and 1 px border */
+.vertical-tab-nav-item { margin-inline-end: 0 !important; }
+.vertical-tab-nav-item {
+  border-radius: 0 !important;
+  border-inline-end: 1px solid transparent !important;
+}
+.vertical-tab-nav-item.is-active { border-inline-end-color: inherit; }
+.vertical-tab-nav-item.is-active { border-inline-end-style: solid !important; border-inline-end-width: 1px !important; border-inline-end-color: var(--plx-rule-strong) !important; }
+body.theme-dark:not(.plx6-no-steel) .vertical-tab-nav-item.is-active { border-inline-end-color: var(--y2k-black, var(--plx-rule-strong)) !important; }

@@ -1,0 +1,30 @@
+/* ==========================================================================
+   67 · DISPLAYS — readout panels (SheafLab instrument references)
+   Light: pale e-ink paper (unchanged). Dark: AMBER PHOSPHOR — near-black brown
+   glass, amber ink, faint amber graticule, a dim amber inner frame — after the
+   SheafLab "instrument strip · data · display amber".
+   Applies to: measurement / readout / lcd callouts, the LCD properties layout,
+   Widgets plugin panels.
+   ========================================================================== */
+.theme-dark {
+  --plx-eink: #16110a;
+  --plx-eink-ink: #f2b445;
+  --plx-eink-rule: rgba(242, 180, 69, 0.24);
+  --plx-amber-grid: rgba(242, 180, 69, 0.07);
+  --plx-amber-frame: rgba(242, 180, 69, 0.30);
+}
+.theme-dark .callout:is([data-callout="measurement"], [data-callout="readout"], [data-callout="reading"], [data-callout="lcd"]) > .callout-content,
+.theme-dark.plx-props-lcd .metadata-container,
+.theme-dark :is(.Countdown_Container, .Counter__container) {
+  background-color: var(--plx-eink) !important;
+  background-image:
+    linear-gradient(var(--plx-amber-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--plx-amber-grid) 1px, transparent 1px) !important;
+  background-size: 24px 24px, 24px 24px !important;
+  color: var(--plx-eink-ink) !important;
+  border: 1px solid #000 !important;
+  box-shadow: inset 0 0 0 1px var(--plx-amber-frame), inset 0 2px 6px rgba(0, 0, 0, 0.7) !important;
+  text-shadow: 0 0 6px rgba(242, 180, 69, 0.25);
+}
+.theme-dark .callout:is([data-callout="measurement"], [data-callout="readout"], [data-callout="reading"], [data-callout="lcd"]) > .callout-content :is(th, td, strong, code) { color: var(--plx-eink-ink) !important; }
+.theme-dark.plx-props-lcd .metadata-container :is(input, .metadata-input-longtext, .multi-select-pill, .metadata-property-key-input, .metadata-properties-title) { color: var(--plx-eink-ink) !important; }

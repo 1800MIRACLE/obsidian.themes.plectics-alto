@@ -1,0 +1,30 @@
+/* ==========================================================================
+   87 · WYSIWYG — what you see is what you typed
+   Text that comes from the user's content is never transformed: no forced
+   capitals on headings, table headers, callout titles, embed titles or canvas
+   labels, so reading view, Live Preview and the editing state all show the same
+   characters. Capitals remain only on the theme's own interface labels
+   (PROPERTIES, panel legends, HUD, generated numbering like "THEOREM 03").
+   ========================================================================== */
+.markdown-rendered :is(h5, h6),
+.cm-header-5, .cm-header-6,
+.HyperMD-header-5, .HyperMD-header-6,
+.markdown-rendered th, .markdown-rendered thead th, .cm-table-widget th,
+.callout-title-inner,
+.markdown-embed-title,
+.canvas-group-label, .canvas-node-group > .canvas-group-label,
+.canvas-node-label,
+.bases-thead .bases-table-header-name, .bases-group-heading .bases-group-property,
+.kanban-plugin__lane-title-text,
+.workspace-tabs.mod-stacked .workspace-tab-header-inner-title {
+  text-transform: none !important;
+}
+/* without forced caps these read as small labels: keep the label voice via weight,
+   not case; loosen the caps-tracking back to normal */
+.markdown-rendered :is(h5, h6), .cm-header-5, .cm-header-6,
+.markdown-rendered th, .cm-table-widget th,
+.canvas-node-group > .canvas-group-label {
+  letter-spacing: 0.01em !important;
+}
+.markdown-rendered h5, .cm-header-5 { font-size: 0.9em; }
+.markdown-rendered h6, .cm-header-6 { font-size: 0.84em; }

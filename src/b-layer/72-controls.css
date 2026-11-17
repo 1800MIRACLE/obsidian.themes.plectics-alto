@@ -1,0 +1,807 @@
+/* ==========================================================================
+   PLECTICS ALTO · 72 · CONTROLS — one Y2K control family (2026-11-15)
+   Request: "redesign all buttons, toggles, sliders, faders, loading bars … to
+   be more y2k and beautiful", and "sizes of elements more faithful to each
+   other". References: Enlightenment E16/E17 BlueSteel, IRIX, Bodhi, and a
+   "peak skeuo" Blue-steel metal reference.
+
+   Everything that is pressed, slid, ticked, chosen or that shows progress is
+   drawn here, from one size module and one bevel language, so a settings row
+   of mixed controls reads as one instrument panel.
+
+   WHY THIS FILE WINS
+   Many earlier layers style these controls (Obsidian 1.15 app.css, main
+   10-workspace, 30-reading, 85-fixes, 89-refine, 91-qa-fixes, 64/65/70 Y2K)
+   and several times one of them silently overrode another. Rules here carry
+   `:not(#plx6 …)`: a :not() takes the specificity of its strongest argument,
+   so every rule gets one ID column (1,x,y) and beats every class-based rule
+   before it, whatever its chain of classes. `!important` is used only where
+   an earlier rule already uses it (input:focus ring, Y2K .mod-cta faces).
+
+   SIZE MODULE (measured on 6.png: ribbon key 28, nav key 22, tab 28 + 2 px
+   lamp edge, tree row 24, root band 20, tag field ≈ 18)
+     --plx6-h-s   16  compact: tab close, status readouts, clear keys
+     --plx6-h     20  control: key, dropdown, field, switch, fader cap, readout
+     --plx6-key   22  toolbar key: nav keys, view actions, canvas keys
+     --plx6-h-l   24  row: tree row, side tabs, settings search field
+     --plx6-h-xl  28  ribbon key (tab = 28 + lamp edge)
+   Icons: 12 in 16, 14 in 20, 16 in 22. Padding steps 4 / 8 / 12.
+   Gap grid 4 / 8. Corners: square, everywhere.
+
+   BEVEL LANGUAGE (light top-left, dark bottom-right, 1 px)
+     key   raised: 1 px frame + glint top-left + shade bottom-right
+     well  sunk:   1 px frame + shade top-left + glint bottom-right
+     lamp  on / active / value: the identity colour (--plx-teal), lit with
+           a glow in dark palettes; never the only signal (marks, position
+           and cells carry state too)
+   Finishes: light and Plectics dark = the same family in their palettes;
+   Blue-steel flat = same geometry, light bevel; Blue-steel metal = richest
+   (double glint, split glass faces, brushed wide keys, drop line).
+   ========================================================================== */
+
+/* ---------- 0 · Size module ---------- */
+body {
+  --plx6-h-s: 16px;
+  --plx6-h: 20px;
+  --plx6-key: 22px;
+  --plx6-h-l: 24px;
+  --plx6-h-xl: 28px;
+  --plx6-ico-s: 12px;
+  --plx6-ico: 14px;
+  --plx6-ico-key: 16px;
+  --plx6-pad-1: 4px;
+  --plx6-pad-2: 8px;
+  --plx6-pad-3: 12px;
+  --plx6-gap: 4px;
+  --plx6-gap-2: 8px;
+  --plx6-cap-w: 11px;      /* fader key cap width (height = --plx6-h) */
+  --plx6-sw-w: 36px;       /* switch: 16 px knob, 16 px travel */
+  --plx6-check: 14px;      /* checkbox / radio in settings and dialogs */
+  --plx6-bar: 10px;        /* progress well: 8 px cells in a 1 px frame */
+}
+/* touch: the same proportions, one step larger */
+body.is-mobile {
+  --plx6-h-s: 20px;
+  --plx6-h: 28px;
+  --plx6-key: 30px;
+  --plx6-h-l: 32px;
+  --plx6-ico: 16px;
+  --plx6-cap-w: 15px;
+  --plx6-sw-w: 52px;
+  --plx6-check: 18px;
+  --plx6-bar: 12px;
+}
+
+/* ---------- 0 · Materials, per palette (tokens only) ---------- */
+/* light: white keys, mid-grey frame */
+body {
+  --plx6-edge:  color-mix(in srgb, var(--plx-rule-strong) 70%, var(--plx-rule));
+  --plx6-glint: var(--plx-hl);
+  --plx6-shade: color-mix(in srgb, var(--plx-ink) 20%, transparent);
+  --plx6-out:   inset 1px 1px 0 var(--plx6-glint), inset -1px -1px 0 var(--plx6-shade);
+  --plx6-in:    inset 1px 1px 0 var(--plx6-shade), inset -1px -1px 0 var(--plx6-glint);
+  --plx6-drop:  0 1px 0 color-mix(in srgb, var(--plx-ink) 10%, transparent);
+  --plx6-face:  var(--plx-key-face);
+  --plx6-face-down: var(--plx-key-face-down);
+  --plx6-wash:  linear-gradient(var(--plx-teal-wash), var(--plx-teal-wash));
+  --plx6-sheen: linear-gradient(transparent, transparent);
+  --plx6-well:  var(--plx-well);
+  --plx6-glow:  0 0 0 transparent;
+  --plx6-emboss: none;
+  --plx6-lamp-edge: color-mix(in srgb, var(--plx-slate-ink) 40%, transparent);
+}
+/* Plectics dark (graphite): black rubber keys separated by a black frame */
+body.theme-dark {
+  --plx6-edge:  var(--plx-case-lo);
+  --plx6-glint: var(--plx-hl);
+  --plx6-shade: color-mix(in srgb, var(--plx-case-lo) 80%, transparent);
+  --plx6-drop:  0 0 0 transparent;
+  --plx6-glow:  var(--plx-lamp-glow);
+}
+/* Blue-steel flat: same geometry, a light 1 px bevel */
+body.theme-dark:not(.plx6-no-steel) {
+  --plx6-edge:  var(--y2k-black);
+  --plx6-glint: var(--y2k-glint);
+  --plx6-shade: var(--y2k-shade-2);
+  --plx6-out:   inset 1px 1px 0 var(--y2k-glint), inset -1px -1px 0 var(--y2k-shade-1);
+  --plx6-in:    var(--y2k-bevel-in);
+  --plx6-drop:  0 0 0 transparent;
+  --plx6-glow:  var(--plx-lamp-glow);
+}
+/* Blue-steel metal: the richest — double glint, split glass faces,
+   brushed wide keys, a dark drop line under every key */
+body.theme-dark:not(.plx6-no-steel).plx6-y2k-metal {
+  --plx6-out:   inset 1px 1px 0 var(--y2k-glint), inset -1px -1px 0 var(--y2k-shade-2), inset 2px 2px 0 var(--y2k-glint-soft);
+  --plx6-in:    inset 1px 1px 0 var(--y2k-shade-2), inset 2px 2px 0 var(--y2k-shade-1), inset -1px -1px 0 var(--y2k-glint-soft);
+  --plx6-drop:  0 1px 0 var(--y2k-shade-2);
+  --plx6-sheen: var(--y2k-brush);
+  --plx6-emboss: 0 1px 0 var(--y2k-shade-2);
+}
+
+
+/* ==========================================================================
+   1 · KEYS — text buttons: plain, .mod-cta (EXE), .mod-warning
+   ========================================================================== */
+body button:not(#plx6, .clickable-icon, .checkbox-container, [class*="iconize"], .callout-copy-button, .excalidraw *, .plx-inst *) {
+  box-sizing: border-box;
+  height: auto;
+  min-height: var(--plx6-h);
+  padding: 0 var(--plx6-pad-3);
+  font-family: var(--plx-ui);
+  font-size: var(--font-ui-small);
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--plx-ink);
+  text-shadow: var(--plx6-emboss);
+  background-color: transparent;
+  background-image: var(--plx6-sheen), var(--plx6-face);
+  border: 1px solid var(--plx6-edge);
+  border-radius: 0;
+  box-shadow: var(--plx6-out), var(--plx6-drop);
+  transform: none;
+  transition: none;
+}
+body button:not(#plx6, .clickable-icon, .checkbox-container, [class*="iconize"], .callout-copy-button, .excalidraw *, .plx-inst *):hover {
+  border-color: var(--plx6-edge);
+  background-image: var(--plx6-wash), var(--plx6-sheen), var(--plx6-face);
+  box-shadow: var(--plx6-out), var(--plx6-drop);
+}
+body button:not(#plx6, .clickable-icon, .checkbox-container, [class*="iconize"], .callout-copy-button, .excalidraw *, .plx-inst *):is(:active, .is-active, .mod-active):not(:disabled) {
+  background-image: var(--plx6-face-down);
+  box-shadow: var(--plx6-in);
+  padding-top: 1px;   /* the legend sinks with the key */
+  transform: none;
+}
+body button:not(#plx6, .clickable-icon, .checkbox-container, [class*="iconize"], .callout-copy-button, .excalidraw *, .plx-inst *):focus-visible {
+  outline: 1px solid var(--plx-teal);
+  outline-offset: 1px;
+}
+body button:not(#plx6, .clickable-icon, .checkbox-container, [class*="iconize"], .callout-copy-button, .excalidraw *, .plx-inst *):disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-image: var(--plx-hatch), var(--plx6-face);
+  box-shadow: none;
+}
+/* EXE key: a lit lamp face, dark legend (light legend on light-palette teal) */
+body button.mod-cta:not(#plx6, .clickable-icon, .excalidraw *, .plx-inst *) {
+  color: var(--plx-paper);
+  text-shadow: none;
+  background: linear-gradient(180deg, var(--plx-teal-bright) 0%, var(--plx-teal) 100%) !important;
+  border-color: var(--plx6-edge) !important;
+  box-shadow: inset 1px 1px 0 var(--plx6-lamp-edge), inset -1px -1px 0 var(--plx6-shade), var(--plx6-drop), var(--plx6-glow) !important;
+}
+body button.mod-cta:not(#plx6, .clickable-icon, .excalidraw *, .plx-inst *):hover {
+  background: linear-gradient(var(--plx6-lamp-edge), var(--plx6-lamp-edge)), linear-gradient(180deg, var(--plx-teal-bright) 0%, var(--plx-teal) 100%) !important;
+}
+body button.mod-cta:not(#plx6, .clickable-icon, .excalidraw *, .plx-inst *):active {
+  background: var(--plx-teal) !important;
+  box-shadow: inset 1px 1px 0 var(--plx6-shade), inset 2px 2px 2px var(--plx6-shade) !important;
+}
+/* destructive key: red face */
+body button:is(.mod-warning, .mod-destructive):not(#plx6, .clickable-icon, .excalidraw *, .plx-inst *) {
+  color: var(--plx-paper);
+  text-shadow: none;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--plx-red) 82%, var(--plx-slate-ink)) 0%, var(--plx-red) 100%) !important;
+  border-color: var(--plx6-edge) !important;
+  box-shadow: inset 1px 1px 0 var(--plx6-lamp-edge), inset -1px -1px 0 var(--plx6-shade), var(--plx6-drop) !important;
+}
+body button:is(.mod-warning, .mod-destructive):not(#plx6, .clickable-icon, .excalidraw *, .plx-inst *):active {
+  background: var(--plx-red) !important;
+  box-shadow: inset 1px 1px 0 var(--plx6-shade), inset 2px 2px 2px var(--plx6-shade) !important;
+}
+/* metal: split "glass" faces with a hard break, like the BlueSteel title bands */
+body.theme-dark:not(.plx6-no-steel).plx6-y2k-metal button.mod-cta:not(#plx6, .clickable-icon, .excalidraw *, .plx-inst *) {
+  background: linear-gradient(180deg, var(--plx-teal-bright) 0%, var(--plx-teal) 48%, color-mix(in srgb, var(--plx-teal) 82%, var(--y2k-black)) 52%, color-mix(in srgb, var(--plx-teal) 70%, var(--y2k-black)) 100%) !important;
+}
+body.theme-dark:not(.plx6-no-steel).plx6-y2k-metal button:is(.mod-warning, .mod-destructive):not(#plx6, .clickable-icon, .excalidraw *, .plx-inst *) {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--plx-red) 80%, var(--plx-slate-ink)) 0%, var(--plx-red) 48%, color-mix(in srgb, var(--plx-red) 82%, var(--y2k-black)) 52%, color-mix(in srgb, var(--plx-red) 70%, var(--y2k-black)) 100%) !important;
+}
+
+
+/* ==========================================================================
+   2 · ICON KEYS in setting rows and dialogs (reset, folder, extra keys)
+   ========================================================================== */
+:is(.setting-item-control, .modal-button-container) > .clickable-icon:not(#plx6) {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--plx6-h);
+  height: var(--plx6-h);
+  padding: 0;
+  --icon-size: var(--plx6-ico);
+  --icon-stroke: 1.75px;
+  color: var(--plx-ink-2);
+  background-color: transparent;
+  background-image: var(--plx6-face);
+  border: 1px solid var(--plx6-edge);
+  border-radius: 0;
+  box-shadow: var(--plx6-out), var(--plx6-drop);
+}
+:is(.setting-item-control, .modal-button-container) > .clickable-icon:not(#plx6):hover {
+  color: var(--plx-teal);
+  background-image: var(--plx6-wash), var(--plx6-face);
+}
+:is(.setting-item-control, .modal-button-container) > .clickable-icon:not(#plx6):active {
+  background-image: var(--plx6-face-down);
+  box-shadow: var(--plx6-in);
+}
+:is(.setting-item-control, .modal-button-container) > .clickable-icon:not(#plx6):focus-visible {
+  outline: 1px solid var(--plx-teal);
+  outline-offset: 1px;
+  box-shadow: var(--plx6-out);
+}
+
+
+/* ==========================================================================
+   3 · WELLS — text and number fields in setting rows, dialogs, graph panel
+   ========================================================================== */
+:is(.setting-item-control, .modal .setting-item-control, .graph-controls .setting-item-control) :is(input[type="text"], input[type="search"], input[type="number"], input[type="password"], input[type="email"], input[type="url"]):not(#plx6) {
+  box-sizing: border-box;
+  height: var(--plx6-h);
+  padding-block: 0;
+  font-size: var(--font-ui-small);
+  background: var(--plx6-well);
+  border: 1px solid var(--plx6-edge);
+  border-radius: 0;
+  box-shadow: var(--plx6-in);
+}
+/* plain fields get the side padding; search fields keep room for their magnifier and clear key */
+:is(.setting-item-control, .graph-controls .setting-item-control) :is(input[type="text"], input[type="number"], input[type="password"], input[type="email"], input[type="url"]):not(#plx6, .search-input-container > input) {
+  padding-inline: 6px;
+}
+:is(.setting-item-control, .modal .setting-item-control) input[type="number"]:not(#plx6) {
+  font-family: var(--plx-mono);
+  font-variant-numeric: tabular-nums;
+}
+/* focus: one square teal ring, 1 px off the frame (beats the wells' !important ring) */
+:is(.setting-item-control, .graph-controls .setting-item-control) :is(input[type="text"], input[type="search"], input[type="number"], input[type="password"], input[type="email"], input[type="url"]):not(#plx6):focus {
+  border-color: var(--plx6-edge) !important;
+  box-shadow: var(--plx6-in) !important;
+  outline: 1px solid var(--plx-teal) !important;
+  outline-offset: 1px;
+}
+/* settings column search: a row-height well */
+.vertical-tab-header .search-input-container:not(#plx6) { --input-height: var(--plx6-h-l); }
+.vertical-tab-header .search-input-container input:not(#plx6) { box-sizing: border-box; height: var(--plx6-h-l); border-radius: 0; }
+/* every search field: the magnifier sits on the field's centre line at any height
+   (Obsidian places it from --input-height, which the theme's wells no longer match) */
+.search-input-container:not(#plx6)::before { top: 0; bottom: 0; margin-block: auto; }
+
+/* search fields' clear key: a 16 px key with a printed × */
+.search-input-clear-button:not(#plx6) {
+  box-sizing: border-box;
+  width: var(--plx6-h-s);
+  height: var(--plx6-h-s);
+  inset-inline-end: 4px;
+  border: 1px solid var(--plx6-edge);
+  border-radius: 0;
+  color: var(--plx-ink-2);
+  background: var(--plx6-face);
+  box-shadow: var(--plx6-out);
+}
+.search-input-clear-button:not(#plx6)::after {
+  width: 8px;
+  height: 8px;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M1 1l6 6M7 1L1 7' stroke='%23000' stroke-width='1.6'/%3E%3C/svg%3E");
+          mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M1 1l6 6M7 1L1 7' stroke='%23000' stroke-width='1.6'/%3E%3C/svg%3E");
+  -webkit-mask-size: 8px 8px;
+          mask-size: 8px 8px;
+}
+.search-input-clear-button:not(#plx6):hover { color: var(--plx-red); background: var(--plx6-wash), var(--plx6-face); }
+.search-input-clear-button:not(#plx6):active { background: var(--plx6-face-down); box-shadow: var(--plx6-in); }
+
+
+/* ==========================================================================
+   4 · DROPDOWN — a key with a boxed ▾ zone (E16 option menu)
+   The ▾ is two half-triangles drawn in --plx-ink-2, so it takes each
+   palette's ink (Obsidian's chevron is a fixed black SVG).
+   ========================================================================== */
+:is(select.dropdown, .dropdown):not(#plx6, .excalidraw *) {
+  --plx6-dd-wash: linear-gradient(transparent, transparent);
+  --plx6-dd-zone: calc(var(--plx6-h) - 2px);
+  box-sizing: border-box;
+  height: var(--plx6-h);
+  min-height: 0;
+  padding: 0 calc(var(--plx6-dd-zone) + 6px) 0 var(--plx6-pad-2);
+  font-family: var(--plx-ui);
+  font-size: var(--font-ui-small);
+  line-height: calc(var(--plx6-h) - 2px);
+  color: var(--plx-ink);
+  text-shadow: var(--plx6-emboss);
+  border: 1px solid var(--plx6-edge);
+  border-radius: 0;
+  box-shadow: var(--plx6-out), var(--plx6-drop);
+  background-color: transparent;
+  background-blend-mode: normal;
+  background-repeat: no-repeat;
+  background-image:
+    linear-gradient(to bottom left, var(--plx-ink-2) 50%, transparent 50%),
+    linear-gradient(to bottom right, var(--plx-ink-2) 50%, transparent 50%),
+    linear-gradient(var(--plx6-shade), var(--plx6-shade)),
+    linear-gradient(var(--plx6-glint), var(--plx6-glint)),
+    var(--plx6-dd-wash),
+    var(--plx6-sheen),
+    var(--plx6-face);
+  background-size: 4px 4px, 4px 4px, 1px calc(100% - 6px), 1px calc(100% - 6px), 100% 100%, 100% 100%, 100% 100%;
+  background-position:
+    right calc(var(--plx6-dd-zone) / 2) center,
+    right calc(var(--plx6-dd-zone) / 2 - 4px) center,
+    right var(--plx6-dd-zone) center,
+    right calc(var(--plx6-dd-zone) - 1px) center,
+    0 0, 0 0, 0 0;
+}
+:is(select.dropdown, .dropdown):not(#plx6, .excalidraw *):hover {
+  --plx6-dd-wash: var(--plx6-wash);
+  border-color: var(--plx6-edge);
+  box-shadow: var(--plx6-out), var(--plx6-drop);
+}
+:is(select.dropdown, .dropdown):not(#plx6, .excalidraw *):focus-visible {
+  outline: 1px solid var(--plx-teal);
+  outline-offset: 1px;
+  box-shadow: var(--plx6-out);
+}
+:is(select.dropdown, .dropdown):not(#plx6, .excalidraw *):disabled { opacity: 0.5; }
+
+
+/* ==========================================================================
+   5 · SWITCH (.checkbox-container) — sunk slot, key-cap knob, printed mark
+     OFF  knob left;  a hollow "O" (5 × 8, ink) shows in the free slot
+     ON   knob right; a lit "I" lamp bar (3 × 8, teal, glows in dark)
+          shows in the free slot, and the slot takes a faint teal wash
+   State reads from the knob position and the O / I mark, not colour alone.
+   Height = --plx6-h, the fader cap's height, so mixed rows line up.
+   Geometry is set here (Obsidian sizes it from --toggle-* in five contexts:
+   default, .mod-small, .modal, .mod-list, mobile); one size everywhere.
+   ========================================================================== */
+body {
+  --toggle-width: var(--plx6-sw-w);
+  --toggle-s-width: var(--plx6-sw-w);
+  --toggle-thumb-width: calc(var(--plx6-h) - 4px);
+  --toggle-thumb-height: calc(var(--plx6-h) - 4px);
+  --toggle-s-thumb-width: calc(var(--plx6-h) - 4px);
+  --toggle-s-thumb-height: calc(var(--plx6-h) - 4px);
+  --toggle-border-width: 2px;
+  --toggle-s-border-width: 2px;
+  --toggle-radius: 0;
+  --toggle-thumb-radius: 0;
+}
+.checkbox-container:not(#plx6) {
+  --plx6-k: calc(var(--plx6-h) - 4px);          /* knob */
+  --plx6-wi: calc(var(--plx6-sw-w) - 2px);      /* slot inside the frame */
+  box-sizing: border-box;
+  width: var(--plx6-sw-w);
+  height: var(--plx6-h);
+  border: 1px solid var(--plx6-edge);
+  border-radius: 0;
+  background: var(--plx6-well);
+  box-shadow: var(--plx6-in);
+  outline: none;
+  transition: background-color 120ms, box-shadow 120ms;
+}
+.checkbox-container.is-enabled:not(#plx6) {
+  background: linear-gradient(var(--plx-teal-wash), var(--plx-teal-wash)), var(--plx6-well);
+  box-shadow: var(--plx6-in);
+}
+/* the printed mark: O when off */
+.checkbox-container:not(#plx6)::before {
+  content: "";
+  display: block;
+  position: absolute;
+  inset: auto;
+  box-sizing: border-box;
+  top: calc((var(--plx6-h) - 2px - 8px) / 2);
+  left: calc((1px + var(--plx6-k) + var(--plx6-wi)) / 2 - 2.5px);
+  width: 5px;
+  height: 8px;
+  border: 1px solid var(--plx-ink-3);
+  background: transparent;
+  opacity: 1;
+  pointer-events: none;
+  transition: none;
+}
+/* … I when on: a lit lamp bar */
+.checkbox-container.is-enabled:not(#plx6)::before {
+  left: calc((var(--plx6-wi) - 1px - var(--plx6-k)) / 2 - 1.5px);
+  width: 3px;
+  border: none;
+  background: var(--plx-teal);
+  box-shadow: var(--plx6-glow);
+}
+/* the knob: a key cap with a three-ridge grip */
+.checkbox-container:not(#plx6)::after {
+  box-sizing: border-box;
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  margin: 0;
+  width: var(--plx6-k);
+  height: var(--plx6-k);
+  border: 1px solid var(--plx6-edge);
+  border-radius: 0;
+  opacity: 1;
+  background-color: transparent;
+  background-image:
+    linear-gradient(90deg, var(--plx6-shade) 0 1px, var(--plx6-glint) 1px 2px, transparent 2px 3px, var(--plx6-shade) 3px 4px, var(--plx6-glint) 4px 5px, transparent 5px 6px, var(--plx6-shade) 6px 7px, var(--plx6-glint) 7px 8px),
+    var(--plx6-face);
+  background-size: 8px 6px, 100% 100%;
+  background-position: center, 0 0;
+  background-repeat: no-repeat;
+  box-shadow: var(--plx6-out), var(--plx6-drop);
+  transform: translate3d(0, 0, 0);
+  transition: transform 120ms ease-out;
+}
+.checkbox-container.is-enabled:not(#plx6)::after {
+  transform: translate3d(calc(var(--plx6-wi) - 2px - var(--plx6-k)), 0, 0);
+}
+.checkbox-container:not(#plx6):hover::after {
+  background-image:
+    linear-gradient(90deg, var(--plx6-shade) 0 1px, var(--plx6-glint) 1px 2px, transparent 2px 3px, var(--plx6-shade) 3px 4px, var(--plx6-glint) 4px 5px, transparent 5px 6px, var(--plx6-shade) 6px 7px, var(--plx6-glint) 7px 8px),
+    var(--plx6-wash), var(--plx6-face);
+  background-size: 8px 6px, 100% 100%, 100% 100%;
+}
+/* press: the knob goes down in place (no iOS stretch) */
+.checkbox-container:not(#plx6, .is-disabled):active::after {
+  width: var(--plx6-k);
+  height: var(--plx6-k);
+  margin: 0;
+  left: 1px;
+  background-image: var(--plx6-face-down);
+  box-shadow: var(--plx6-in);
+}
+.checkbox-container:not(#plx6):focus-visible {
+  outline: 1px solid var(--plx-teal);
+  outline-offset: 1px;
+}
+.checkbox-container.is-disabled:not(#plx6) {
+  opacity: 0.5;
+  background: var(--plx-hatch), var(--plx6-well);
+}
+
+
+/* ==========================================================================
+   6 · CHECKBOX and RADIO — a sunk square; checked = a lit lamp face
+   (cancelled tasks keep their hatched box from 30-reading)
+   ========================================================================== */
+input:is([type="checkbox"], [type="radio"]):not(#plx6, .checkbox-container > *, [data-task="-"] input, [data-task="-"] > p > input, .excalidraw *, .plx-inst *) {
+  box-sizing: border-box;
+  border: 1px solid var(--plx6-edge);
+  border-radius: 0 !important;
+  background: var(--plx6-well);
+  box-shadow: var(--plx6-in);
+  --checkbox-marker-color: var(--plx-paper);
+}
+input:is([type="checkbox"], [type="radio"]):not(#plx6, .checkbox-container > *, [data-task="-"] input, [data-task="-"] > p > input, .excalidraw *, .plx-inst *):hover {
+  border-color: var(--plx-teal);
+}
+input:is([type="checkbox"], [type="radio"]):not(#plx6, .checkbox-container > *, [data-task="-"] input, [data-task="-"] > p > input, .excalidraw *, .plx-inst *):checked {
+  background: linear-gradient(180deg, var(--plx-teal-bright) 0%, var(--plx-teal) 100%);
+  border-color: var(--plx6-edge);
+  box-shadow: inset 1px 1px 0 var(--plx6-lamp-edge), var(--plx6-glow);
+}
+input:is([type="checkbox"], [type="radio"]):not(#plx6, .checkbox-container > *, .excalidraw *, .plx-inst *):focus-visible {
+  outline: 1px solid var(--plx-teal);
+  outline-offset: 1px;
+}
+/* radio: a square well; checked = a lit inner square (instrument selector) */
+input[type="radio"]:not(#plx6, .excalidraw *, .plx-inst *):checked {
+  background: var(--plx6-well);
+  box-shadow: var(--plx6-in);
+}
+input[type="radio"]:not(#plx6, .excalidraw *, .plx-inst *):checked::after {
+  inset: 2px;
+  top: 2px;
+  width: auto;
+  height: auto;
+  -webkit-mask-image: none;
+          mask-image: none;
+  background: var(--plx-teal);
+  box-shadow: inset 1px 1px 0 var(--plx6-lamp-edge), var(--plx6-glow);
+}
+/* in settings and dialogs: the module size */
+:is(.setting-item-control, .modal) input:is([type="checkbox"], [type="radio"]):not(#plx6, .checkbox-container > *) {
+  --checkbox-size: var(--plx6-check);
+  width: var(--plx6-check);
+  height: var(--plx6-check);
+}
+
+
+/* ==========================================================================
+   7 · FADER — the default slider (moved here from 68-qa6 §2, redesigned)
+   Drawn from the --slider-fill-ratio Obsidian 1.15 writes inline on
+   input.slider (Obsidian paints its own 3 px line track on that class):
+     groove  6 px sunk channel (frame, well, shade lip above, glint lip below)
+     fill    teal lamp inside the channel, up to the cap's index line
+     scale   11 ticks (0 … 10) under the channel, 0 / 5 / 10 longer
+     cap     --plx6-cap-w × --plx6-h key cap, teal index line, raised bevel
+   Range inputs without the ratio show an empty channel. The segmented LCD
+   variant (plx-slider-segmented) keeps its own drawing, at module height.
+   ========================================================================== */
+body:not(.plx-slider-segmented) input[type="range"]:not(#plx6, .plx-range, .excalidraw *) {
+  -webkit-appearance: none;
+  appearance: none;
+  --plx6-gt: calc((var(--plx6-h) - 6px) / 2);                                   /* channel top */
+  --plx6-fx: calc(var(--slider-fill-ratio, 0) * (100% - var(--plx6-cap-w)) + var(--plx6-cap-w) / 2);   /* cap centre */
+  box-sizing: border-box;
+  height: var(--plx6-h);
+  min-width: 96px;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  outline: none;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-image:
+    linear-gradient(180deg, var(--plx-teal-bright), var(--plx-teal)),
+    linear-gradient(var(--plx6-shade), var(--plx6-shade)),
+    linear-gradient(var(--plx6-well), var(--plx6-well)),
+    linear-gradient(var(--plx6-edge), var(--plx6-edge)),
+    linear-gradient(var(--plx6-glint), var(--plx6-glint)),
+    repeating-linear-gradient(90deg, var(--plx-ink-3) 0 1px, transparent 1px calc((100% - 1px) / 2)),
+    repeating-linear-gradient(90deg, var(--plx-ink-4) 0 1px, transparent 1px calc((100% - 1px) / 10));
+  background-size:
+    calc(var(--plx6-fx) - 1px) 4px,
+    calc(100% - 2px) 1px,
+    calc(100% - 2px) 4px,
+    100% 6px,
+    100% 1px,
+    calc(100% - var(--plx6-cap-w) + 1px) 5px,
+    calc(100% - var(--plx6-cap-w) + 1px) 3px;
+  background-position:
+    1px calc(var(--plx6-gt) + 1px),
+    1px calc(var(--plx6-gt) + 1px),
+    1px calc(var(--plx6-gt) + 1px),
+    0 var(--plx6-gt),
+    0 calc(var(--plx6-gt) + 6px),
+    calc(var(--plx6-cap-w) / 2 - 0.5px) calc(var(--plx6-gt) + 8px),
+    calc(var(--plx6-cap-w) / 2 - 0.5px) calc(var(--plx6-gt) + 8px);
+  cursor: pointer;
+}
+/* the input never draws a box ring (the wells' input:focus !important ring leaked onto it) */
+body:not(.plx-slider-segmented) input[type="range"]:not(#plx6, .plx-range, .excalidraw *):is(:focus, :focus-visible, :hover, :active) {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+body:not(.plx-slider-segmented) input[type="range"]:not(#plx6, .plx-range, .excalidraw *)::-webkit-slider-runnable-track {
+  height: var(--plx6-h);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+body:not(.plx-slider-segmented) input[type="range"]:not(#plx6, .plx-range, .excalidraw *)::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  box-sizing: border-box;
+  position: relative;
+  top: 0;
+  width: var(--plx6-cap-w);
+  height: var(--plx6-h);
+  margin-top: 0;
+  border: 1px solid var(--plx6-edge);
+  border-radius: 0;
+  opacity: 1;
+  background:
+    linear-gradient(90deg, transparent calc((var(--plx6-cap-w) - 2px) / 2 - 0.5px), var(--plx-teal) 0 calc((var(--plx6-cap-w) - 2px) / 2 + 0.5px), transparent 0),
+    var(--plx6-sheen),
+    var(--plx6-face);
+  box-shadow: var(--plx6-out), var(--plx6-drop);
+  cursor: grab;
+  transition: none;
+}
+body:not(.plx-slider-segmented) input[type="range"]:not(#plx6, .plx-range, .excalidraw *):hover::-webkit-slider-thumb {
+  width: var(--plx6-cap-w);
+  height: var(--plx6-h);
+  top: 0;
+  border-color: var(--plx6-edge);
+  background:
+    linear-gradient(90deg, transparent calc((var(--plx6-cap-w) - 2px) / 2 - 0.5px), var(--plx-teal) 0 calc((var(--plx6-cap-w) - 2px) / 2 + 0.5px), transparent 0),
+    var(--plx6-wash), var(--plx6-sheen), var(--plx6-face);
+  box-shadow: var(--plx6-out), var(--plx6-drop);
+}
+body:not(.plx-slider-segmented) input[type="range"]:not(#plx6, .plx-range, .excalidraw *):focus:not(:focus-visible)::-webkit-slider-thumb {
+  box-shadow: var(--plx6-out), var(--plx6-drop);
+}
+body:not(.plx-slider-segmented) input[type="range"]:not(#plx6, .plx-range, .excalidraw *):active::-webkit-slider-thumb,
+body:not(.plx-slider-segmented) input[type="range"]:not(#plx6, .plx-range, .excalidraw *)::-webkit-slider-thumb:active {
+  width: var(--plx6-cap-w);
+  height: var(--plx6-h);
+  top: 0;
+  opacity: 1;
+  cursor: grabbing;
+  background:
+    linear-gradient(90deg, transparent calc((var(--plx6-cap-w) - 2px) / 2 - 0.5px), var(--plx-teal) 0 calc((var(--plx6-cap-w) - 2px) / 2 + 0.5px), transparent 0),
+    var(--plx6-face-down);
+  box-shadow: var(--plx6-in);
+}
+/* keyboard focus: the cap's frame lights and a 1 px ring stands round it */
+body:not(.plx-slider-segmented) input[type="range"]:not(#plx6, .plx-range, .excalidraw *):focus-visible::-webkit-slider-thumb {
+  border-color: var(--plx-teal);
+  box-shadow: var(--plx6-out), 0 0 0 1px var(--plx-teal), var(--plx6-glow);
+}
+body:not(.plx-slider-segmented) input[type="range"]:not(#plx6, .plx-range, .excalidraw *):disabled { opacity: 0.45; cursor: not-allowed; }
+body:not(.plx-slider-segmented) input[type="range"]:not(#plx6, .plx-range, .excalidraw *):disabled::-webkit-slider-thumb { cursor: not-allowed; }
+
+/* segmented LCD variant: unchanged drawing, module height and square cap */
+body.plx-slider-segmented input[type="range"]:not(#plx6, .plx-range, .excalidraw *) {
+  --plx-slider-h: calc(var(--plx6-h) - 2px);
+  border-radius: 0;
+}
+
+/* the value readout beside a fader: a small LCD well */
+:is(.setting-item-control, .graph-controls .setting-item-control) .slider-value:not(#plx6),
+.vertical-tab-content .setting-item-control:has(> input[type="range"]) > :is(span, div):not(#plx6, .clickable-icon, :empty) {
+  box-sizing: border-box;
+  height: var(--plx6-h);
+  min-width: 4ch;
+  padding: 0 5px;
+  line-height: calc(var(--plx6-h) - 2px);
+  background: var(--plx-lcd);
+  color: var(--plx-lcd-ink);
+  font-family: var(--plx-mono);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  border: 1px solid var(--plx6-edge);
+  border-radius: 0;
+  box-shadow: var(--plx6-in);
+}
+/* graph panel: every fader starts at the same x (readout fixed at 46 px, 68-qa6 §6) */
+.graph-controls .setting-item.mod-slider .setting-item-control { gap: var(--plx6-gap-2); align-items: center; }
+.graph-controls .setting-item.mod-slider input[type="range"]:not(#plx6) { flex: 1 1 auto; min-width: 0; }
+
+
+/* ==========================================================================
+   8 · PROGRESS and LOADING — an LCD well filled with lit cells
+   Determinate: cells up to the value. Indeterminate: a block of three cells
+   scans across (static half fill when motion is reduced). Obsidian's own
+   bars (.progress-bar-line / -subline, scaled by transform) are chopped
+   into cells by a well-coloured grille laid over them, so scaling never
+   stretches a cell.
+   ========================================================================== */
+progress:not(#plx6) {
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+  height: var(--plx6-bar);
+  border: 1px solid var(--plx6-edge);
+  border-radius: 0;
+  background: var(--plx6-well);
+  box-shadow: var(--plx6-in);
+  vertical-align: middle;
+}
+progress:not(#plx6)::-webkit-progress-bar {
+  background: var(--plx6-well);
+  border-radius: 0;
+  box-shadow: var(--plx6-in);
+}
+progress:not(#plx6)::-webkit-progress-value {
+  background: repeating-linear-gradient(90deg, var(--plx-teal) 0 4px, transparent 4px 6px);
+  background-position: 1px 0;
+  border-radius: 0;
+}
+progress:not(#plx6):not([value])::-webkit-progress-bar {
+  background:
+    linear-gradient(90deg, var(--plx-teal) 0 4px, transparent 4px 6px, var(--plx-teal) 6px 10px, transparent 10px 12px, var(--plx-teal) 12px 16px, transparent 16px) no-repeat,
+    var(--plx6-well);
+  background-size: 18px 100%, 100% 100%;
+  animation: plx6-scan 1.4s steps(24) infinite;
+}
+
+.progress-bar-indicator:not(#plx6) {
+  box-sizing: border-box;
+  height: var(--plx6-bar);
+  border: 1px solid var(--plx6-edge);
+  border-radius: 0;
+  background: var(--plx6-well);
+  box-shadow: var(--plx6-in);
+}
+.progress-bar-indicator:not(#plx6) :is(.progress-bar-line, .progress-bar-subline) { height: 100%; background-color: var(--plx-teal); }
+.progress-bar-indicator:not(#plx6) .progress-bar-line { opacity: 0.22; }
+.progress-bar-indicator:not(#plx6)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: repeating-linear-gradient(90deg, transparent 0 4px, var(--plx6-well) 4px 6px);
+  box-shadow: var(--plx6-in);
+}
+.status-bar-item.mod-loading .progress-bar-indicator:not(#plx6) { height: var(--plx6-bar); }
+.status-bar-item.mod-loading .progress-bar-indicator:not(#plx6) :is(.progress-bar-line, .progress-bar-subline) { height: 100%; }
+
+/* setting progress (sync, uploads) */
+.setting-progress-bar:not(#plx6) {
+  box-sizing: border-box;
+  height: var(--plx6-bar);
+  border: 1px solid var(--plx6-edge);
+  border-radius: 0;
+  background: var(--plx6-well);
+  box-shadow: var(--plx6-in);
+}
+.setting-progress-bar-inner:not(#plx6) {
+  border-radius: 0;
+  background: repeating-linear-gradient(90deg, var(--plx-teal) 0 4px, transparent 4px 6px);
+}
+/* the cube loader: nine lit cells */
+.loader-cube .sk-cube:not(#plx6) {
+  background-color: var(--plx-teal);
+  box-shadow: inset 0 0 0 1px var(--plx6-edge);
+}
+
+@keyframes plx6-scan {
+  from { background-position: -18px 0, 0 0; }
+  to   { background-position: calc(100% + 18px) 0, 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  progress:not(#plx6):not([value])::-webkit-progress-bar {
+    animation: none;
+    background: repeating-linear-gradient(90deg, var(--plx-teal) 0 4px, transparent 4px 6px) no-repeat, var(--plx6-well);
+    background-size: 50% 100%, 100% 100%;
+  }
+}
+
+
+/* ==========================================================================
+   9 · CHROME KEYS on the module (desktop; sizes only — each finish keeps
+   its own faces from 10-workspace / 64 / 65 / 68-qa6)
+   Measured before → after: nav / view / back keys 22.5 → 22, new-tab key
+   23.5 → 22, Blue-steel tree row 22 → 24, status readouts 16–17.2 → 16 in
+   a 20 px line, setting-row keys 26 → 20, settings search 28 → 24.
+   ========================================================================== */
+body:not(.is-mobile) :is(.nav-action-button, .view-header-nav-buttons .clickable-icon, .view-header-nav-buttons button, .view-actions .clickable-icon, .workspace-tab-header-new-tab .clickable-icon, .workspace-tab-header-tab-list .clickable-icon, .canvas-control-item, .canvas-menu button.clickable-icon):not(#plx6) {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--plx6-key);
+  height: var(--plx6-key);
+  min-height: 0;
+  padding: 0 !important;
+  --icon-size: var(--plx6-ico-key);
+}
+body:not(.is-mobile) .canvas-control-item:not(#plx6) { display: flex; }
+body:not(.is-mobile) .side-dock-ribbon .side-dock-ribbon-action:not(#plx6) {
+  box-sizing: border-box;
+  width: var(--plx6-h-xl);
+  height: var(--plx6-h-xl);
+}
+body:not(.is-mobile) .workspace-tab-header-inner-close-button:not(#plx6) {
+  box-sizing: border-box;
+  flex: none;
+  width: var(--plx6-h-s);
+  height: var(--plx6-h-s);
+  padding: 0;
+  --icon-size: var(--plx6-ico-s);
+}
+/* Blue-steel: tree rows back on the 24 px rhythm of the reference */
+body.theme-dark:not(.plx6-no-steel),
+body.theme-dark:not(.plx6-no-steel).plx6-y2k-metal { --plx-row: var(--plx6-h-l); }
+/* status line: 16 px readouts on a 20 px line, every finish */
+body:not(.is-mobile) .status-bar:not(#plx6) {
+  box-sizing: border-box;
+  min-height: var(--plx6-h);
+  padding-block: 1px;
+  align-items: center;
+}
+body:not(.is-mobile) .status-bar-item:not(#plx6) {
+  box-sizing: border-box;
+  height: var(--plx6-h-s);
+  padding-block: 0;
+  display: flex;
+  align-items: center;
+  line-height: 1;
+}
+
+
+/* ==========================================================================
+   10 · SETTINGS COLUMN — a calm flat panel in every finish (request: "no need
+   for metal here on the left"); the metal finish's brushed column is
+   replaced by the flat finish's steel. Keys, bands and controls keep metal.
+   ========================================================================== */
+body.theme-dark:not(.plx6-no-steel).plx6-y2k-metal .vertical-tab-header:not(#plx6) {
+  background: var(--y2k-s2);
+  border-inline-end: 1px solid var(--y2k-black);
+}

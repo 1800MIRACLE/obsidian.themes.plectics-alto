@@ -1,0 +1,927 @@
+/* ==========================================================================
+   20 · FILE TREE
+   File Explorer, plus the trees that share its row language: Bookmarks,
+   Outline, Tags, Recent Files (plugin) and search-result file rows.
+
+   Not styled here (owned elsewhere): tab headers, .nav-header /
+   .nav-buttons-container (toolbar above the tree), ribbon, status bar.
+
+   Contents
+     1. Module tokens (icon palette — token references only)
+     2. Rows: geometry, type, chevrons
+     3. Tree connectors (├ │ └) + active-path tint
+     4. Row states: hover, active, multi-select, drag target, focus
+     5. Counters (File Explorer Note Count plugin) + root strip
+     6. Row icons (Lucide masks: type, prefix sign, keyword) + Iconize + ext tags
+     7. Shared trees: Bookmarks, Outline, Tags, Recent Files, Search
+     8. Style Settings toggles: body.plx-no-tree-lines, body.plx-no-file-icons
+
+   GEOMETRY (Obsidian 1.15, measured)
+     Every .tree-item-self spans the full tree width: Obsidian writes an
+     inline `margin-inline-start: -17d px; padding-inline-start: 24+17d px`
+     (!important) for depth d. Seen from the item's own x (= X):
+         X+2 … X+22   collapse marker box "[+]"/"[-]" (centre X+12)
+         X+22         row icon (15px), name at X+43
+     A child list (.tree-item-children) sits at X+12 and its items at
+     X+17, so a child's X' = X+17 and the parent's chevron centre is X'−5.
+     We remove Obsidian's border guide and keep the 17px step exactly
+     (12px margin + 5px padding) so the inline offsets stay correct.
+   ========================================================================== */
+
+
+/* --------------------------------------------------------------------------
+   1. MODULE TOKENS
+   -------------------------------------------------------------------------- */
+body {
+  --plx-tree-step: 17px;                 /* Obsidian's fixed indent per depth */
+  --plx-tree-guide-x: -5px;              /* guide x relative to child item (X'−5) */
+  --plx-tree-mid: calc(var(--plx-row) / 2);
+  --plx-tree-line: var(--plx-rule);
+  --plx-tree-line-path: color-mix(in srgb, var(--plx-teal) 75%, var(--plx-rule));
+  --plx-ico-size: 15px;                  /* row icon box */
+  --plx-ico-lead: -2px;                  /* icon at X+22, clear of the [+] marker */
+  --plx-tint-file: var(--plx-ink-3);     /* file icon tint */
+  --plx-tint-folder: var(--plx-ink-2);   /* folder icon tint */
+}
+
+/* --------------------------------------------------------------------------
+   2. ROWS
+   -------------------------------------------------------------------------- */
+
+/* Rows run flush to the panel edges, like a list on an LCD. */
+.nav-files-container {
+  padding: 4px 0 24px 0;
+}
+
+/* The trees that share the row language. */
+:is(.nav-files-container,
+    .workspace-leaf-content[data-type="bookmarks"],
+    .workspace-leaf-content[data-type="outline"],
+    .workspace-leaf-content[data-type="tag"]) .tree-item-self {
+  /* 24px pitch: 16px line + 4px + 4px, no gap between rows */
+  align-items: center;       /* Obsidian uses baseline for files: icons would grow the row */
+  min-height: var(--plx-row);
+  margin-bottom: 0;
+  padding-top: calc((var(--plx-row) - 16px) / 2);
+  padding-bottom: calc((var(--plx-row) - 16px) / 2);
+  line-height: 16px;
+  font-family: var(--plx-ui);
+  font-size: var(--plx-fs-ui);
+  color: var(--plx-ink-2);
+  border-radius: 0;
+  border: 0;
+  box-shadow: none;          /* old theme: outset bevels caused jitter */
+  transform: none;           /* old theme: hover translateX — never move rows */
+  transition: background-color 60ms linear;
+}
+
+/* Folders read as headings of their branch. */
+.nav-folder-title {
+  color: var(--plx-ink);
+  font-weight: 500;
+}
+
+/* Top-level folders are the "sections" of the vault: a touch heavier, and
+   a hairline above each one after the first (drawn as a background so the
+   row height never changes). */
+.nav-files-container > div > .nav-folder > .nav-folder-title {
+  font-weight: 600;
+}
+.nav-files-container > div > .tree-item + .nav-folder > .nav-folder-title {
+  background-image: linear-gradient(var(--plx-rule-soft), var(--plx-rule-soft));
+  background-size: 100% 1px;
+  background-position: top left;
+  background-repeat: no-repeat;
+}
+
+/* Name: never wraps, never collides with the counter (ellipsis instead). */
+:is(.nav-files-container, .workspace-leaf-content[data-type="bookmarks"]) .tree-item-inner {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre;
+}
+
+/* Collapse markers "[+]" (collapsed, teal) / "[-]" (expanded, ink-3).
+   The global rule lives in 10-workspace; here the tree-specific geometry,
+   with enough specificity to beat Obsidian's own "\200B" ::before.
+   The box is widened to 20px and re-centred on X+12 (X+2…X+22) so the
+   mono marker (~16px) sits centred on the parent spine: the spine drops
+   straight from the "+"/"-" sign. */
+:is(.nav-files-container,
+    .workspace-leaf-content[data-type="bookmarks"],
+    .workspace-leaf-content[data-type="outline"],
+    .workspace-leaf-content[data-type="tag"]) .tree-item-self > .tree-item-icon.collapse-icon {
+  top: calc((var(--plx-row) - 16px) / 2);
+  width: 20px;
+  height: 16px;
+  margin-inline-start: -22px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--plx-ink-3);
+  opacity: 1;
+}
+:is(.nav-files-container,
+    .workspace-leaf-content[data-type="bookmarks"],
+    .workspace-leaf-content[data-type="outline"],
+    .workspace-leaf-content[data-type="tag"]) .tree-item-self > .tree-item-icon.collapse-icon::before {
+  content: var(--plx-mark-open);
+  display: block;
+  font-family: var(--plx-mono);
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 16px;
+  letter-spacing: -0.06em;
+  white-space: nowrap;
+  color: var(--plx-ink-3);
+}
+:is(.nav-files-container,
+    .workspace-leaf-content[data-type="bookmarks"],
+    .workspace-leaf-content[data-type="outline"],
+    .workspace-leaf-content[data-type="tag"]) .tree-item-self > .tree-item-icon.collapse-icon.is-collapsed::before {
+  content: var(--plx-mark-closed);
+  color: var(--plx-teal);
+}
+:is(.nav-files-container,
+    .workspace-leaf-content[data-type="bookmarks"],
+    .workspace-leaf-content[data-type="outline"],
+    .workspace-leaf-content[data-type="tag"]) .tree-item-self:hover > .tree-item-icon.collapse-icon::before {
+  color: var(--plx-teal-bright);
+}
+
+
+/* --------------------------------------------------------------------------
+   3. TREE CONNECTORS
+   Each child item draws its own piece of the tree, so the drawing is local
+   and needs no knowledge of heights:
+
+        parent ▾            ::before  — vertical guide through the WHOLE item
+          │                            (its row and all its descendants), so
+          ├─ child                     the line runs on to the next sibling.
+          │    …descendants            Hidden on the last child.
+          └─ last child     ::after   — "└": vertical from the item's top to
+                                       the row middle, then the tick right.
+
+   Ticks stop just short of what they point at: the "[+]"/"[-]" marker
+   (folders) or the type icon (files). Lines are on z-index 1 so full-width hover /
+   active rows never cut them.
+
+   Virtualisation: Obsidian culls rows outside the viewport (+ a buffer), so
+   the last *rendered* child of a long branch can briefly take the elbow
+   while it sits off-screen. Accepted; it is invisible in practice.
+   -------------------------------------------------------------------------- */
+:is(.nav-files-container,
+    .workspace-leaf-content[data-type="bookmarks"],
+    .workspace-leaf-content[data-type="outline"],
+    .workspace-leaf-content[data-type="tag"]) .tree-item-children {
+  /* keep Obsidian's 17px step exactly; drop its border guide */
+  margin-inline-start: 12px;
+  padding-inline-start: 5px;
+  border-inline-start: 0;
+}
+
+:is(.nav-files-container,
+    .workspace-leaf-content[data-type="bookmarks"],
+    .workspace-leaf-content[data-type="outline"],
+    .workspace-leaf-content[data-type="tag"]) .tree-item-children > .tree-item {
+  position: relative;
+  /* per-item knobs, overridden for the active path below */
+  --plx-c-run: var(--plx-tree-line);     /* ::before, guide to next sibling */
+  --plx-c-elbow: var(--plx-tree-line);   /* ::after, vertical half */
+  --plx-c-tick: var(--plx-tree-line);    /* ::after, horizontal tick */
+  --plx-c-tick-len: 25px;                /* X'−5 → X'+20: file → its icon (X'+22) */
+}
+/* folders: tick ends just before the "[+]" marker (X'+4) */
+:is(.nav-files-container,
+    .workspace-leaf-content[data-type="bookmarks"],
+    .workspace-leaf-content[data-type="outline"],
+    .workspace-leaf-content[data-type="tag"]) .tree-item-children > .tree-item:has(> .tree-item-self .collapse-icon) {
+  --plx-c-tick-len: 8px;
+}
+
+:is(.nav-files-container,
+    .workspace-leaf-content[data-type="bookmarks"],
+    .workspace-leaf-content[data-type="outline"],
+    .workspace-leaf-content[data-type="tag"]) .tree-item-children > .tree-item::before,
+:is(.nav-files-container,
+    .workspace-leaf-content[data-type="bookmarks"],
+    .workspace-leaf-content[data-type="outline"],
+    .workspace-leaf-content[data-type="tag"]) .tree-item-children > .tree-item::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset-inline-start: var(--plx-tree-guide-x);
+  top: 0;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+/* │ run-on guide */
+:is(.nav-files-container,
+    .workspace-leaf-content[data-type="bookmarks"],
+    .workspace-leaf-content[data-type="outline"],
+    .workspace-leaf-content[data-type="tag"]) .tree-item-children > .tree-item::before {
+  bottom: 0;
+  width: 0;
+  border-inline-start: 1px solid var(--plx-c-run);
+}
+/* └ elbow + tick */
+:is(.nav-files-container,
+    .workspace-leaf-content[data-type="bookmarks"],
+    .workspace-leaf-content[data-type="outline"],
+    .workspace-leaf-content[data-type="tag"]) .tree-item-children > .tree-item::after {
+  height: calc(var(--plx-tree-mid) + 0.5px);
+  width: var(--plx-c-tick-len);
+  border-inline-start: 1px solid var(--plx-c-elbow);
+  border-bottom: 1px solid var(--plx-c-tick);
+}
+/* the last child ends the branch: no run-on */
+:is(.nav-files-container,
+    .workspace-leaf-content[data-type="bookmarks"],
+    .workspace-leaf-content[data-type="outline"],
+    .workspace-leaf-content[data-type="tag"]) .tree-item-children > .tree-item:last-child::before {
+  content: none;
+}
+
+/* Active path (File Explorer only): the line from each ancestor's chevron
+   down to the child that leads to the active file is tinted teal.
+   - the branch child (contains .is-active): elbow + tick teal
+   - siblings ABOVE it: their run-on guide (and elbow) teal
+   Rendered rows are few (virtualised), so these :has() checks are cheap. */
+.nav-files-container .tree-item-children > .tree-item:has(.is-active) {
+  --plx-c-elbow: var(--plx-tree-line-path);
+  --plx-c-tick: var(--plx-tree-line-path);
+}
+.nav-files-container .tree-item-children > .tree-item:has(~ .tree-item .is-active) {
+  --plx-c-run: var(--plx-tree-line-path);
+  --plx-c-elbow: var(--plx-tree-line-path);
+}
+
+
+/* --------------------------------------------------------------------------
+   4. ROW STATES
+   -------------------------------------------------------------------------- */
+:is(.nav-files-container,
+    .workspace-leaf-content[data-type="bookmarks"],
+    .workspace-leaf-content[data-type="outline"],
+    .workspace-leaf-content[data-type="tag"]) .tree-item-self.is-clickable:hover {
+  background-color: var(--plx-lcd-2);
+  color: var(--plx-ink);
+}
+
+/* Active file = Casio list cursor: LCD row + 2px teal key at the left edge */
+:is(.nav-files-container,
+    .workspace-leaf-content[data-type="bookmarks"],
+    .workspace-leaf-content[data-type="outline"],
+    .workspace-leaf-content[data-type="tag"]) .tree-item-self.is-active,
+:is(.nav-files-container,
+    .workspace-leaf-content[data-type="bookmarks"]) .tree-item-self.is-active:hover {
+  background-color: var(--plx-lcd);
+  /* the key: 3px teal bar whose foot is cut at an angle (a small chamfer,
+     like a Casio list cursor / Aperture sign marker) */
+  background-image:
+    linear-gradient(var(--plx-teal), var(--plx-teal)),
+    linear-gradient(to bottom left, transparent 50%, var(--plx-teal) 50%);
+  background-size: 3px calc(100% - 3px), 3px 3px;
+  background-position: left top, left bottom;
+  background-repeat: no-repeat;
+  color: var(--plx-lcd-ink);
+  font-weight: 600;
+}
+
+/* Multi-select (shift/ctrl click): blue wash = a selection range */
+:is(.nav-files-container, .workspace-leaf-content[data-type="bookmarks"]) .tree-item-self.is-selected,
+:is(.nav-files-container, .workspace-leaf-content[data-type="bookmarks"]) .tree-item-self.is-selected:hover {
+  background-color: var(--plx-blue-wash);
+  background-image: linear-gradient(var(--plx-blue), var(--plx-blue));
+  background-size: 2px 100%;
+  background-repeat: no-repeat;
+  color: var(--plx-ink);
+}
+:is(.nav-files-container, .workspace-leaf-content[data-type="bookmarks"]) .tree-item-self.is-selected.is-active {
+  background-color: var(--plx-lcd);
+  background-image:
+    linear-gradient(var(--plx-teal), var(--plx-teal)),
+    linear-gradient(to bottom left, transparent 50%, var(--plx-teal) 50%);
+  background-size: 3px calc(100% - 3px), 3px 3px;
+  background-position: left top, left bottom;
+}
+
+/* Drop target while dragging: dashed teal = "would go here" (provisional) */
+:is(.nav-files-container, .workspace-leaf-content[data-type="bookmarks"]) .tree-item.is-being-dragged-over,
+:is(.nav-files-container, .workspace-leaf-content[data-type="bookmarks"]) .tree-item-self.is-being-dragged-over,
+.nav-files-container.is-being-dragged-over {
+  background-color: var(--plx-teal-wash);
+  outline: 1px dashed var(--plx-teal);
+  outline-offset: -1px;
+  border-radius: 0;
+}
+.nav-files-container .tree-item-self.is-being-dragged {
+  opacity: 0.55;
+}
+
+/* Keyboard focus: dotted inset frame (dotted = pointer to "here") */
+:is(.nav-files-container,
+    .workspace-leaf-content[data-type="bookmarks"],
+    .workspace-leaf-content[data-type="outline"],
+    .workspace-leaf-content[data-type="tag"]) .tree-item-self.has-focus {
+  box-shadow: none;
+  outline: 1px dotted var(--plx-rule-strong);
+  outline-offset: -1px;
+}
+
+/* Rename in place: an input well */
+.nav-files-container .tree-item-self .tree-item-inner[contenteditable="true"],
+.nav-files-container .tree-item-self.is-being-renamed .tree-item-inner {
+  background: var(--plx-well);
+  color: var(--plx-ink);
+  box-shadow: var(--plx-recessed);
+  outline: 1px solid var(--plx-teal);
+  outline-offset: 0;
+  border-radius: 0;
+  padding: 0 3px;
+  text-overflow: clip;
+}
+
+
+/* --------------------------------------------------------------------------
+   5. COUNTERS — File Explorer Note Count plugin
+   The plugin prints `data-count` through ::after. Restyled as a tiny LCD
+   digit readout: mono, tabular, faint, right-aligned, never overlapping the
+   name (the name ellipsises first).
+   -------------------------------------------------------------------------- */
+.nav-folder-title[data-count]::after,
+.oz-explorer-root-nav-folder-title[data-count]::after {
+  flex: 0 0 auto;
+  order: 9;
+  margin: 0 0 0 8px;
+  padding: 0;
+  min-width: 3ch;
+  text-align: end;
+  font-family: var(--plx-mono);
+  font-size: var(--plx-fs-small);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums slashed-zero;
+  letter-spacing: 0;
+  line-height: 16px;
+  color: var(--plx-ink-4);
+  background: none;
+  border: 0;
+  border-radius: 0;
+}
+.nav-folder-title[data-count]:hover::after {
+  color: var(--plx-ink-3);
+}
+.nav-folder-title.is-active[data-count]::after {
+  color: var(--plx-lcd-ink);
+}
+
+/* Root strip ("VAULT ……… 398"): a Casio panel label above the tree. */
+.nav-files-container .oz-explorer-root-folder {
+  margin: 0 0 4px 0;
+}
+.oz-explorer-root-nav-folder-title {
+  display: flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px 0 10px;
+  background: var(--plx-case);
+  border-top: 1px solid var(--plx-rule-soft);
+  border-bottom: 1px solid var(--plx-rule-soft);
+  box-shadow: inset 0 1px 0 var(--plx-hl);
+  font-family: var(--plx-ui-cond);
+  font-size: var(--plx-fs-label);
+  font-weight: 700;
+  letter-spacing: var(--plx-track);
+  text-transform: uppercase;
+  color: var(--plx-ink-2);
+}
+.oz-explorer-root-nav-folder-title .tree-item-inner {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.oz-explorer-root-nav-folder-title[data-count]::after {
+  color: var(--plx-ink-3);
+  font-size: var(--plx-fs-label);
+}
+
+
+/* --------------------------------------------------------------------------
+   6. ROW ICONS — Lucide (the icon family Obsidian itself uses)
+   Drawn by ::before on each title, before the name. Each icon is a Lucide
+   SVG (ISC licence) used as a MASK, so its colour comes from tokens via
+   background-color. Stroke re-set to 2.4/24 (≈1.5px at 15px) to match
+   Obsidian's UI icons. One custom property per icon: --plx-ico-<lucide id>.
+
+   Which icon a row gets — three layers, highest first:
+     1. KEYWORD in the row's own name   → --plx-row-key  (+ --plx-row-key-tint)
+     2. PREFIX SIGN on the row's name   → --plx-row-sign
+     3. TYPE / DEPTH default            → --plx-row-icon (+ --plx-row-tint)
+   and a real Iconize icon (svg/img) beats all three.
+
+   Type defaults (by data-path suffix; later rules win):
+     top-level folder  library          nested folder  folder / folder-open
+     .md               file-text        .canvas        layout-dashboard
+     .excalidraw(.md)  pencil-ruler     .base          table-2
+     .pdf              file-type        images         image
+     audio             file-audio       video          film
+     code              file-code        json           file-json
+     csv / tsv         sheet            .tex           sigma
+     .bib              book-marked      anything else  file
+
+   Prefix signs (Plectics filing standard):
+     ~ META (asterisk; row quieter, ink-3)   _ support/assets (paperclip)
+     @ people (user-round)                   ! pinned (pin)
+     + inbox (inbox)                         % or = index / MOC (list-tree)
+
+   Keywords (case-insensitive; "$=" = name ends with, for short words that
+   would otherwise hit inside other words): Meta, admin, Sandbox, Recent,
+   Maintenance, Template, Attachment/Assets, Inbox, Archive, Sticky Notes,
+   Bases, Excalidraw, Empty (dashed circle, ink-3), Recycle Bin/Trash/Deleted
+   (ink-3), Unfinished/Draft/WIP (construction, amber), Low Quality
+   (circle-alert, amber).
+
+   "Own name" matching: CSS cannot isolate the last path segment, so a
+   sign/keyword rule only fires when the PARENT folder's title does not
+   match the same pattern (otherwise every descendant of "~ Maintenance"
+   would inherit the wrench). Limitation: "~y" directly inside "~x" keeps
+   its type icon; same for a keyword repeated in parent and child.
+
+   Data-URIs: regenerate with gen_lucide.py <folder of Lucide SVGs> (Lucide, ISC licence).
+   -------------------------------------------------------------------------- */
+body {
+  --plx-ico-library: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m16 6 4 14'/%3E%3Cpath d='M12 6v14'/%3E%3Cpath d='M8 8v12'/%3E%3Cpath d='M4 4v16'/%3E%3C/svg%3E");
+  --plx-ico-folder: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z'/%3E%3C/svg%3E");
+  --plx-ico-folder-open: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2'/%3E%3C/svg%3E");
+  --plx-ico-file: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z'/%3E%3Cpath d='M14 2v4a2 2 0 0 0 2 2h4'/%3E%3C/svg%3E");
+  --plx-ico-file-text: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z'/%3E%3Cpath d='M14 2v4a2 2 0 0 0 2 2h4'/%3E%3Cpath d='M10 9H8'/%3E%3Cpath d='M16 13H8'/%3E%3Cpath d='M16 17H8'/%3E%3C/svg%3E");
+  --plx-ico-layout-dashboard: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='7' height='9' x='3' y='3' rx='1'/%3E%3Crect width='7' height='5' x='14' y='3' rx='1'/%3E%3Crect width='7' height='9' x='14' y='12' rx='1'/%3E%3Crect width='7' height='5' x='3' y='16' rx='1'/%3E%3C/svg%3E");
+  --plx-ico-pencil-ruler: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m15 5 4 4'/%3E%3Cpath d='M13 7 8.7 2.7a2.41 2.41 0 0 0-3.4 0L2.7 5.3a2.41 2.41 0 0 0 0 3.4L7 13'/%3E%3Cpath d='m8 6 2-2'/%3E%3Cpath d='m2 22 5.5-1.5L21.17 6.83a2.82 2.82 0 0 0-4-4L3.5 16.5Z'/%3E%3Cpath d='m18 16 2-2'/%3E%3Cpath d='m17 11 4.3 4.3c.94.94.94 2.46 0 3.4l-2.6 2.6c-.94.94-2.46.94-3.4 0L11 17'/%3E%3C/svg%3E");
+  --plx-ico-table-2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18'/%3E%3C/svg%3E");
+  --plx-ico-file-type: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z'/%3E%3Cpath d='M14 2v4a2 2 0 0 0 2 2h4'/%3E%3Cpath d='M9 13v-1h6v1'/%3E%3Cpath d='M12 12v6'/%3E%3Cpath d='M11 18h2'/%3E%3C/svg%3E");
+  --plx-ico-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2' ry='2'/%3E%3Ccircle cx='9' cy='9' r='2'/%3E%3Cpath d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21'/%3E%3C/svg%3E");
+  --plx-ico-file-audio: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17.5 22h.5a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3'/%3E%3Cpath d='M14 2v4a2 2 0 0 0 2 2h4'/%3E%3Cpath d='M2 19a2 2 0 1 1 4 0v1a2 2 0 1 1-4 0v-4a6 6 0 0 1 12 0v4a2 2 0 1 1-4 0v-1a2 2 0 1 1 4 0'/%3E%3C/svg%3E");
+  --plx-ico-film: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2'/%3E%3Cpath d='M7 3v18'/%3E%3Cpath d='M3 7.5h4'/%3E%3Cpath d='M3 12h18'/%3E%3Cpath d='M3 16.5h4'/%3E%3Cpath d='M17 3v18'/%3E%3Cpath d='M17 7.5h4'/%3E%3Cpath d='M17 16.5h4'/%3E%3C/svg%3E");
+  --plx-ico-file-code: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z'/%3E%3Cpath d='M14 2v4a2 2 0 0 0 2 2h4'/%3E%3Cpath d='m10 13-2 2 2 2'/%3E%3Cpath d='m14 17 2-2-2-2'/%3E%3C/svg%3E");
+  --plx-ico-file-json: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z'/%3E%3Cpath d='M14 2v4a2 2 0 0 0 2 2h4'/%3E%3Cpath d='M10 12a1 1 0 0 0-1 1v1a1 1 0 0 1-1 1 1 1 0 0 1 1 1v1a1 1 0 0 0 1 1'/%3E%3Cpath d='M14 18a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1 1 1 0 0 1-1-1v-1a1 1 0 0 0-1-1'/%3E%3C/svg%3E");
+  --plx-ico-sheet: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2' ry='2'/%3E%3Cline x1='3' x2='21' y1='9' y2='9'/%3E%3Cline x1='3' x2='21' y1='15' y2='15'/%3E%3Cline x1='9' x2='9' y1='9' y2='21'/%3E%3Cline x1='15' x2='15' y1='9' y2='21'/%3E%3C/svg%3E");
+  --plx-ico-sigma: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 7V4H6l6 8-6 8h12v-3'/%3E%3C/svg%3E");
+  --plx-ico-book-marked: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20'/%3E%3Cpolyline points='10 2 10 10 13 7 16 10 16 2'/%3E%3C/svg%3E");
+  --plx-ico-asterisk: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 6v12'/%3E%3Cpath d='M17.196 9 6.804 15'/%3E%3Cpath d='m6.804 9 10.392 6'/%3E%3C/svg%3E");
+  --plx-ico-paperclip: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48'/%3E%3C/svg%3E");
+  --plx-ico-user-round: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='5'/%3E%3Cpath d='M20 21a8 8 0 0 0-16 0'/%3E%3C/svg%3E");
+  --plx-ico-pin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='12' x2='12' y1='17' y2='22'/%3E%3Cpath d='M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z'/%3E%3C/svg%3E");
+  --plx-ico-inbox: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='22 12 16 12 14 15 10 15 8 12 2 12'/%3E%3Cpath d='M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z'/%3E%3C/svg%3E");
+  --plx-ico-list-tree: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 12h-8'/%3E%3Cpath d='M21 6H8'/%3E%3Cpath d='M21 18h-8'/%3E%3Cpath d='M3 6v4c0 1.1.9 2 2 2h3'/%3E%3Cpath d='M3 10v6c0 1.1.9 2 2 2h3'/%3E%3C/svg%3E");
+  --plx-ico-wrench: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z'/%3E%3C/svg%3E");
+  --plx-ico-trash-2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 6h18'/%3E%3Cpath d='M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6'/%3E%3Cpath d='M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2'/%3E%3Cline x1='10' x2='10' y1='11' y2='17'/%3E%3Cline x1='14' x2='14' y1='11' y2='17'/%3E%3C/svg%3E");
+  --plx-ico-construction: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='6' width='20' height='8' rx='1'/%3E%3Cpath d='M17 14v7'/%3E%3Cpath d='M7 14v7'/%3E%3Cpath d='M17 3v3'/%3E%3Cpath d='M7 3v3'/%3E%3Cpath d='M10 14 2.3 6.3'/%3E%3Cpath d='m14 6 7.7 7.7'/%3E%3Cpath d='m8 6 8 8'/%3E%3C/svg%3E");
+  --plx-ico-circle-dashed: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10.1 2.182a10 10 0 0 1 3.8 0'/%3E%3Cpath d='M13.9 21.818a10 10 0 0 1-3.8 0'/%3E%3Cpath d='M17.609 3.721a10 10 0 0 1 2.69 2.7'/%3E%3Cpath d='M2.182 13.9a10 10 0 0 1 0-3.8'/%3E%3Cpath d='M20.279 17.609a10 10 0 0 1-2.7 2.69'/%3E%3Cpath d='M21.818 10.1a10 10 0 0 1 0 3.8'/%3E%3Cpath d='M3.721 6.391a10 10 0 0 1 2.7-2.69'/%3E%3Cpath d='M6.391 20.279a10 10 0 0 1-2.69-2.7'/%3E%3C/svg%3E");
+  --plx-ico-archive: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='20' height='5' x='2' y='3' rx='1'/%3E%3Cpath d='M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8'/%3E%3Cpath d='M10 12h4'/%3E%3C/svg%3E");
+  --plx-ico-layout-template: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='7' x='3' y='3' rx='1'/%3E%3Crect width='9' height='7' x='3' y='14' rx='1'/%3E%3Crect width='5' height='7' x='16' y='14' rx='1'/%3E%3C/svg%3E");
+  --plx-ico-sticky-note: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z'/%3E%3Cpath d='M15 3v4a2 2 0 0 0 2 2h4'/%3E%3C/svg%3E");
+  --plx-ico-shield: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/%3E%3C/svg%3E");
+  --plx-ico-flask-conical: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2'/%3E%3Cpath d='M8.5 2h7'/%3E%3Cpath d='M7 16h10'/%3E%3C/svg%3E");
+  --plx-ico-history: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8'/%3E%3Cpath d='M3 3v5h5'/%3E%3Cpath d='M12 7v5l4 2'/%3E%3C/svg%3E");
+  --plx-ico-circle-alert: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='12' x2='12' y1='8' y2='12'/%3E%3Cline x1='12' x2='12.01' y1='16' y2='16'/%3E%3C/svg%3E");
+}
+
+/* shared box -------------------------------------------------------------- */
+.nav-files-container :is(.nav-file-title, .nav-folder-title):not(:has(> .iconize-icon :is(svg, img)))::before {
+  content: "";
+  flex: 0 0 var(--plx-ico-size);
+  width: var(--plx-ico-size);
+  height: var(--plx-ico-size);
+  margin: 0 6px 0 var(--plx-ico-lead);
+  -webkit-mask: var(--plx-row-key, var(--plx-row-sign, var(--plx-row-icon, var(--plx-ico-file)))) center / var(--plx-ico-size) var(--plx-ico-size) no-repeat;
+          mask: var(--plx-row-key, var(--plx-row-sign, var(--plx-row-icon, var(--plx-ico-file)))) center / var(--plx-ico-size) var(--plx-ico-size) no-repeat;
+  background-color: var(--plx-row-key-tint, var(--plx-row-tint, var(--plx-tint-file)));
+}
+
+/* 3 · type / depth defaults --------------------------------------------- */
+.nav-files-container .nav-folder-title {
+  --plx-row-icon: var(--plx-ico-folder);
+  --plx-row-tint: var(--plx-tint-folder);
+}
+.nav-files-container .nav-folder-children > .nav-folder:not(.is-collapsed) > .nav-folder-title {
+  --plx-row-icon: var(--plx-ico-folder-open);
+}
+/* top-level folders are the vault's main divisions: a "library" glyph */
+.nav-files-container > div > .nav-folder > .nav-folder-title {
+  --plx-row-icon: var(--plx-ico-library);
+}
+.nav-files-container .nav-file-title[data-path$=".md" i]            { --plx-row-icon: var(--plx-ico-file-text); }
+.nav-files-container .nav-file-title[data-path$=".canvas" i]        { --plx-row-icon: var(--plx-ico-layout-dashboard); }
+.nav-files-container .nav-file-title:is([data-path$=".excalidraw" i],
+                                        [data-path$=".excalidraw.md" i]) { --plx-row-icon: var(--plx-ico-pencil-ruler); }
+.nav-files-container .nav-file-title[data-path$=".base" i]          { --plx-row-icon: var(--plx-ico-table-2); }
+.nav-files-container .nav-file-title[data-path$=".pdf" i]           { --plx-row-icon: var(--plx-ico-file-type); }
+.nav-files-container .nav-file-title:is(
+    [data-path$=".png" i], [data-path$=".jpg" i], [data-path$=".jpeg" i],
+    [data-path$=".gif" i], [data-path$=".svg" i], [data-path$=".webp" i],
+    [data-path$=".bmp" i], [data-path$=".avif" i])                  { --plx-row-icon: var(--plx-ico-image); }
+.nav-files-container .nav-file-title:is(
+    [data-path$=".mp3" i], [data-path$=".wav" i], [data-path$=".m4a" i],
+    [data-path$=".ogg" i], [data-path$=".flac" i], [data-path$=".3gp" i]) { --plx-row-icon: var(--plx-ico-file-audio); }
+.nav-files-container .nav-file-title:is(
+    [data-path$=".mp4" i], [data-path$=".webm" i], [data-path$=".mov" i],
+    [data-path$=".mkv" i], [data-path$=".ogv" i])                   { --plx-row-icon: var(--plx-ico-film); }
+.nav-files-container .nav-file-title:is(
+    [data-path$=".js" i], [data-path$=".mjs" i], [data-path$=".ts" i],
+    [data-path$=".py" i], [data-path$=".css" i], [data-path$=".html" i],
+    [data-path$=".htm" i], [data-path$=".yml" i], [data-path$=".yaml" i],
+    [data-path$=".toml" i], [data-path$=".xml" i], [data-path$=".sh" i],
+    [data-path$=".sql" i], [data-path$=".r" i], [data-path$=".jl" i],
+    [data-path$=".ipynb" i])                                        { --plx-row-icon: var(--plx-ico-file-code); }
+.nav-files-container .nav-file-title[data-path$=".json" i]          { --plx-row-icon: var(--plx-ico-file-json); }
+.nav-files-container .nav-file-title:is([data-path$=".csv" i],
+                                        [data-path$=".tsv" i])      { --plx-row-icon: var(--plx-ico-sheet); }
+.nav-files-container .nav-file-title[data-path$=".tex" i]           { --plx-row-icon: var(--plx-ico-sigma); }
+.nav-files-container .nav-file-title[data-path$=".bib" i]           { --plx-row-icon: var(--plx-ico-book-marked); }
+
+/* 2 · prefix signs (own name starts with the sign) ---------------------- */
+/* ~ META: cross-cutting / system (Drive "[~] Memos") */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path^="~"], [data-path*="/~"]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path^="~"], [data-path*="/~"]) {
+  --plx-row-sign: var(--plx-ico-asterisk);
+}
+/* _ support / assets */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path^="_"], [data-path*="/_"]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path^="_"], [data-path*="/_"]) {
+  --plx-row-sign: var(--plx-ico-paperclip);
+}
+/* @ people */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path^="@"], [data-path*="/@"]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path^="@"], [data-path*="/@"]) {
+  --plx-row-sign: var(--plx-ico-user-round);
+}
+/* ! pinned / priority */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path^="!"], [data-path*="/!"]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path^="!"], [data-path*="/!"]) {
+  --plx-row-sign: var(--plx-ico-pin);
+}
+/* + inbox / incoming */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path^="+"], [data-path*="/+"]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path^="+"], [data-path*="/+"]) {
+  --plx-row-sign: var(--plx-ico-inbox);
+}
+/* % or = index / map of content */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path^="%"], [data-path*="/%"], [data-path^="="], [data-path*="/="]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path^="%"], [data-path*="/%"], [data-path^="="], [data-path*="/="]) {
+  --plx-row-sign: var(--plx-ico-list-tree);
+}
+/* META rows step back so content folders dominate */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path^="~"], [data-path*="/~"]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path^="~"], [data-path*="/~"]):not(.is-active, :hover) {
+  color: var(--plx-ink-3);
+  --plx-row-tint: var(--plx-ink-3);
+}
+
+/* 1 · keywords in the row's own name (later rules win) ------------------ */
+/* Meta */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path$="meta" i]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path$="meta" i]) {
+  --plx-row-key: var(--plx-ico-asterisk);
+}
+/* admin */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path$="admin" i]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path$="admin" i]) {
+  --plx-row-key: var(--plx-ico-shield);
+}
+/* Sandbox */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path*="sandbox" i]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path*="sandbox" i]) {
+  --plx-row-key: var(--plx-ico-flask-conical);
+}
+/* Recent */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path*="recent" i]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path*="recent" i]) {
+  --plx-row-key: var(--plx-ico-history);
+}
+/* Maintenance */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path*="maintenance" i]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path*="maintenance" i]) {
+  --plx-row-key: var(--plx-ico-wrench);
+}
+/* Template(s) */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path*="template" i]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path*="template" i]) {
+  --plx-row-key: var(--plx-ico-layout-template);
+}
+/* Attachment(s) / Assets */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path*="attachment" i], [data-path$="assets" i]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path*="attachment" i], [data-path$="assets" i]) {
+  --plx-row-key: var(--plx-ico-paperclip);
+}
+/* Inbox */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path$="inbox" i]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path$="inbox" i]) {
+  --plx-row-key: var(--plx-ico-inbox);
+}
+/* Archive */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path$="archive" i]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path$="archive" i]) {
+  --plx-row-key: var(--plx-ico-archive);
+}
+/* Sticky Notes */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path*="sticky notes" i]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path*="sticky notes" i]) {
+  --plx-row-key: var(--plx-ico-sticky-note);
+}
+/* Bases */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path$="bases" i]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path$="bases" i]) {
+  --plx-row-key: var(--plx-ico-table-2);
+}
+/* Excalidraw (folder) */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path$="excalidraw" i]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path$="excalidraw" i]) {
+  --plx-row-key: var(--plx-ico-pencil-ruler);
+}
+/* Empty: dashed = absent */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path$="empty" i]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path$="empty" i]) {
+  --plx-row-key: var(--plx-ico-circle-dashed);
+  --plx-row-key-tint: var(--plx-ink-3);
+}
+/* Recycle Bin / Trash / Deleted */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path*="recycle bin" i], [data-path$="trash" i], [data-path$="deleted" i]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path*="recycle bin" i], [data-path$="trash" i], [data-path$="deleted" i]) {
+  --plx-row-key: var(--plx-ico-trash-2);
+  --plx-row-key-tint: var(--plx-ink-3);
+}
+/* Unfinished / Draft(s) / WIP: amber = provisional */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path*="unfinished" i], [data-path*="draft" i], [data-path$="wip" i], [data-path*="(wip)" i], [data-path*="[wip]" i]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path*="unfinished" i], [data-path*="draft" i], [data-path$="wip" i], [data-path*="(wip)" i], [data-path*="[wip]" i]) {
+  --plx-row-key: var(--plx-ico-construction);
+  --plx-row-key-tint: var(--plx-amber);
+}
+/* Low Quality: amber = caution */
+:is(.nav-files-container > div,
+    .nav-folder:not(:has(> .nav-folder-title:is([data-path*="low quality" i]))) > .nav-folder-children)
+  > .tree-item > .tree-item-self:is([data-path*="low quality" i]) {
+  --plx-row-key: var(--plx-ico-circle-alert);
+  --plx-row-key-tint: var(--plx-amber);
+}
+
+/* "you are here": the active row's icon turns teal, whatever it is */
+.nav-files-container .tree-item-self.is-active::before {
+  background-color: var(--plx-teal) !important;
+}
+
+/* Iconize plugin: a user-chosen icon replaces ours; make it match --------
+   If Iconize could not resolve its icon (pack not installed) it prints the
+   icon NAME as text ("LiMoreVertical"); hide that slot and let our own
+   type icon draw. Caveat: Iconize emoji icons are plain text too, so they
+   are hidden as well (the vault uses none; revisit if emoji are adopted). */
+.nav-files-container .tree-item-self > .iconize-icon:not(:has(svg, img)) {
+  display: none;
+}
+.nav-files-container .tree-item-self > .iconize-icon {
+  flex: 0 0 var(--plx-ico-size);
+  width: var(--plx-ico-size);
+  height: var(--plx-ico-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 6px 0 var(--plx-ico-lead) !important;   /* beats Iconize's inline -2px 5px 0 -5px */
+  color: var(--plx-ink-2);
+  font-size: var(--plx-fs-small);   /* emoji icons */
+  line-height: 16px;
+  overflow: hidden;
+}
+.nav-files-container .tree-item-self > .iconize-icon svg {
+  width: var(--plx-ico-size);
+  height: var(--plx-ico-size);
+}
+.nav-files-container .tree-item-self.is-active > .iconize-icon {
+  color: var(--plx-teal);
+}
+
+/* Extension tag for non-markdown files: a tiny mono key-cap ------------- */
+:is(.nav-files-container, .workspace-leaf-content[data-type="recent-files"]) .nav-file-tag {
+  flex: 0 0 auto;
+  order: 8;
+  margin: 0 0 0 6px;
+  padding: 0 3px;
+  height: 14px;
+  line-height: 12px;
+  box-sizing: border-box;
+  font-family: var(--plx-mono);
+  font-size: 9.5px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--plx-ink-3);
+  background: var(--plx-key-face);
+  border: 1px solid var(--plx-rule);
+  border-radius: 1px;
+  box-shadow: inset 0 1px 0 var(--plx-hl);
+}
+.nav-files-container .tree-item-self.is-active .nav-file-tag {
+  color: var(--plx-lcd-ink);
+  border-color: var(--plx-teal);
+}
+
+
+/* --------------------------------------------------------------------------
+   7. SHARED TREES
+   Rows, chevrons, connectors and states above already cover Bookmarks,
+   Outline and Tags (same .tree-item DOM). Here: per-pane tick lengths,
+   plus the panes whose DOM differs (Recent Files, Search).
+   -------------------------------------------------------------------------- */
+
+/* Leaf ticks: Outline and Tags have no icons, so a leaf's tick runs to the
+   text (X'+21); Bookmarks draw their own Lucide icon in the chevron slot
+   (X'+4…), so the tick stops just before it. */
+:is(.workspace-leaf-content[data-type="outline"],
+    .workspace-leaf-content[data-type="tag"]) .tree-item-children > .tree-item {
+  --plx-c-tick-len: 26px;
+}
+.workspace-leaf-content[data-type="bookmarks"] .tree-item-children > .tree-item {
+  --plx-c-tick-len: 8px;
+}
+:is(.workspace-leaf-content[data-type="outline"],
+    .workspace-leaf-content[data-type="tag"],
+    .workspace-leaf-content[data-type="bookmarks"]) .tree-item-children > .tree-item:has(> .tree-item-self .collapse-icon) {
+  --plx-c-tick-len: 8px;
+}
+
+/* Outline: long headings may wrap; the tick stays on the first line. */
+.workspace-leaf-content[data-type="outline"] .tree-item-self {
+  align-items: flex-start;
+}
+.workspace-leaf-content[data-type="outline"] .tree-item-inner {
+  white-space: normal;
+}
+
+/* Bookmarks: their own type icons, faint, teal when active */
+.workspace-leaf-content[data-type="bookmarks"] .tree-item-self > .tree-item-icon:not(.collapse-icon) {
+  color: var(--plx-ink-3);
+}
+.workspace-leaf-content[data-type="bookmarks"] .tree-item-self > .tree-item-icon:not(.collapse-icon) svg {
+  width: 14px;
+  height: 14px;
+}
+.workspace-leaf-content[data-type="bookmarks"] .tree-item-self.is-active > .tree-item-icon {
+  color: var(--plx-teal);
+}
+
+/* Tags: count readout like the folder counters */
+.workspace-leaf-content[data-type="tag"] .tree-item-flair {
+  font-family: var(--plx-mono);
+  font-size: var(--plx-fs-small);
+  font-variant-numeric: tabular-nums slashed-zero;
+  color: var(--plx-ink-4);
+}
+
+/* Recent Files plugin: flat list, same rows + type icons. Its rows carry
+   the path in aria-label (not data-path), so icons key off that. */
+.workspace-leaf-content[data-type="recent-files"] .nav-folder.mod-root > .nav-folder-children {
+  margin: 0;
+  padding: 4px 0;
+  border: 0;
+}
+.workspace-leaf-content[data-type="recent-files"] .recent-files-title {
+  align-items: center;
+  min-height: var(--plx-row);
+  margin: 0;
+  padding: calc((var(--plx-row) - 16px) / 2) 8px calc((var(--plx-row) - 16px) / 2) 24px;
+  line-height: 16px;
+  font-family: var(--plx-ui);
+  font-size: var(--plx-fs-ui);
+  color: var(--plx-ink-2);
+  border-radius: 0;
+}
+.workspace-leaf-content[data-type="recent-files"] .recent-files-title:hover {
+  background-color: var(--plx-lcd-2);
+  color: var(--plx-ink);
+}
+.workspace-leaf-content[data-type="recent-files"] .recent-files-title.is-active {
+  background-color: var(--plx-lcd);
+  background-image:
+    linear-gradient(var(--plx-teal), var(--plx-teal)),
+    linear-gradient(to bottom left, transparent 50%, var(--plx-teal) 50%);
+  background-size: 3px calc(100% - 3px), 3px 3px;
+  background-position: left top, left bottom;
+  background-repeat: no-repeat;
+  color: var(--plx-lcd-ink);
+  font-weight: 600;
+  --plx-row-tint: var(--plx-teal);
+}
+.workspace-leaf-content[data-type="recent-files"] .recent-files-title::before {
+  content: "";
+  flex: 0 0 var(--plx-ico-size);
+  width: var(--plx-ico-size);
+  height: var(--plx-ico-size);
+  margin: 0 6px 0 -5px;
+  -webkit-mask: var(--plx-row-icon, var(--plx-ico-file)) center / var(--plx-ico-size) var(--plx-ico-size) no-repeat;
+          mask: var(--plx-row-icon, var(--plx-ico-file)) center / var(--plx-ico-size) var(--plx-ico-size) no-repeat;
+  background-color: var(--plx-row-tint, var(--plx-tint-file));
+}
+.recent-files-file[aria-label$=".md" i] > .recent-files-title     { --plx-row-icon: var(--plx-ico-file-text); }
+.recent-files-file[aria-label$=".canvas" i] > .recent-files-title { --plx-row-icon: var(--plx-ico-layout-dashboard); }
+.recent-files-file:is([aria-label$=".excalidraw" i], [aria-label$=".excalidraw.md" i]) > .recent-files-title { --plx-row-icon: var(--plx-ico-pencil-ruler); }
+.recent-files-file[aria-label$=".base" i] > .recent-files-title   { --plx-row-icon: var(--plx-ico-table-2); }
+.recent-files-file[aria-label$=".pdf" i] > .recent-files-title    { --plx-row-icon: var(--plx-ico-file-type); }
+.recent-files-file:is([aria-label$=".png" i], [aria-label$=".jpg" i], [aria-label$=".jpeg" i],
+    [aria-label$=".gif" i], [aria-label$=".svg" i], [aria-label$=".webp" i]) > .recent-files-title { --plx-row-icon: var(--plx-ico-image); }
+.workspace-leaf-content[data-type="recent-files"] .nav-file-tag:empty {
+  display: none;
+}
+.workspace-leaf-content[data-type="recent-files"] .recent-files-file-delete {
+  display: flex;
+  align-items: center;
+  color: var(--plx-ink-4);
+  opacity: 0;
+}
+.workspace-leaf-content[data-type="recent-files"] .recent-files-title:hover .recent-files-file-delete {
+  opacity: 1;
+}
+.workspace-leaf-content[data-type="recent-files"] .recent-files-file-delete:hover {
+  color: var(--plx-red);     /* destructive: remove from list */
+}
+.workspace-leaf-content[data-type="recent-files"] .recent-files-file-delete svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Search results: "[-]"/"[+]" marker (Obsidian's own "\200B" ::before
+   would otherwise blank the global marker here) */
+.search-result-file-title > .tree-item-icon.collapse-icon::before {
+  content: var(--plx-mark-open);
+  font-family: var(--plx-mono);
+  font-size: 10px;
+  line-height: 16px;
+  letter-spacing: -0.06em;
+  white-space: nowrap;
+  color: var(--plx-ink-3);
+}
+.search-result.is-collapsed > .search-result-file-title > .tree-item-icon.collapse-icon::before,
+.search-result-file-title > .tree-item-icon.collapse-icon.is-collapsed::before {
+  content: var(--plx-mark-closed);
+  color: var(--plx-teal);
+}
+
+/* Search results: the file row only (match cards belong to the workspace
+   module) — a 24px row with a note icon after the chevron. */
+.search-result-file-title {
+  align-items: center;
+  min-height: var(--plx-row);
+  border-radius: 0;
+}
+.search-result-file-title > .tree-item-inner::before {
+  content: "";
+  display: inline-block;
+  vertical-align: -2px;
+  width: 13px;
+  height: 13px;
+  margin-inline-end: 5px;
+  -webkit-mask: var(--plx-ico-file-text) center / 13px 13px no-repeat;
+          mask: var(--plx-ico-file-text) center / 13px 13px no-repeat;
+  background-color: var(--plx-ink-3);
+}
+.search-result-file-title:hover {
+  background-color: var(--plx-lcd-2);
+}
+
+
+/* --------------------------------------------------------------------------
+   8. STYLE SETTINGS TOGGLES
+   -------------------------------------------------------------------------- */
+body.plx-no-tree-lines .tree-item-children > .tree-item::before,
+body.plx-no-tree-lines .tree-item-children > .tree-item::after {
+  content: none;
+}
+body.plx-no-file-icons .nav-files-container .nav-file-title::before,
+body.plx-no-file-icons .nav-files-container .nav-folder-title::before,
+body.plx-no-file-icons .recent-files-title::before,
+body.plx-no-file-icons .search-result-file-title > .tree-item-inner::before {
+  content: none;
+}

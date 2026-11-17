@@ -1,0 +1,1589 @@
+/* ==========================================================================
+   40 · CALLOUTS
+   Instrument plates, typeset formal objects, lab-paper elements, wiki parts.
+   Uses only --plx-* tokens (00-tokens.css) and Obsidian variables.
+
+   ── HOW TO WRITE THEM ────────────────────────────────────────────────────
+   Standard plates   > [!note] / info / tip / success / question / warning /
+                     failure / danger / bug / example / quote / abstract / todo
+                     (+ Obsidian's aliases). Title = condensed-caps label.
+
+   Formal objects    > [!theorem] Cauchy–Schwarz      →  [THEOREM 03] Cauchy–Schwarz
+   (amsthm family)   > [!thm]                         →  [THEOREM 03]
+                     > [!theorem|anon]                →  [THEOREM 03]
+                     > [!theorem|star] Zorn           →  [THEOREM] Zorn   (theorem*)
+     CONVENTION: CSS cannot tell Obsidian's default title ("Theorem") from a
+     typed one, so: the LONG type name shows the title text as the object's
+     name; the SHORT alias (thm, lem, prop, cor, defn, def, rmk, rem, obs, conj,
+     clm, ax, post, exr, prob, nota, pf, sol, hyp, asm) never shows title text. Use the alias (or |anon) for
+     an unnamed object, the long name when you give it a name.
+
+   Numbering         One shared counter for the whole theorem family (like
+                     amsthm [theorem]); separate counters for hypothesis H.01,
+                     assumption A.01, equation (01), figure, table, algorithm.
+                     Scope = one note (.markdown-preview-view / LP scroller).
+                     Embeds and hover previews number on their own.
+     LIMITS: Reading view is exact. Live Preview (CodeMirror) only keeps the
+     lines near the viewport in the DOM, so in long notes LP numbers count
+     from the first rendered callout and can be low; in LP the proven-object
+     tab is drawn tinted, not filled, to say "provisional". Reading view /
+     PDF are authoritative.
+
+   Metadata flags    > [!type|flag flag]  (space- or pipe-separated)
+                     star | nonum   unnumbered, does not advance the counter
+                     anon           hide the title text (label only)
+                     upright        upright body for a plain-style theorem
+                     italic         italic body for a definition-style one
+                     titled         show the title on an equation (as a tag)
+                     left | nofloat infobox: float left / don't float
+                     wide           table/infobox: full line width
+
+   Wiki hatnotes     > [!seealso]  / [!main] / [!further] : text goes in the
+                     BODY (title is replaced by "See also:"), or a title-only
+                     callout `> [!seealso] [[Page]]` uses the title as text.
+   ========================================================================== */
+
+
+/* --------------------------------------------------------------------------
+   0 · COUNTER SCOPE — one numbering per rendered note
+   -------------------------------------------------------------------------- */
+.markdown-preview-view,
+.markdown-source-view.mod-cm6 .cm-scroller {
+  counter-reset: plx-thm plx-hyp plx-asm plx-eq plx-fig plx-tab plx-alg;
+}
+
+/* Note pane is a size container so the infobox can stop floating in narrow
+   panes. (container-type also scopes counters to the pane — harmless.) */
+.workspace-leaf-content[data-type="markdown"] > .view-content {
+  container: plx-note / inline-size;
+}
+
+
+/* --------------------------------------------------------------------------
+   1 · BASE PLATE — every callout starts as an instrument plate
+   -------------------------------------------------------------------------- */
+.callout {
+  /* per-type hooks (overridden below) */
+  --plx-co: var(--plx-steel);
+  --plx-co-wash: var(--plx-steel-wash);
+  --plx-co-line: solid;
+  --plx-co-edge: color-mix(in srgb, var(--plx-co) 38%, var(--plx-rule));
+  --plx-co-ink: color-mix(in srgb, var(--plx-co) 78%, var(--plx-ink));
+  /* numbering hooks: no counter unless a type sets one */
+  --plx-ctr: none;
+  --plx-num: "";
+  --plx-label: "";
+  counter-increment: var(--plx-ctr);
+
+  position: relative;
+  margin: 1em 0;
+  padding: 0;
+  overflow: hidden;
+  background: var(--plx-plate);
+  border: 1px var(--plx-co-line) var(--plx-co-edge);
+  border-radius: var(--plx-r);
+  mix-blend-mode: normal;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--plx-co) 10%, transparent);
+}
+
+.callout > .callout-title {
+  align-items: center;
+  gap: 7px;
+  min-height: 24px;
+  padding: 3px 10px 3px 4px;
+  background:
+    linear-gradient(var(--plx-co-wash), var(--plx-co-wash)),
+    var(--plx-paper-2);
+  box-shadow: inset 0 1px 0 var(--plx-hl);
+  border-bottom: 1px solid color-mix(in srgb, var(--plx-co) 22%, var(--plx-rule-soft));
+  color: var(--plx-co-ink);
+  font-family: var(--plx-ui-cond);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: var(--plx-track);
+  text-transform: uppercase;
+  /* Univers Condensed's kern table collapses word spaces after caps (S␣, E␣
+     → 1px). Kerning off keeps "IS THE" from reading "ISTHE". */
+  font-kerning: none;
+}
+.callout.is-collapsed > .callout-title { border-bottom-color: transparent; }
+.callout > .callout-title .callout-title-inner {
+  font-weight: inherit;
+  color: inherit;
+}
+/* math, code and links inside titles keep their own case/tracking */
+.callout-title :is(mjx-container, .math, code, .katex) {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Icon = a small filled key chip in the type colour, chamfered bottom-right */
+.callout > .callout-title > .callout-icon {
+  flex: 0 0 auto;
+  width: 19px;
+  height: 17px;
+  align-items: center;
+  justify-content: center;
+  background: var(--plx-co);
+  color: var(--plx-paper);
+  clip-path: var(--plx-clip-br);
+}
+.callout > .callout-title > .callout-icon::after { content: none; }
+.callout > .callout-title > .callout-icon .svg-icon {
+  width: 11px;
+  height: 11px;
+  color: var(--plx-paper);
+  stroke-width: 2.2px;
+}
+
+/* Fold chevron ▸ */
+.callout-title > .callout-fold {
+  margin-left: auto;
+  padding: 0 0 0 4px;
+  color: var(--plx-ink-3);
+}
+.callout-title > .callout-fold .svg-icon { width: 12px; height: 12px; stroke-width: 2px; }
+.callout.is-collapsible > .callout-title { cursor: pointer; }
+.callout.is-collapsible > .callout-title:hover .callout-fold { color: var(--plx-teal); }
+
+.callout > .callout-content {
+  padding: 7px 12px 9px;
+  background: transparent;
+  overflow-x: auto;
+  overflow-y: hidden; /* x:auto alone also spawns a y scrollbar on glyph overhang */
+}
+.callout > .callout-content > :first-child { margin-top: 0; }
+.callout > .callout-content > :last-child { margin-bottom: 0; }
+
+/* Nested callouts and callouts inside embeds sit tighter */
+.callout .callout { margin: 0.6em 0; }
+.callout .callout:last-child { margin-bottom: 0.2em; }
+.markdown-embed .callout { margin: 0.6em 0; }
+
+/* Live Preview wrapper: no extra frame around the plate */
+.markdown-source-view.mod-cm6 .cm-embed-block.cm-callout {
+  background: transparent;
+  box-shadow: none;
+}
+.markdown-source-view.mod-cm6 .cm-embed-block.cm-callout > .callout { margin: 0.35em 0; }
+
+
+/* Dark-mode tunings for filled shapes (slate is near-black at night) */
+body { --plx-captab-bg: var(--plx-slate-2); --plx-captab-ink: var(--plx-slate-ink); }
+.theme-dark { --plx-captab-bg: var(--plx-ink-2); --plx-captab-ink: var(--plx-paper); }
+
+/* --------------------------------------------------------------------------
+   2 · COPY BUTTONS (callout-copy-buttons plugin) — tiny Casio keys
+   The plugin uses !important on background/box-shadow; we must match it.
+   -------------------------------------------------------------------------- */
+.callout > .callout-action-buttons {
+  top: 4px;
+  inset-inline-end: 6px;
+  gap: 3px;
+  z-index: 2;
+}
+.callout.is-collapsible > .callout-action-buttons { inset-inline-end: 26px; }
+.callout > .callout-action-buttons .callout-copy-button,
+.callout > .callout-action-buttons .edit-block-button {
+  width: 20px;
+  height: 16px;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  background: var(--plx-key-face) !important;
+  border: 1px solid var(--plx-rule);
+  border-radius: 2px;
+  box-shadow: var(--plx-raised) !important;
+  color: var(--plx-ink-2);
+  font-family: var(--plx-mono);
+  font-size: 8px;
+  opacity: 0;
+  transition: opacity 120ms;
+}
+.callout > .callout-action-buttons .callout-copy-button svg,
+.callout > .callout-action-buttons .edit-block-button svg {
+  width: 10px;
+  height: 10px;
+  stroke-width: 2px;
+}
+.callout:hover > .callout-action-buttons .callout-copy-button,
+.callout:hover > .callout-action-buttons .edit-block-button,
+.cm-callout:hover .callout > .callout-action-buttons .callout-copy-button { opacity: 0.9; }
+.callout > .callout-action-buttons .callout-copy-button:hover {
+  background: var(--plx-key-face) !important;
+  border-color: var(--plx-rule-strong);
+  color: var(--plx-ink);
+  opacity: 1;
+}
+.callout > .callout-action-buttons .callout-copy-button:active {
+  background: var(--plx-key-face-down) !important;
+  box-shadow: var(--plx-pressed) !important;
+}
+.callout > .callout-action-buttons .callout-copy-button.just-copied {
+  color: var(--plx-green);
+  border-color: var(--plx-green);
+}
+/* M / P format letters: mono, tucked bottom-right like a key legend */
+.callout > .callout-action-buttons .callout-copy-button::after {
+  font-family: var(--plx-mono);
+  font-weight: 700;
+  font-size: 7px;
+  top: auto;
+  bottom: -1px;
+  left: auto;
+  right: 1px;
+  transform: none;
+}
+
+
+/* Live Preview: Obsidian's own "edit block" button sits in .embed-actions at
+   the top-right of the .cm-callout. Make it the rightmost key of the row and
+   shift the copy keys left of it. */
+.markdown-source-view.mod-cm6 .cm-callout > .embed-actions {
+  top: 6px;
+  inset-inline-end: 6px;
+  z-index: 3;
+}
+.markdown-source-view.mod-cm6 .cm-callout > .embed-actions .edit-block-button {
+  width: 20px;
+  height: 16px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--plx-key-face);
+  border: 1px solid var(--plx-rule);
+  border-radius: 2px;
+  box-shadow: var(--plx-raised);
+  color: var(--plx-ink-2);
+}
+.markdown-source-view.mod-cm6 .cm-callout > .embed-actions .edit-block-button svg { width: 10px; height: 10px; stroke-width: 2px; }
+.markdown-source-view.mod-cm6 .cm-callout > .embed-actions .edit-block-button:active {
+  background: var(--plx-key-face-down);
+  box-shadow: var(--plx-pressed);
+}
+.markdown-source-view.mod-cm6 .cm-callout > .markdown-rendered > .callout > .callout-action-buttons {
+  top: 5px;
+  inset-inline-end: 29px;
+}
+.markdown-source-view.mod-cm6 .cm-callout > .markdown-rendered > .callout.is-collapsible > .callout-action-buttons {
+  inset-inline-end: 49px;
+}
+
+/* --------------------------------------------------------------------------
+   3 · STANDARD TYPES — colour = meaning, line = status
+   -------------------------------------------------------------------------- */
+/* note — neutral reference */
+.callout[data-callout="note"] { --plx-co: var(--plx-steel); --plx-co-wash: var(--plx-steel-wash); }
+
+/* info — information, blue */
+.callout:is([data-callout="info"], [data-callout="information"]) {
+  --plx-co: var(--plx-blue); --plx-co-wash: var(--plx-blue-wash);
+  --callout-icon: lucide-info;
+}
+
+/* tip / hint / important / idea — teal, the house voice */
+.callout:is([data-callout="tip"], [data-callout="hint"], [data-callout="important"], [data-callout="idea"]) {
+  --plx-co: var(--plx-teal); --plx-co-wash: var(--plx-teal-wash);
+}
+.callout[data-callout="idea"] { --callout-icon: lucide-lightbulb; }
+
+/* success — green */
+.callout:is([data-callout="success"], [data-callout="check"], [data-callout="done"]) {
+  --plx-co: var(--plx-green); --plx-co-wash: var(--plx-green-wash);
+}
+
+/* question — open, so dashed */
+.callout:is([data-callout="question"], [data-callout="help"], [data-callout="faq"]) {
+  --plx-co: var(--plx-blue); --plx-co-wash: var(--plx-blue-wash);
+  --plx-co-line: dashed;
+}
+
+/* warning — amber caution */
+.callout:is([data-callout="warning"], [data-callout="caution"], [data-callout="attention"]) {
+  --plx-co: var(--plx-amber); --plx-co-wash: var(--plx-amber-wash);
+}
+
+/* failure — red, negative result: hatched band */
+.callout:is([data-callout="failure"], [data-callout="fail"], [data-callout="missing"]) {
+  --plx-co: var(--plx-red); --plx-co-wash: var(--plx-red-wash);
+}
+.callout:is([data-callout="failure"], [data-callout="fail"], [data-callout="missing"]) > .callout-title {
+  background: var(--plx-hatch), linear-gradient(var(--plx-red-wash), var(--plx-red-wash)), var(--plx-paper-2);
+}
+
+/* danger / error — destructive: the only filled red band */
+.callout:is([data-callout="danger"], [data-callout="error"]) {
+  --plx-co: var(--plx-red); --plx-co-wash: var(--plx-red-wash);
+}
+.callout:is([data-callout="danger"], [data-callout="error"]) > .callout-title {
+  background: var(--plx-red);
+  color: var(--plx-paper);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--plx-paper) 25%, transparent);
+  border-bottom-color: var(--plx-red);
+}
+.callout:is([data-callout="danger"], [data-callout="error"]) > .callout-title > .callout-icon {
+  background: var(--plx-paper);
+}
+.callout:is([data-callout="danger"], [data-callout="error"]) > .callout-title > .callout-icon .svg-icon { color: var(--plx-red); }
+.callout:is([data-callout="danger"], [data-callout="error"]) > .callout-title > .callout-fold { color: var(--plx-paper); }
+.theme-dark .callout:is([data-callout="danger"], [data-callout="error"]) > .callout-title {
+  background: color-mix(in srgb, var(--plx-red) 42%, var(--plx-paper));
+  color: var(--plx-ink);
+  border-bottom-color: color-mix(in srgb, var(--plx-red) 60%, var(--plx-paper));
+}
+.theme-dark .callout:is([data-callout="danger"], [data-callout="error"]) > .callout-title > .callout-icon { background: var(--plx-red); }
+.theme-dark .callout:is([data-callout="danger"], [data-callout="error"]) > .callout-title > .callout-icon .svg-icon { color: var(--plx-paper); }
+
+/* bug — red, title in mono like a log line */
+.callout[data-callout="bug"] { --plx-co: var(--plx-red); --plx-co-wash: var(--plx-red-wash); }
+.callout[data-callout="bug"] > .callout-title {
+  font-family: var(--plx-mono);
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+}
+
+/* example — violet (a worked formal instance) */
+.callout[data-callout="example"] { --plx-co: var(--plx-violet); --plx-co-wash: var(--plx-violet-wash); }
+
+/* todo — open task: amber, dashed, hollow-square icon */
+.callout[data-callout="todo"] {
+  --plx-co: var(--plx-amber); --plx-co-wash: var(--plx-amber-wash);
+  --plx-co-line: dashed;
+  --callout-icon: lucide-square;
+}
+
+/* time-period (used in the vault's timelines) — steel plate */
+.callout[data-callout="time-period"] { --callout-icon: lucide-calendar-range; }
+
+
+/* ---------- quote / cite ---------- */
+.callout[data-callout="quote"] {
+  --callout-icon: lucide-quote;
+  background: transparent;
+  border: 0;
+  border-left: 2px solid var(--plx-rule-strong);
+  border-radius: 0;
+  box-shadow: none;
+  margin: 1.2em 0 1.2em 0.4em;
+}
+.callout[data-callout="quote"] > .callout-title {
+  background: none;
+  box-shadow: none;
+  border: 0;
+  min-height: 0;
+  padding: 0 0 2px 14px;
+  color: var(--plx-ink-3);
+  font-size: var(--plx-fs-label);
+}
+.callout[data-callout="quote"] > .callout-title > .callout-icon { display: none; }
+.callout[data-callout="quote"] > .callout-content {
+  padding: 0 14px 2px;
+  font-family: var(--plx-quote-font);
+  font-style: var(--plx-quote-style);
+  font-size: 1.14em;
+  line-height: 1.5;
+  color: var(--plx-ink-2);
+}
+.callout[data-callout="quote"] > .callout-content em { font-style: normal; }
+
+/* cite — one bibliographic entry: dotted (= reference), hanging indent */
+.callout[data-callout="cite"] {
+  --callout-icon: lucide-book-marked;
+  background: transparent;
+  border: 0;
+  border-top: 1px dotted var(--plx-rule-strong);
+  border-bottom: 1px dotted var(--plx-rule-strong);
+  border-radius: 0;
+  box-shadow: none;
+}
+.callout[data-callout="cite"] > .callout-title {
+  background: none; box-shadow: none; border: 0; min-height: 0;
+  padding: 4px 0 0; color: var(--plx-ink-3); font-size: var(--plx-fs-label);
+}
+.callout[data-callout="cite"] > .callout-title > .callout-icon { background: var(--plx-ink-3); }
+.callout[data-callout="cite"] > .callout-content {
+  padding: 2px 0 6px 2em;
+  text-indent: -2em;
+  font-family: var(--plx-text-serif);
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+.callout[data-callout="cite"] > .callout-content code { text-indent: 0; }
+
+
+/* ---------- abstract — a journal abstract ---------- */
+.callout[data-callout="abstract"] {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--plx-rule-soft);
+  border-bottom: 1px solid var(--plx-rule-soft);
+  border-radius: 0;
+  box-shadow: none;
+  max-width: 88%;
+  margin: 1.6em auto;
+}
+.callout .callout[data-callout="abstract"] { max-width: none; }
+.callout[data-callout="abstract"] > .callout-title {
+  justify-content: center;
+  background: none;
+  box-shadow: none;
+  border: 0;
+  padding: 8px 0 2px;
+  color: var(--plx-ink);
+  font-family: var(--plx-serif);
+  font-size: 1.02em;
+  font-weight: 600;
+  text-transform: none;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.09em;
+}
+.callout[data-callout="abstract"] > .callout-title > .callout-icon { display: none; }
+.callout[data-callout="abstract"] > .callout-title > .callout-fold { margin-left: 4px; }
+.callout[data-callout="abstract"] > .callout-content {
+  padding: 2px 4px 10px;
+  font-size: 0.9em;
+  line-height: 1.55;
+  text-align: justify;
+  hyphens: auto;
+  color: var(--plx-ink-2);
+}
+
+/* ---------- summary / tldr — key-points bar, ruled top and bottom ---------- */
+.callout:is([data-callout="summary"], [data-callout="tldr"]) {
+  --plx-co: var(--plx-teal); --plx-co-wash: transparent;
+  background: transparent;
+  border: 0;
+  border-top: 2px solid var(--plx-ink-2);
+  border-bottom: 1px solid var(--plx-ink-2);
+  border-radius: 0;
+  box-shadow: none;
+}
+.callout:is([data-callout="summary"], [data-callout="tldr"]) > .callout-title {
+  background: none; box-shadow: none;
+  border-bottom: 1px solid var(--plx-rule-soft);
+  padding: 4px 0;
+  color: var(--plx-ink-2);
+}
+.callout:is([data-callout="summary"], [data-callout="tldr"]) > .callout-content { padding: 6px 2px 8px; }
+
+
+/* --------------------------------------------------------------------------
+   4 · FORMAL OBJECTS — the amsthm family (typeset, not a coloured box)
+   Heading = mono label tab (filled = proven ■, tint = defined, hollow = open □)
+   + the object's name in Garamond. Double 3px rule = closed formal object.
+   -------------------------------------------------------------------------- */
+
+/* 4a. labels + counters */
+.callout:is([data-callout="theorem"], [data-callout="thm"])          { --plx-label: "Theorem"; }
+.callout:is([data-callout="lemma"], [data-callout="lem"])            { --plx-label: "Lemma"; }
+.callout:is([data-callout="proposition"], [data-callout="prop"])     { --plx-label: "Proposition"; }
+.callout:is([data-callout="corollary"], [data-callout="cor"])        { --plx-label: "Corollary"; }
+.callout:is([data-callout="claim"], [data-callout="clm"])                                       { --plx-label: "Claim"; }
+.callout:is([data-callout="conjecture"], [data-callout="conj"])      { --plx-label: "Conjecture"; }
+.callout:is([data-callout="definition"], [data-callout="defn"], [data-callout="def"]) { --plx-label: "Definition"; }
+.callout:is([data-callout="axiom"], [data-callout="ax"])                                       { --plx-label: "Axiom"; }
+.callout:is([data-callout="postulate"], [data-callout="post"])                                   { --plx-label: "Postulate"; }
+.callout:is([data-callout="exercise"], [data-callout="exr"])                                    { --plx-label: "Exercise"; }
+.callout:is([data-callout="problem"], [data-callout="prob"])                                     { --plx-label: "Problem"; }
+.callout:is([data-callout="remark"], [data-callout="rmk"], [data-callout="rem"])           { --plx-label: "Remark"; }
+.callout:is([data-callout="observation"], [data-callout="obs"])      { --plx-label: "Observation"; }
+.callout:is([data-callout="notation"], [data-callout="nota"])                                    { --plx-label: "Notation"; }
+.callout:is([data-callout="hypothesis"], [data-callout="hyp"])       { --plx-label: "Hypothesis"; }
+.callout:is([data-callout="assumption"], [data-callout="asm"])       { --plx-label: "Assumption"; }
+
+/* shared theorem counter: 01, 02, 03 … */
+.callout:is(
+  [data-callout="theorem"], [data-callout="thm"], [data-callout="lemma"], [data-callout="lem"],
+  [data-callout="proposition"], [data-callout="prop"], [data-callout="corollary"], [data-callout="cor"],
+  [data-callout="claim"], [data-callout="clm"], [data-callout="conjecture"], [data-callout="conj"],
+  [data-callout="definition"], [data-callout="defn"], [data-callout="def"],
+  [data-callout="axiom"], [data-callout="ax"], [data-callout="postulate"], [data-callout="post"], [data-callout="exercise"], [data-callout="exr"], [data-callout="problem"], [data-callout="prob"],
+  [data-callout="remark"], [data-callout="rmk"], [data-callout="rem"], [data-callout="observation"], [data-callout="obs"],
+  [data-callout="notation"], [data-callout="nota"]) {
+  --plx-ctr: plx-thm;
+  --plx-num: "\a0" counter(plx-thm, decimal-leading-zero);
+}
+/* hypotheses H.01 and assumptions A.01 — the Drive index voice */
+.callout:is([data-callout="hypothesis"], [data-callout="hyp"]) {
+  --plx-ctr: plx-hyp;
+  --plx-num: "\a0 H." counter(plx-hyp, decimal-leading-zero);
+}
+.callout:is([data-callout="assumption"], [data-callout="asm"]) {
+  --plx-ctr: plx-asm;
+  --plx-num: "\a0 A." counter(plx-asm, decimal-leading-zero);
+}
+
+/* 4b. the typeset frame (theorem family + hypothesis + assumption) */
+.callout:is(
+  [data-callout="theorem"], [data-callout="thm"], [data-callout="lemma"], [data-callout="lem"],
+  [data-callout="proposition"], [data-callout="prop"], [data-callout="corollary"], [data-callout="cor"],
+  [data-callout="claim"], [data-callout="clm"], [data-callout="conjecture"], [data-callout="conj"],
+  [data-callout="definition"], [data-callout="defn"], [data-callout="def"],
+  [data-callout="axiom"], [data-callout="ax"], [data-callout="postulate"], [data-callout="post"], [data-callout="exercise"], [data-callout="exr"], [data-callout="problem"], [data-callout="prob"],
+  [data-callout="remark"], [data-callout="rmk"], [data-callout="rem"], [data-callout="observation"], [data-callout="obs"],
+  [data-callout="notation"], [data-callout="nota"], [data-callout="hypothesis"], [data-callout="hyp"],
+  [data-callout="assumption"], [data-callout="asm"]) {
+  --callout-icon: none;
+  --plx-co: var(--plx-violet);
+  --plx-co-wash: var(--plx-violet-wash);
+  --plx-rule-formal: color-mix(in srgb, var(--plx-violet) 62%, var(--plx-rule));
+  --plx-tab-bg: color-mix(in srgb, var(--plx-violet) 15%, var(--plx-paper));
+  --plx-tab-ink: color-mix(in srgb, var(--plx-violet) 82%, var(--plx-ink));
+  background: transparent;
+  border: 0;
+  border-left: 3px double var(--plx-rule-formal);
+  border-radius: 0;
+  box-shadow: none;
+  margin: 1.25em 0;
+  overflow: visible;
+}
+.callout:is(
+  [data-callout="theorem"], [data-callout="thm"], [data-callout="lemma"], [data-callout="lem"],
+  [data-callout="proposition"], [data-callout="prop"], [data-callout="corollary"], [data-callout="cor"],
+  [data-callout="claim"], [data-callout="clm"], [data-callout="conjecture"], [data-callout="conj"],
+  [data-callout="definition"], [data-callout="defn"], [data-callout="def"],
+  [data-callout="axiom"], [data-callout="ax"], [data-callout="postulate"], [data-callout="post"], [data-callout="exercise"], [data-callout="exr"], [data-callout="problem"], [data-callout="prob"],
+  [data-callout="remark"], [data-callout="rmk"], [data-callout="rem"], [data-callout="observation"], [data-callout="obs"],
+  [data-callout="notation"], [data-callout="nota"], [data-callout="hypothesis"], [data-callout="hyp"],
+  [data-callout="assumption"], [data-callout="asm"]) > .callout-title {
+  display: block;
+  min-height: 0;
+  padding: 1px 70px 0 12px; /* right room for copy keys */
+  background: none;
+  box-shadow: none;
+  border: 0;
+  color: var(--plx-ink);
+  font-family: var(--plx-serif);
+  font-size: 1.12em;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.callout:is(
+  [data-callout="theorem"], [data-callout="thm"], [data-callout="lemma"], [data-callout="lem"],
+  [data-callout="proposition"], [data-callout="prop"], [data-callout="corollary"], [data-callout="cor"],
+  [data-callout="claim"], [data-callout="clm"], [data-callout="conjecture"], [data-callout="conj"],
+  [data-callout="definition"], [data-callout="defn"], [data-callout="def"],
+  [data-callout="axiom"], [data-callout="ax"], [data-callout="postulate"], [data-callout="post"], [data-callout="exercise"], [data-callout="exr"], [data-callout="problem"], [data-callout="prob"],
+  [data-callout="remark"], [data-callout="rmk"], [data-callout="rem"], [data-callout="observation"], [data-callout="obs"],
+  [data-callout="notation"], [data-callout="nota"], [data-callout="hypothesis"], [data-callout="hyp"],
+  [data-callout="assumption"], [data-callout="asm"]) > .callout-title > .callout-icon { display: none; }
+
+/* the mono label tab: "THEOREM 03" */
+.callout:is(
+  [data-callout="theorem"], [data-callout="thm"], [data-callout="lemma"], [data-callout="lem"],
+  [data-callout="proposition"], [data-callout="prop"], [data-callout="corollary"], [data-callout="cor"],
+  [data-callout="claim"], [data-callout="clm"], [data-callout="conjecture"], [data-callout="conj"],
+  [data-callout="definition"], [data-callout="defn"], [data-callout="def"],
+  [data-callout="axiom"], [data-callout="ax"], [data-callout="postulate"], [data-callout="post"], [data-callout="exercise"], [data-callout="exr"], [data-callout="problem"], [data-callout="prob"],
+  [data-callout="remark"], [data-callout="rmk"], [data-callout="rem"], [data-callout="observation"], [data-callout="obs"],
+  [data-callout="notation"], [data-callout="nota"], [data-callout="hypothesis"], [data-callout="hyp"],
+  [data-callout="assumption"], [data-callout="asm"]) > .callout-title::before {
+  content: var(--plx-label) var(--plx-num);
+  display: inline-block;
+  margin: 0 9px 0 0;
+  padding: 4px 10px 3px 7px;
+  vertical-align: 0.14em;
+  background: var(--plx-tab-bg);
+  color: var(--plx-tab-ink);
+  font-family: var(--plx-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  font-style: normal;
+  line-height: 1.2;
+  letter-spacing: var(--plx-track);
+  text-transform: uppercase;
+  clip-path: var(--plx-clip-br);
+}
+.callout:is(
+  [data-callout="theorem"], [data-callout="thm"], [data-callout="lemma"], [data-callout="lem"],
+  [data-callout="proposition"], [data-callout="prop"], [data-callout="corollary"], [data-callout="cor"],
+  [data-callout="claim"], [data-callout="clm"], [data-callout="conjecture"], [data-callout="conj"],
+  [data-callout="definition"], [data-callout="defn"], [data-callout="def"],
+  [data-callout="axiom"], [data-callout="ax"], [data-callout="postulate"], [data-callout="post"], [data-callout="exercise"], [data-callout="exr"], [data-callout="problem"], [data-callout="prob"],
+  [data-callout="remark"], [data-callout="rmk"], [data-callout="rem"], [data-callout="observation"], [data-callout="obs"],
+  [data-callout="notation"], [data-callout="nota"], [data-callout="hypothesis"], [data-callout="hyp"],
+  [data-callout="assumption"], [data-callout="asm"]) > .callout-title > .callout-title-inner { display: inline; }
+.callout:is(
+  [data-callout="theorem"], [data-callout="thm"], [data-callout="lemma"], [data-callout="lem"],
+  [data-callout="proposition"], [data-callout="prop"], [data-callout="corollary"], [data-callout="cor"],
+  [data-callout="claim"], [data-callout="clm"], [data-callout="conjecture"], [data-callout="conj"],
+  [data-callout="definition"], [data-callout="defn"], [data-callout="def"],
+  [data-callout="axiom"], [data-callout="ax"], [data-callout="postulate"], [data-callout="post"], [data-callout="exercise"], [data-callout="exr"], [data-callout="problem"], [data-callout="prob"],
+  [data-callout="remark"], [data-callout="rmk"], [data-callout="rem"], [data-callout="observation"], [data-callout="obs"],
+  [data-callout="notation"], [data-callout="nota"], [data-callout="hypothesis"], [data-callout="hyp"],
+  [data-callout="assumption"], [data-callout="asm"]) > .callout-title > .callout-fold {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: 6px;
+  padding: 0;
+}
+.callout:is(
+  [data-callout="theorem"], [data-callout="thm"], [data-callout="lemma"], [data-callout="lem"],
+  [data-callout="proposition"], [data-callout="prop"], [data-callout="corollary"], [data-callout="cor"],
+  [data-callout="claim"], [data-callout="clm"], [data-callout="conjecture"], [data-callout="conj"],
+  [data-callout="definition"], [data-callout="defn"], [data-callout="def"],
+  [data-callout="axiom"], [data-callout="ax"], [data-callout="postulate"], [data-callout="post"], [data-callout="exercise"], [data-callout="exr"], [data-callout="problem"], [data-callout="prob"],
+  [data-callout="remark"], [data-callout="rmk"], [data-callout="rem"], [data-callout="observation"], [data-callout="obs"],
+  [data-callout="notation"], [data-callout="nota"], [data-callout="hypothesis"], [data-callout="hyp"],
+  [data-callout="assumption"], [data-callout="asm"]) > .callout-content {
+  padding: 4px 0 2px 12px;
+  overflow: visible;
+}
+.callout:is(
+  [data-callout="theorem"], [data-callout="thm"], [data-callout="lemma"], [data-callout="lem"],
+  [data-callout="proposition"], [data-callout="prop"], [data-callout="corollary"], [data-callout="cor"],
+  [data-callout="claim"], [data-callout="clm"], [data-callout="conjecture"], [data-callout="conj"],
+  [data-callout="definition"], [data-callout="defn"], [data-callout="def"],
+  [data-callout="axiom"], [data-callout="ax"], [data-callout="postulate"], [data-callout="post"], [data-callout="exercise"], [data-callout="exr"], [data-callout="problem"], [data-callout="prob"],
+  [data-callout="remark"], [data-callout="rmk"], [data-callout="rem"], [data-callout="observation"], [data-callout="obs"],
+  [data-callout="notation"], [data-callout="nota"], [data-callout="hypothesis"], [data-callout="hyp"],
+  [data-callout="assumption"], [data-callout="asm"]) > .callout-action-buttons { top: 2px; inset-inline-end: 0; }
+
+/* short aliases never show title text (see convention at top) */
+.callout:is([data-callout="thm"], [data-callout="lem"], [data-callout="prop"], [data-callout="cor"],
+  [data-callout="conj"], [data-callout="defn"], [data-callout="def"], [data-callout="rmk"],
+  [data-callout="obs"], [data-callout="hyp"], [data-callout="asm"], [data-callout="rem"], [data-callout="ax"],
+  [data-callout="post"], [data-callout="exr"], [data-callout="prob"], [data-callout="nota"], [data-callout="clm"]) > .callout-title > .callout-title-inner { display: none; }
+
+/* 4c. plain style (amsthm): italic body — emphasis flips back upright */
+.callout:is([data-callout="theorem"], [data-callout="thm"], [data-callout="lemma"], [data-callout="lem"],
+  [data-callout="proposition"], [data-callout="prop"], [data-callout="corollary"], [data-callout="cor"],
+  [data-callout="claim"], [data-callout="clm"], [data-callout="conjecture"], [data-callout="conj"], [data-callout="hypothesis"], [data-callout="hyp"]) > .callout-content,
+.callout[data-callout-metadata*="italic"] > .callout-content {
+  font-style: italic;
+}
+.callout:is([data-callout="theorem"], [data-callout="thm"], [data-callout="lemma"], [data-callout="lem"],
+  [data-callout="proposition"], [data-callout="prop"], [data-callout="corollary"], [data-callout="cor"],
+  [data-callout="claim"], [data-callout="clm"], [data-callout="conjecture"], [data-callout="conj"], [data-callout="hypothesis"], [data-callout="hyp"]) > .callout-content :is(em, i),
+.callout[data-callout-metadata*="italic"] > .callout-content :is(em, i) { font-style: normal; }
+.callout.callout[data-callout-metadata*="upright"] > .callout-content { font-style: normal; }
+.callout.callout[data-callout-metadata*="upright"] > .callout-content :is(em, i) { font-style: italic; }
+
+/* 4d. tab weights — semiotic: filled ■ proven, tinted = stated, hollow □ open */
+.callout:is([data-callout="theorem"], [data-callout="thm"], [data-callout="lemma"], [data-callout="lem"],
+  [data-callout="proposition"], [data-callout="prop"], [data-callout="corollary"], [data-callout="cor"]) {
+  --plx-tab-bg: var(--plx-violet);
+  --plx-tab-ink: var(--plx-paper);
+}
+/* definition-style: tinted tab + the faintest wash */
+.callout:is([data-callout="definition"], [data-callout="defn"], [data-callout="def"],
+  [data-callout="axiom"], [data-callout="ax"], [data-callout="postulate"], [data-callout="post"]) {
+  background: linear-gradient(90deg, var(--plx-violet-wash), transparent 70%);
+}
+/* conjecture: open claim — dashed rule, hollow tab */
+.callout:is([data-callout="conjecture"], [data-callout="conj"]) {
+  border-left: 2px dashed var(--plx-rule-formal);
+}
+.callout:is([data-callout="conjecture"], [data-callout="conj"],
+  [data-callout="exercise"], [data-callout="exr"], [data-callout="problem"], [data-callout="prob"]) > .callout-title::before {
+  content: "\25A1\2002" var(--plx-label) var(--plx-num);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--plx-rule-formal);
+  clip-path: none;
+  border-radius: 1px;
+}
+/* exercise / problem: not a closed object — single solid rule */
+.callout:is([data-callout="exercise"], [data-callout="exr"], [data-callout="problem"], [data-callout="prob"]) {
+  border-left: 1px solid var(--plx-rule-formal);
+}
+/* remark style: no tab fill, italic serif heading, upright body, hairline rule */
+.callout:is([data-callout="remark"], [data-callout="rmk"], [data-callout="rem"], [data-callout="observation"],
+  [data-callout="obs"], [data-callout="notation"], [data-callout="nota"]) {
+  border-left: 1px solid var(--plx-rule);
+}
+.callout:is([data-callout="remark"], [data-callout="rmk"], [data-callout="rem"], [data-callout="observation"],
+  [data-callout="obs"], [data-callout="notation"], [data-callout="nota"]) > .callout-title {
+  font-weight: 400;
+  font-style: italic;
+  color: var(--plx-ink-2);
+}
+.callout:is([data-callout="remark"], [data-callout="rmk"], [data-callout="rem"], [data-callout="observation"],
+  [data-callout="obs"], [data-callout="notation"], [data-callout="nota"]) > .callout-title::before {
+  background: transparent;
+  color: var(--plx-ink-3);
+  padding-left: 0;
+  clip-path: none;
+}
+
+/* hypothesis: provisional — amber, dashed */
+.callout:is([data-callout="hypothesis"], [data-callout="hyp"]) {
+  --plx-rule-formal: color-mix(in srgb, var(--plx-amber) 70%, var(--plx-rule));
+  --plx-tab-bg: color-mix(in srgb, var(--plx-amber) 16%, var(--plx-paper));
+  --plx-tab-ink: color-mix(in srgb, var(--plx-amber) 80%, var(--plx-ink));
+  border-left: 2px dashed var(--plx-rule-formal);
+}
+/* assumption: a stated premise — steel, solid */
+.callout:is([data-callout="assumption"], [data-callout="asm"]) {
+  --plx-rule-formal: color-mix(in srgb, var(--plx-steel) 60%, var(--plx-rule));
+  --plx-tab-bg: color-mix(in srgb, var(--plx-steel) 15%, var(--plx-paper));
+  --plx-tab-ink: color-mix(in srgb, var(--plx-steel) 80%, var(--plx-ink));
+  border-left: 2px solid var(--plx-rule-formal);
+}
+
+/* 4e. proof / solution — "Proof." italic, hairline rule, ends with ∎ */
+.callout:is([data-callout="proof"], [data-callout="pf"], [data-callout="solution"], [data-callout="sol"]) {
+  --callout-icon: none;
+  background: transparent;
+  border: 0;
+  border-left: 1px solid var(--plx-rule);
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0.6em 0 1.25em;
+  overflow: visible;
+}
+.callout:is([data-callout="proof"], [data-callout="pf"], [data-callout="solution"], [data-callout="sol"]) > .callout-title {
+  display: block;
+  min-height: 0;
+  padding: 0 70px 0 12px;
+  background: none;
+  box-shadow: none;
+  border: 0;
+  color: var(--plx-ink-2);
+  font-family: var(--plx-serif);
+  font-size: 1.1em;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.callout:is([data-callout="proof"], [data-callout="pf"], [data-callout="solution"], [data-callout="sol"]) > .callout-title > .callout-icon { display: none; }
+.callout:is([data-callout="proof"], [data-callout="pf"], [data-callout="solution"], [data-callout="sol"]) > .callout-title > .callout-title-inner { display: inline; }
+.callout:is([data-callout="proof"], [data-callout="pf"], [data-callout="solution"], [data-callout="sol"]) > .callout-title > .callout-fold {
+  display: inline-flex; vertical-align: middle; margin-left: 6px; padding: 0;
+}
+.callout[data-callout="pf"] > .callout-title > .callout-title-inner,
+.callout[data-callout="sol"] > .callout-title > .callout-title-inner { display: none; }
+.callout[data-callout="pf"] > .callout-title::before { content: "Proof."; }
+.callout[data-callout="sol"] > .callout-title::before { content: "Solution."; }
+.callout:is([data-callout="proof"], [data-callout="pf"], [data-callout="solution"], [data-callout="sol"]) > .callout-content {
+  padding: 2px 0 2px 12px;
+}
+.callout:is([data-callout="proof"], [data-callout="pf"], [data-callout="solution"], [data-callout="sol"]) > .callout-action-buttons { top: 0; inset-inline-end: 0; }
+/* ∎ — a drawn filled square (font-independent) at the bottom-right of the
+   content; the right padding keeps the last line from running under it. */
+.callout:is([data-callout="proof"], [data-callout="pf"], [data-callout="solution"], [data-callout="sol"]) > .callout-content {
+  position: relative;
+  padding-right: 1.6em;
+  overflow: visible;
+}
+.callout:is([data-callout="proof"], [data-callout="pf"], [data-callout="solution"], [data-callout="sol"]) > .callout-content::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0.62em;
+  width: 0.56em;
+  height: 0.56em;
+  background: var(--plx-ink-2);
+}
+.callout:is([data-callout="proof"], [data-callout="pf"], [data-callout="solution"], [data-callout="sol"]) > .callout-content :is(.math-block, mjx-container[display="true"]) {
+  margin: 0.5em 0 !important; /* beat 30-reading's display-math margin */
+}
+
+/* 4f. flags: star / nonum — unnumbered; anon — no title text */
+.callout:is([data-callout-metadata*="star"], [data-callout-metadata*="nonum"]) {
+  --plx-ctr: none;
+  --plx-num: "";
+}
+.callout[data-callout-metadata*="anon"] > .callout-title > .callout-title-inner { display: none; }
+
+/* 4g. Live Preview: CodeMirror virtualises lines, so numbers are provisional
+   there — the filled (proven) tab is drawn tinted. Reading view is authoritative. */
+.markdown-source-view.mod-cm6 .callout:is(
+  [data-callout="theorem"], [data-callout="thm"], [data-callout="lemma"], [data-callout="lem"],
+  [data-callout="proposition"], [data-callout="prop"], [data-callout="corollary"], [data-callout="cor"]) {
+  --plx-tab-bg: color-mix(in srgb, var(--plx-violet) 15%, var(--plx-paper));
+  --plx-tab-ink: color-mix(in srgb, var(--plx-violet) 82%, var(--plx-ink));
+}
+
+
+/* --------------------------------------------------------------------------
+   5 · LAB-PAPER ELEMENTS
+   -------------------------------------------------------------------------- */
+
+/* ---------- experiment / method / procedure / protocol ---------- */
+.callout:is([data-callout="experiment"], [data-callout="method"], [data-callout="procedure"], [data-callout="protocol"]) {
+  --plx-co: var(--plx-steel); --plx-co-wash: var(--plx-steel-wash);
+  --callout-icon: lucide-flask-conical;
+}
+.callout[data-callout="method"] { --callout-icon: lucide-list-ordered; }
+.callout:is([data-callout="experiment"], [data-callout="method"], [data-callout="procedure"], [data-callout="protocol"]) > .callout-content ol > li::marker {
+  font-family: var(--plx-mono);
+  font-size: 0.85em;
+  color: var(--plx-ink-3);
+}
+
+/* ---------- result / finding — settled: solid strong edge, ■ ---------- */
+.callout:is([data-callout="result"], [data-callout="finding"]) {
+  --plx-co: var(--plx-teal-deep); --plx-co-wash: var(--plx-teal-wash);
+  --plx-co-edge: var(--plx-rule-strong);
+  --callout-icon: lucide-square;
+}
+.callout:is([data-callout="result"], [data-callout="finding"]) > .callout-title > .callout-icon .svg-icon { fill: currentColor; }
+
+/* ---------- caveat — a margin-note caution ---------- */
+.callout[data-callout="caveat"] {
+  --plx-co: var(--plx-amber); --plx-co-wash: var(--plx-amber-wash);
+  --callout-icon: lucide-triangle-alert;
+  background: transparent;
+  border: 0;
+  border-left: 3px solid var(--plx-amber);
+  border-radius: 0;
+  box-shadow: none;
+  font-size: 0.92em;
+}
+.callout[data-callout="caveat"] > .callout-title {
+  background: none; box-shadow: none; border: 0; min-height: 0; padding: 2px 10px 0 8px;
+}
+.callout[data-callout="caveat"] > .callout-title > .callout-icon { display: none; }
+.callout[data-callout="caveat"] > .callout-content { padding: 1px 10px 3px 8px; font-style: italic; color: var(--plx-ink-2); }
+
+/* ---------- measurement / readout — the Casio LCD ---------- */
+.callout:is([data-callout="measurement"], [data-callout="readout"], [data-callout="reading"], [data-callout="lcd"]) {
+  --plx-co: var(--plx-slate-2); --plx-co-wash: transparent;
+  --callout-icon: lucide-gauge;
+  background: var(--plx-case);
+  border: 1px solid var(--plx-rule);
+  border-radius: var(--plx-r-key);
+  box-shadow: var(--plx-raised);
+  padding-bottom: 8px;
+}
+.callout:is([data-callout="measurement"], [data-callout="readout"], [data-callout="reading"], [data-callout="lcd"]) > .callout-title {
+  background: none;
+  box-shadow: none;
+  border: 0;
+  padding: 4px 12px 4px 8px;
+  color: var(--plx-ink-2);
+  font-size: var(--plx-fs-label);
+}
+.callout:is([data-callout="measurement"], [data-callout="readout"], [data-callout="reading"], [data-callout="lcd"]) > .callout-title > .callout-icon {
+  background: var(--plx-captab-bg);
+}
+/* (solar-cell strip removed — decorative, carried no meaning) */
+.callout:is([data-callout="measurement"], [data-callout="readout"], [data-callout="reading"], [data-callout="lcd"]).is-collapsible > .callout-title::after { margin-left: auto; order: 3; }
+.callout:is([data-callout="measurement"], [data-callout="readout"], [data-callout="reading"], [data-callout="lcd"]) > .callout-title > .callout-fold { order: 4; margin-left: 6px; }
+.callout:is([data-callout="measurement"], [data-callout="readout"], [data-callout="reading"], [data-callout="lcd"]) > .callout-action-buttons { inset-inline-end: 64px; }
+.callout:is([data-callout="measurement"], [data-callout="readout"], [data-callout="reading"], [data-callout="lcd"]) > .callout-content {
+  margin: 0 8px;
+  padding: 8px 12px 9px;
+  background: var(--plx-eink);
+  color: var(--plx-eink-ink);
+  border: 1px solid var(--plx-rule);
+  border-radius: 2px;
+  box-shadow: var(--plx-recessed);
+  font-family: var(--plx-mono);
+  font-size: 0.9em;
+  font-variant-numeric: tabular-nums slashed-zero;
+  line-height: 1.55;
+}
+.callout:is([data-callout="measurement"], [data-callout="readout"], [data-callout="reading"], [data-callout="lcd"]) > .callout-content :is(code, strong, mjx-container) {
+  color: inherit;
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+.callout:is([data-callout="measurement"], [data-callout="readout"], [data-callout="reading"], [data-callout="lcd"]) > .callout-content table {
+  border: 0;
+  background: transparent;
+  min-width: 0;
+  margin: 0.2em 0;
+  font-size: 1em;
+}
+.callout:is([data-callout="measurement"], [data-callout="readout"], [data-callout="reading"], [data-callout="lcd"]) > .callout-content :is(th, td) {
+  border: 0;
+  border-bottom: 1px dotted var(--plx-eink-rule);
+  background: transparent;
+  color: inherit;
+  padding: 2px 14px 2px 0;
+  font-family: var(--plx-mono);
+}
+.callout:is([data-callout="measurement"], [data-callout="readout"], [data-callout="reading"], [data-callout="lcd"]) > .callout-content th {
+  font-size: 0.78em;
+  font-weight: 600;
+  letter-spacing: var(--plx-track);
+  border-bottom: 1px solid var(--plx-eink-rule);
+  text-transform: none;
+}
+.callout:is([data-callout="measurement"], [data-callout="readout"], [data-callout="reading"], [data-callout="lcd"]) > .callout-content tbody tr:hover { background: transparent; }
+
+/* ---------- equation — display math, numbered (01) at the right ---------- */
+.callout:is([data-callout="equation"], [data-callout="eq"]) {
+  --plx-ctr: plx-eq;
+  --plx-num: counter(plx-eq, decimal-leading-zero);
+  --callout-icon: lucide-sigma;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0.9em 0;
+  overflow: visible;
+}
+.callout:is([data-callout="equation"], [data-callout="eq"]) > .callout-title { display: none; }
+.callout:is([data-callout="equation"], [data-callout="eq"]) > .callout-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 2.2em;
+  padding: 0 4.2em;
+  text-align: center;
+  overflow: visible;
+}
+.callout:is([data-callout="equation"], [data-callout="eq"]) > .callout-content :is(.math-block, mjx-container[display="true"], p) {
+  margin: 0.25em 0 !important; /* beat 30-reading's display-math margin */
+}
+.callout:is([data-callout="equation"], [data-callout="eq"]) > .callout-content::after {
+  content: "(" var(--plx-num) ")";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--plx-ink-2);
+  font-family: var(--plx-mono);
+  font-size: 0.86em;
+  font-variant-numeric: tabular-nums;
+}
+.callout:is([data-callout="equation"], [data-callout="eq"]):is([data-callout-metadata*="star"], [data-callout-metadata*="nonum"]) > .callout-content::after { content: none; }
+/* |titled — show the title as a small tag on the left */
+.callout:is([data-callout="equation"], [data-callout="eq"])[data-callout-metadata*="titled"] > .callout-title {
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  max-width: 4em;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  border: 0;
+  min-height: 0;
+  color: var(--plx-ink-3);
+  font-size: 9.5px;
+  line-height: 1.2;
+}
+.callout:is([data-callout="equation"], [data-callout="eq"])[data-callout-metadata*="titled"] > .callout-title > .callout-icon { display: none; }
+.callout:is([data-callout="equation"], [data-callout="eq"]) > .callout-action-buttons { top: -14px; }
+
+/* ---------- caption voice shared by figure / table / algorithm ---------- */
+.callout:is([data-callout="figure"], [data-callout="fig"], [data-callout="table"], [data-callout="tab"]) > .callout-title {
+  display: block;
+  min-height: 0;
+  background: none;
+  box-shadow: none;
+  border: 0;
+  color: var(--plx-ink-2);
+  font-family: var(--plx-serif);
+  font-size: 0.98em;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-transform: none;
+  text-align: center;
+}
+.callout:is([data-callout="figure"], [data-callout="fig"], [data-callout="table"], [data-callout="tab"]) > .callout-title > .callout-icon { display: none; }
+/* short captions centre, long ones run left-aligned (LaTeX caption pkg) */
+.callout:is([data-callout="figure"], [data-callout="fig"], [data-callout="table"], [data-callout="tab"]) > .callout-title > .callout-title-inner {
+  display: inline-block;
+  text-align: left;
+}
+.callout:is([data-callout="figure"], [data-callout="fig"], [data-callout="table"], [data-callout="tab"]) > .callout-title > .callout-title-inner::before {
+  content: var(--plx-label) var(--plx-num);
+  display: inline-block;
+  margin-right: 8px;
+  padding: 3px 9px 2px 6px;
+  vertical-align: 0.1em;
+  background: var(--plx-captab-bg);
+  color: var(--plx-captab-ink);
+  font-family: var(--plx-mono);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: var(--plx-track);
+  text-transform: uppercase;
+  clip-path: var(--plx-clip-br);
+}
+.callout:is([data-callout="figure"], [data-callout="fig"], [data-callout="table"], [data-callout="tab"])[data-callout-metadata*="anon"] > .callout-title > .callout-title-inner {
+  display: inline-block;
+  font-size: 0;
+}
+.callout:is([data-callout="figure"], [data-callout="fig"], [data-callout="table"], [data-callout="tab"])[data-callout-metadata*="anon"] > .callout-title > .callout-title-inner::before { margin-right: 0; }
+
+/* ---------- figure — bordered plate, caption below ---------- */
+.callout:is([data-callout="figure"], [data-callout="fig"]) {
+  --plx-ctr: plx-fig;
+  --plx-label: "Fig.";
+  --plx-num: "\a0" counter(plx-fig, decimal-leading-zero);
+  --callout-icon: lucide-image;
+  display: flex;
+  flex-direction: column;
+  background: var(--plx-plate);
+  border: 1px solid var(--plx-rule-soft);
+  border-radius: var(--plx-r);
+  box-shadow: none;
+  padding: 10px 10px 8px;
+}
+.callout:is([data-callout="figure"], [data-callout="fig"]) > .callout-title { order: 2; padding: 8px 6px 0; }
+.callout:is([data-callout="figure"], [data-callout="fig"]) > .callout-content {
+  order: 1;
+  padding: 0;
+  text-align: center;
+}
+.callout:is([data-callout="figure"], [data-callout="fig"]) > .callout-content :is(img, svg, video, .image-embed) {
+  max-width: 100%;
+  margin-inline: auto;
+}
+.callout:is([data-callout="figure"], [data-callout="fig"]) > .callout-content .math-block { margin: 0.4em 0 !important; }
+
+/* ---------- table — booktabs: caption above, three rules ---------- */
+.callout:is([data-callout="table"], [data-callout="tab"]) {
+  --plx-ctr: plx-tab;
+  --plx-label: "Table";
+  --plx-num: "\a0" counter(plx-tab, decimal-leading-zero);
+  --callout-icon: lucide-table;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.callout:is([data-callout="table"], [data-callout="tab"]) > .callout-title { padding: 0 0 6px; }
+.callout:is([data-callout="table"], [data-callout="tab"]) > .callout-content { padding: 0; }
+.callout:is([data-callout="table"], [data-callout="tab"]) table {
+  margin: 0 auto;
+  border: 0;
+  border-top: 2px solid var(--plx-ink);
+  border-bottom: 2px solid var(--plx-ink);
+  background: transparent;
+  font-variant-numeric: tabular-nums;
+}
+.callout:is([data-callout="table"], [data-callout="tab"]) :is(th, td) {
+  border: 0;
+  background: transparent;
+  padding: 4px 14px;
+  vertical-align: baseline;
+}
+.callout:is([data-callout="table"], [data-callout="tab"]) thead th {
+  border-bottom: 1px solid var(--plx-ink);
+  color: var(--plx-ink);
+}
+.callout:is([data-callout="table"], [data-callout="tab"])[data-callout-metadata*="wide"] table { width: 100%; }
+
+/* ---------- algorithm — top/bottom heavy rules, mono, line numbers ---------- */
+.callout:is([data-callout="algorithm"], [data-callout="alg"]) {
+  --plx-ctr: plx-alg;
+  --plx-num: "\a0" counter(plx-alg, decimal-leading-zero);
+  --callout-icon: lucide-binary;
+  counter-reset: plx-line;
+  background: transparent;
+  border: 0;
+  border-top: 2px solid var(--plx-ink);
+  border-bottom: 2px solid var(--plx-ink);
+  border-radius: 0;
+  box-shadow: none;
+}
+.callout:is([data-callout="algorithm"], [data-callout="alg"]) > .callout-title {
+  display: block;
+  min-height: 0;
+  padding: 4px 70px 4px 0;
+  background: none;
+  box-shadow: none;
+  border-bottom: 1px solid var(--plx-ink);
+  color: var(--plx-ink);
+  font-family: var(--plx-serif);
+  font-size: 1.04em;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.callout:is([data-callout="algorithm"], [data-callout="alg"]) > .callout-title > .callout-icon { display: none; }
+.callout:is([data-callout="algorithm"], [data-callout="alg"]) > .callout-title > .callout-title-inner { display: inline; }
+.callout:is([data-callout="algorithm"], [data-callout="alg"]) > .callout-title::before {
+  content: "Algorithm" var(--plx-num);
+  display: inline-block;
+  margin-right: 8px;
+  padding: 3px 9px 2px 6px;
+  vertical-align: 0.1em;
+  background: var(--plx-captab-bg);
+  color: var(--plx-captab-ink);
+  font-family: var(--plx-mono);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: var(--plx-track);
+  text-transform: uppercase;
+  clip-path: var(--plx-clip-br);
+}
+.callout[data-callout="alg"] > .callout-title > .callout-title-inner { display: inline; }
+.callout:is([data-callout="algorithm"], [data-callout="alg"]) > .callout-action-buttons { top: 3px; inset-inline-end: 0; }
+.callout:is([data-callout="algorithm"], [data-callout="alg"]) > .callout-content {
+  position: relative;
+  padding: 6px 0 7px;
+  font-family: var(--plx-mono);
+  font-size: 0.85em;
+  line-height: 1.65;
+}
+.callout:is([data-callout="algorithm"], [data-callout="alg"]) > .callout-content p { margin: 0.2em 0; }
+.callout:is([data-callout="algorithm"], [data-callout="alg"]) > .callout-content :is(ol, ul) {
+  position: static;
+  list-style: none;
+  margin: 0;
+  padding-left: 2.6em;
+}
+.callout:is([data-callout="algorithm"], [data-callout="alg"]) > .callout-content :is(ol, ul) :is(ol, ul) {
+  padding-left: 1.4em;
+  margin-left: 0.25em;
+  border-left: 1px solid var(--plx-rule-soft);
+}
+.callout:is([data-callout="algorithm"], [data-callout="alg"]) > .callout-content li {
+  position: static; /* number gutter anchors to the content box, not the li */
+  counter-increment: plx-line;
+}
+.callout:is([data-callout="algorithm"], [data-callout="alg"]) > .callout-content :is(ol, ul)::before,
+.callout:is([data-callout="algorithm"], [data-callout="alg"]) > .callout-content li::after { display: none; } /* Obsidian indentation guides — we draw our own */
+.callout:is([data-callout="algorithm"], [data-callout="alg"]) > .callout-content li::marker { content: none; }
+.callout:is([data-callout="algorithm"], [data-callout="alg"]) > .callout-content li::before {
+  content: counter(plx-line) ":";
+  position: absolute;
+  left: 0;
+  width: 1.9em;
+  text-align: right;
+  color: var(--plx-ink-4);
+  font-size: 0.92em;
+}
+.callout:is([data-callout="algorithm"], [data-callout="alg"]) > .callout-content :is(.list-bullet, .list-collapse-indicator) { display: none; }
+.callout:is([data-callout="algorithm"], [data-callout="alg"]) > .callout-content pre {
+  margin: 0;
+  background: transparent;
+  border: 0;
+}
+.callout:is([data-callout="algorithm"], [data-callout="alg"]) > .callout-content strong { font-weight: 700; color: var(--plx-ink); }
+
+
+/* --------------------------------------------------------------------------
+   6 · WIKI ELEMENTS
+   -------------------------------------------------------------------------- */
+
+/* ---------- hatnotes: see also / main article / further ---------- */
+.callout[data-callout="seealso"], .callout[data-callout="see-also"], .callout[data-callout="also"]
+  { --plx-hat: "See also:"; --callout-icon: lucide-link-2; }
+.callout[data-callout="main"], .callout[data-callout="mainarticle"], .callout[data-callout="main-article"]
+  { --plx-hat: "Main article:"; --callout-icon: lucide-book-open; }
+.callout[data-callout="further"]
+  { --plx-hat: "Further information:"; --callout-icon: lucide-library; }
+
+.callout:is([data-callout="seealso"], [data-callout="see-also"], [data-callout="also"],
+  [data-callout="main"], [data-callout="mainarticle"], [data-callout="main-article"], [data-callout="further"]) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.35em;
+  margin: 0.25em 0 0.9em;
+  padding: 0 0 0 1.6em;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+  color: var(--plx-ink-2);
+  font-style: italic;
+}
+.callout:is([data-callout="seealso"], [data-callout="see-also"], [data-callout="also"],
+  [data-callout="main"], [data-callout="mainarticle"], [data-callout="main-article"], [data-callout="further"]) > .callout-title {
+  display: inline;
+  min-height: 0;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.callout:is([data-callout="seealso"], [data-callout="see-also"], [data-callout="also"],
+  [data-callout="main"], [data-callout="mainarticle"], [data-callout="main-article"], [data-callout="further"]) > .callout-title::before {
+  content: var(--plx-hat);
+}
+.callout:is([data-callout="seealso"], [data-callout="see-also"], [data-callout="also"],
+  [data-callout="main"], [data-callout="mainarticle"], [data-callout="main-article"], [data-callout="further"]) > .callout-title > :is(.callout-icon, .callout-title-inner, .callout-fold) { display: none; }
+/* title-only hatnote: the title IS the text */
+.callout:is([data-callout="seealso"], [data-callout="see-also"], [data-callout="also"],
+  [data-callout="main"], [data-callout="mainarticle"], [data-callout="main-article"], [data-callout="further"]):not(:has(> .callout-content)) > .callout-title > .callout-title-inner {
+  display: inline;
+  margin-left: 0.3em;
+}
+.callout:is([data-callout="seealso"], [data-callout="see-also"], [data-callout="also"],
+  [data-callout="main"], [data-callout="mainarticle"], [data-callout="main-article"], [data-callout="further"]) > .callout-content {
+  display: inline;
+  padding: 0;
+  overflow: visible;
+}
+.callout:is([data-callout="seealso"], [data-callout="see-also"], [data-callout="also"],
+  [data-callout="main"], [data-callout="mainarticle"], [data-callout="main-article"], [data-callout="further"]) > .callout-content > p {
+  display: inline;
+  margin: 0;
+}
+.callout:is([data-callout="seealso"], [data-callout="see-also"], [data-callout="also"],
+  [data-callout="main"], [data-callout="mainarticle"], [data-callout="main-article"], [data-callout="further"]) > .callout-action-buttons { display: none; }
+
+/* ---------- stub — hatched (= incomplete), compact ---------- */
+.callout[data-callout="stub"] {
+  --plx-co: var(--plx-ink-3); --plx-co-wash: transparent;
+  --callout-icon: lucide-sprout;
+  display: flex;
+  align-items: stretch;
+  background: var(--plx-hatch), var(--plx-paper-2);
+  border: 1px solid var(--plx-rule);
+  font-size: 0.88em;
+  max-width: 34rem;
+}
+.callout[data-callout="stub"] > .callout-title {
+  flex: 0 0 auto;
+  background: var(--plx-paper-2);
+  border: 0;
+  border-right: 1px solid var(--plx-rule-soft);
+  padding: 5px 10px 5px 5px;
+  color: var(--plx-ink-2);
+  font-size: var(--plx-fs-label);
+}
+.callout[data-callout="stub"] > .callout-title > .callout-icon { background: var(--plx-ink-3); }
+.callout[data-callout="stub"] > .callout-content {
+  display: block;
+  flex: 1 1 auto;
+  padding: 5px 12px;
+  background: color-mix(in srgb, var(--plx-paper) 55%, transparent);
+  color: var(--plx-ink-2);
+}
+.callout[data-callout="stub"] > .callout-content::before {
+  content: "This article is a stub. ";
+  font-style: italic;
+}
+.callout[data-callout="stub"] > .callout-content > p { display: inline; }
+.callout[data-callout="stub"]:not(:has(> .callout-content)) > .callout-title::after {
+  content: "This article is a stub.";
+  margin-left: 6px;
+  font-family: var(--plx-sans);
+  font-weight: 400;
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.callout[data-callout="stub"] > .callout-action-buttons { display: none; }
+
+/* ---------- citation needed — small tag, right-aligned; note on hover ---------- */
+.callout:is([data-callout="citation-needed"], [data-callout="cn"]) {
+  width: fit-content;
+  margin: -0.85em 0 0.9em auto;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+.callout:is([data-callout="citation-needed"], [data-callout="cn"]) > .callout-title {
+  display: inline;
+  min-height: 0;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  border: 0;
+  color: var(--plx-teal);
+  font-family: var(--plx-sans);
+  font-size: 0.74em;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: help;
+}
+.callout:is([data-callout="citation-needed"], [data-callout="cn"]) > .callout-title::before {
+  content: "[citation needed]";
+  border-bottom: 1px dashed currentColor;
+}
+.callout:is([data-callout="citation-needed"], [data-callout="cn"]) > .callout-title > * { display: none; }
+.callout:is([data-callout="citation-needed"], [data-callout="cn"]) > .callout-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 1.4em;
+  z-index: 5;
+  width: max-content;
+  max-width: 22rem;
+  padding: 5px 9px;
+  background: var(--plx-paper);
+  border: 1px dotted var(--plx-rule-strong);
+  box-shadow: var(--plx-float);
+  font-size: 0.8em;
+  color: var(--plx-ink-2);
+}
+.callout:is([data-callout="citation-needed"], [data-callout="cn"]):hover > .callout-content { display: block; }
+.callout:is([data-callout="citation-needed"], [data-callout="cn"]) > .callout-action-buttons { display: none; }
+
+/* ---------- disambiguation — dotted (= points elsewhere) ---------- */
+.callout:is([data-callout="disambiguation"], [data-callout="disambig"]) {
+  --plx-co: var(--plx-ink-3); --plx-co-wash: transparent;
+  --callout-icon: lucide-signpost;
+  background: transparent;
+  border: 1px dotted var(--plx-rule-strong);
+}
+.callout:is([data-callout="disambiguation"], [data-callout="disambig"]) > .callout-title {
+  background: none; box-shadow: none;
+  border-bottom: 1px dotted var(--plx-rule);
+  color: var(--plx-ink-2);
+}
+.callout:is([data-callout="disambiguation"], [data-callout="disambig"]) > .callout-title > .callout-icon { background: var(--plx-ink-3); }
+.callout:is([data-callout="disambiguation"], [data-callout="disambig"]) > .callout-content > ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr));
+  column-gap: 2rem;
+}
+
+/* ---------- under construction — amber, dashed, hatched ---------- */
+.callout:is([data-callout="wip"], [data-callout="construction"], [data-callout="under-construction"]) {
+  --plx-co: var(--plx-amber); --plx-co-wash: var(--plx-amber-wash);
+  --plx-co-line: dashed;
+  --plx-co-edge: var(--plx-amber);
+  --callout-icon: lucide-construction;
+  background: var(--plx-hatch), linear-gradient(var(--plx-amber-wash), var(--plx-amber-wash)), var(--plx-plate);
+}
+.callout:is([data-callout="wip"], [data-callout="construction"], [data-callout="under-construction"]) > .callout-title {
+  background: var(--plx-paper-2);
+  border-bottom: 1px dashed var(--plx-amber);
+}
+.callout:is([data-callout="wip"], [data-callout="construction"], [data-callout="under-construction"]) > .callout-content {
+  margin: 6px;
+  padding: 5px 9px;
+  background: var(--plx-plate);
+}
+
+/* ---------- references / bibliography — numbered [n], hanging ---------- */
+.callout:is([data-callout="references"], [data-callout="refs"], [data-callout="bibliography"]) {
+  --callout-icon: lucide-library;
+  background: transparent;
+  border: 0;
+  border-top: 1px dotted var(--plx-rule-strong);
+  border-radius: 0;
+  box-shadow: none;
+  margin-top: 2em;
+}
+.callout:is([data-callout="references"], [data-callout="refs"], [data-callout="bibliography"]) > .callout-title {
+  background: none; box-shadow: none; border: 0;
+  padding: 8px 70px 4px 0;
+  color: var(--plx-ink);
+  font-family: var(--plx-serif);
+  font-size: 1.15em;
+  font-weight: 600;
+  text-transform: none;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.08em;
+}
+.callout:is([data-callout="references"], [data-callout="refs"], [data-callout="bibliography"]) > .callout-title > .callout-icon { display: none; }
+.callout:is([data-callout="references"], [data-callout="refs"], [data-callout="bibliography"]) > .callout-action-buttons { inset-inline-end: 0; }
+.callout:is([data-callout="references"], [data-callout="refs"], [data-callout="bibliography"]) > .callout-content {
+  padding: 0;
+  font-size: 0.86em;
+  line-height: 1.5;
+}
+.callout:is([data-callout="references"], [data-callout="refs"], [data-callout="bibliography"]) > .callout-content ol {
+  counter-reset: plx-ref;
+  list-style: none;
+  padding-left: 3em;
+}
+.callout:is([data-callout="references"], [data-callout="refs"], [data-callout="bibliography"]) > .callout-content ol > li {
+  counter-increment: plx-ref;
+  position: relative;
+  margin: 0.25em 0;
+}
+.callout:is([data-callout="references"], [data-callout="refs"], [data-callout="bibliography"]) > .callout-content ol > li::marker { content: none; }
+.callout:is([data-callout="references"], [data-callout="refs"], [data-callout="bibliography"]) > .callout-content ol > li::before {
+  content: "[" counter(plx-ref, decimal-leading-zero) "]";
+  position: absolute;
+  left: -3em;
+  width: 2.5em;
+  text-align: right;
+  color: var(--plx-ink-3);
+  font-family: var(--plx-mono);
+  font-size: 0.92em;
+}
+.callout:is([data-callout="references"], [data-callout="refs"], [data-callout="bibliography"]) > .callout-content ul {
+  list-style: none;
+  padding-left: 2em;
+}
+.callout:is([data-callout="references"], [data-callout="refs"], [data-callout="bibliography"]) > .callout-content ul > li { text-indent: -2em; }
+.callout:is([data-callout="references"], [data-callout="refs"], [data-callout="bibliography"]) > .callout-content ul > li::marker { content: none; }
+.callout:is([data-callout="references"], [data-callout="refs"], [data-callout="bibliography"]) > .callout-content :is(.list-bullet, .list-collapse-indicator) { display: none; }
+
+/* ---------- navbox / topic — centred navigation box ---------- */
+.callout:is([data-callout="navbox"], [data-callout="topic"], [data-callout="navbox-simple"]) {
+  --plx-co: var(--plx-teal); --plx-co-wash: transparent;
+  --callout-icon: none;
+  border: 1px solid var(--plx-rule);
+}
+.callout:is([data-callout="navbox"], [data-callout="topic"], [data-callout="navbox-simple"]) > .callout-title {
+  justify-content: center;
+  padding: 4px 10px;
+  background: var(--plx-paper-2);
+  color: var(--plx-ink);
+  font-family: var(--plx-serif);
+  font-size: 1.02em;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.callout:is([data-callout="navbox"], [data-callout="topic"], [data-callout="navbox-simple"]) > .callout-title > .callout-icon { display: none; }
+.callout:is([data-callout="navbox"], [data-callout="topic"], [data-callout="navbox-simple"]) > .callout-title > .callout-fold { margin-left: 6px; }
+.callout:is([data-callout="navbox"], [data-callout="topic"], [data-callout="navbox-simple"]) > .callout-content {
+  padding: 6px 14px 7px;
+  text-align: center;
+  font-size: 0.9em;
+  line-height: 1.7;
+}
+
+/* ---------- infobox — floats right in reading view ---------- */
+.callout[data-callout="infobox"] {
+  --plx-co: var(--plx-slate); --plx-co-wash: transparent;
+  --callout-icon: none;
+  float: right;
+  clear: right;
+  width: 18rem;
+  margin: 0.3em 0 1em 1.6em;
+  background: var(--plx-paper-2);
+  border: 1px solid var(--plx-rule);
+  font-size: 0.86em;
+  line-height: 1.4;
+}
+.callout[data-callout="infobox"] > .callout-title {
+  justify-content: center;
+  padding: 6px 10px;
+  background: var(--plx-band);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--plx-slate-ink) 12%, transparent);
+  border-bottom: 1px solid var(--plx-slate);
+  color: var(--plx-slate-ink);
+  font-family: var(--plx-serif);
+  font-size: 1.22em;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  text-align: center;
+}
+.callout[data-callout="infobox"] > .callout-title > .callout-icon { display: none; }
+.callout[data-callout="infobox"] > .callout-title > .callout-fold { color: var(--plx-slate-ink); margin-left: 6px; }
+.callout[data-callout="infobox"] > .callout-action-buttons { top: 6px; inset-inline-end: 4px; }
+.callout[data-callout="infobox"] > .callout-content { padding: 6px 8px 8px; }
+.callout[data-callout="infobox"] > .callout-content > p { margin: 0.4em 0; }
+.callout[data-callout="infobox"] > .callout-content :is(img, .image-embed) {
+  display: block;
+  max-width: 100%;
+  margin: 0 auto;
+}
+.callout[data-callout="infobox"] > .callout-content :is(.table-wrapper, table) { width: 100%; }
+.callout[data-callout="infobox"] > .callout-content table {
+  margin: 0.3em 0;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font-size: 1em;
+}
+.callout[data-callout="infobox"] > .callout-content :is(th, td) {
+  border: 0;
+  border-top: 1px solid var(--plx-rule-soft);
+  padding: 3px 4px;
+  background: transparent;
+  vertical-align: top;
+}
+/* header row → a sub-heading strip; hidden when left empty (| | |) */
+.callout[data-callout="infobox"] > .callout-content thead th {
+  border-top: 0;
+  border-bottom: 1px solid var(--plx-rule);
+  background: var(--plx-case-hi);
+  color: var(--plx-ink-2);
+  font-size: var(--plx-fs-label);
+  text-align: center;
+}
+.callout[data-callout="infobox"] > .callout-content thead:not(:has(th:not(:empty))) { display: none; }
+.callout[data-callout="infobox"] > .callout-content tbody td:first-child {
+  width: 40%;
+  color: var(--plx-ink-2);
+  font-family: var(--plx-ui-cond);
+  font-size: var(--plx-fs-small);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.callout[data-callout="infobox"] > .callout-content tbody tr:first-child td { border-top: 0; }
+.callout[data-callout="infobox"] > .callout-content tbody tr:hover { background: transparent; }
+.callout[data-callout="infobox"][data-callout-metadata*="left"] {
+  float: left;
+  clear: left;
+  margin: 0.3em 1.6em 1em 0;
+}
+/* no float: Live Preview, nested, |nofloat |wide, and narrow panes */
+.callout[data-callout="infobox"]:is([data-callout-metadata*="nofloat"], [data-callout-metadata*="wide"]),
+.markdown-source-view .callout[data-callout="infobox"],
+.callout .callout[data-callout="infobox"] {
+  float: none;
+  margin: 0.8em 0 0.8em auto;
+}
+.callout[data-callout="infobox"][data-callout-metadata*="wide"] { width: auto; }
+@container plx-note (max-width: 700px) {
+  .callout[data-callout="infobox"] {
+    float: none;
+    width: auto;
+    margin: 0.8em 0;
+  }
+}
+
+/* ---------- compact academic objects (figure / table / equation / algorithm) ---------- */
+.callout:is([data-callout="figure"], [data-callout="fig"]) { padding: 6px 8px 5px; margin-block: 0.8em; }
+.callout:is([data-callout="figure"], [data-callout="fig"]) > .callout-title { padding: 5px 4px 0; line-height: 1.35; }
+.callout:is([data-callout="table"], [data-callout="tab"]) { margin-block: 0.8em; }
+.callout:is([data-callout="table"], [data-callout="tab"]) > .callout-title { padding: 0 0 4px; line-height: 1.35; position: relative; z-index: 0; }
+.callout:is([data-callout="table"], [data-callout="tab"]) > .callout-content { position: relative; z-index: 1; }
+.callout:is([data-callout="table"], [data-callout="tab"]) :is(th, td) { padding: 2px 10px !important; line-height: 1.4 !important; }
+.callout:is([data-callout="table"], [data-callout="tab"]) thead th { background: transparent !important; vertical-align: bottom; }
+.callout:is([data-callout="figure"], [data-callout="fig"], [data-callout="table"], [data-callout="tab"]) > .callout-title > .callout-title-inner::before {
+  padding: 2px 7px 1px 5px; margin-right: 6px; vertical-align: 0.08em; line-height: 1.25;
+}
+.callout:is([data-callout="algorithm"], [data-callout="alg"]) > .callout-content { line-height: 1.45; }
+.callout:is([data-callout="equation"], [data-callout="eq"]) { margin-block: 0.4em; }
+.callout:is([data-callout="equation"], [data-callout="eq"]) .math-block { margin: 0.25em 0 !important; }
+.callout:is([data-callout="table"], [data-callout="tab"]) :is(thead, thead tr, tbody tr) { background: transparent !important; }
+
+/* ---------- revision: balance + attachment ----------
+   Infobox: labels and values share one size (Wikipedia-style), labels bold
+   in the reading face, so math in a label matches math in a value.
+   Titled equation: the name sits under its number at the right, attached to
+   the tag it explains, not stranded at the left margin. */
+.callout[data-callout="infobox"] > .callout-content tbody td {
+  font-size: calc(var(--font-text-size) * 0.86) !important; /* = wikitable cells */
+}
+.callout[data-callout="infobox"] > .callout-content tbody td:first-child {
+  font-family: inherit;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+.callout:is([data-callout="equation"], [data-callout="eq"])[data-callout-metadata*="titled"] > .callout-title {
+  left: auto;
+  right: 0;
+  top: calc(50% + 0.95em);
+  transform: none;
+  max-width: 7em;
+  text-align: right;
+  font-family: var(--plx-reading);
+  font-style: italic;
+  font-size: 0.78em;
+  font-weight: 400;
+}
+
+/* star / nonum, enforced: the figure, table, algorithm and equation blocks set
+   their own counter later in this file at equal specificity, so the generic
+   flag rule lost and those objects kept numbering (the equation even advanced
+   the counter while hiding the number). Doubled class = higher specificity. */
+.callout.callout:is([data-callout-metadata*="star"], [data-callout-metadata*="nonum"]) {
+  --plx-ctr: none;
+  --plx-num: "";
+}

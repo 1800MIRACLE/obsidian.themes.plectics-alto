@@ -1,0 +1,47 @@
+/* ==========================================================================
+   PLECTICS ALTO · 85 · RELEASE FIXES (final visual audit, 2026-11-17)
+   ========================================================================== */
+
+/* V3 · checkbox tick stays inside its 13 px box at any font size.
+   Obsidian sizes the ::after tick from --checkbox-size, which follows the
+   font size; the box itself is fixed at 13 px (30-reading, 50-properties). */
+input[type="checkbox"], .task-list-item-checkbox,
+.metadata-property-value input.metadata-input-checkbox { --checkbox-size: 13px; }
+
+/* V4 · open task boxes visible in dark: the near-black edge on the navy page
+   was about 1.1:1; the strong rule reads as an edge without shouting. */
+body.theme-dark input:is([type="checkbox"], [type="radio"]):not(:checked):not(#plx6, #plx6b, .checkbox-container > *, .excalidraw *, .plx-inst *) {
+  border-color: var(--plx-rule-strong);
+}
+
+/* V5 · Style Settings colour rows draw a light and a dark half; each half's
+   reset key takes its face and ink from that half (Obsidian's own tokens
+   follow the .theme-light / .theme-dark wrapper), so neither icon vanishes. */
+.themed-color-wrapper > :is(.theme-light, .theme-dark) button:not(#plx6, #plx6b) {
+  background: var(--interactive-normal);
+  color: var(--text-muted);
+}
+.themed-color-wrapper > :is(.theme-light, .theme-dark) button:not(#plx6, #plx6b):hover {
+  background: var(--interactive-hover);
+  color: var(--text-normal);
+}
+
+/* V6 · the framed Properties panel sits on the column. Obsidian shifts the
+   container 4 px left, which only suits an unframed list. */
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-container,
+body.plx-props-lcd .metadata-container { transform: none; }
+
+/* V2 · profile titles: the ChicagoFLF title and the framed page shrink with
+   the pane, so a long word no longer splits ("Mathemati / cian"). */
+.markdown-preview-view.type-profile { container: plx-profile / inline-size; }
+.markdown-preview-view.type-profile .inline-title {
+  font-size: clamp(1.3em, 6.2cqi, 2.1em);
+  overflow-wrap: normal;
+}
+@container plx-profile (max-width: 520px) {
+  .markdown-preview-view.type-profile .markdown-preview-sizer { padding: 12px 14px 20px !important; }
+  .markdown-preview-view.type-profile .inline-title { overflow-wrap: anywhere; }
+}
+/* boards: the same guard for the uppercase caps title */
+.markdown-preview-view.plx-board { container: plx-board / inline-size; }
+.markdown-preview-view.plx-board .inline-title { font-size: clamp(1.2em, 5.6cqi, 1.9em); }

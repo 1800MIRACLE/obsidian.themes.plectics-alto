@@ -1,0 +1,89 @@
+/* ==========================================================================
+   PLECTICS ALTO · 82 · AUDIT FIXES, A1 (note page: Live Preview + Reading)
+   ========================================================================== */
+
+/* ---------- Tables: why they were "extremely glitchy" ----------
+   Live Preview edits each cell in a nested CodeMirror editor. Theme rules for
+   the MAIN editor (.markdown-source-view.mod-cm6 .cm-scroller / .cm-content:
+   line-height 1.62, the reading face, text size, old-style figures, counter
+   resets) also reached that nested editor, so focusing a cell changed its
+   line height, face, size and figures: rows grew 2.6–15 px, the table jumped
+   under the mouse, headers swapped from caps to serif mid-drag.
+   A1-01 … A1-04: the cell editor inherits everything from its cell. */
+.markdown-source-view.mod-cm6 .cm-table-widget :is(.table-cell-wrapper > *, .markdown-source-view, .cm-s-obsidian, .cm-editor, .cm-scroller, .cm-content, .cm-line):not(#plx6) {
+  font: inherit !important;
+  line-height: inherit !important;
+  letter-spacing: inherit !important;
+  text-transform: inherit !important;
+  font-size-adjust: inherit !important;
+  font-variant-numeric: inherit !important;
+  counter-reset: none !important;
+}
+/* A1-11 the caret in a cell is the theme's teal caret */
+.markdown-source-view.mod-cm6 .cm-table-widget .cm-content { caret-color: var(--plx-teal); }
+
+/* A1-05 row hover worked on every other row, header hover lit every other
+   column: Obsidian's zebra rules (:nth-child) out-ranked the theme */
+body {
+  --table-row-alt-background-hover: var(--plx-teal-wash);
+  --table-row-background-hover: var(--plx-teal-wash);
+  --table-header-background: var(--plx-paper-2);
+  --table-header-background-hover: var(--plx-paper-2);
+  --table-column-alt-background: transparent;
+  /* A1-12 the multi-cell selection frame: square, one colour */
+  --table-selection-border-radius: 0;
+  --table-selection-border-color: var(--plx-blue);
+  /* A1-13 body cells take the intended ≈13.2 px, not Obsidian's 15 px */
+  --table-text-size: calc(var(--font-text-size) * 0.88);
+}
+:is(.markdown-rendered, .cm-table-widget) thead tr > th:not(#plx6) { background-color: var(--plx-paper-2); }
+:is(.markdown-rendered, .cm-table-widget) tbody tr:hover > td:not(#plx6) { background-color: var(--plx-teal-wash); }
+
+/* A1-14 one row height whatever the content (mixed serif and mono faces sat
+   on a shared baseline); cells align to the top, as the token intends */
+:is(.markdown-rendered, .cm-table-widget) td:not(#plx6) { vertical-align: top; }
+
+/* ---------- Properties ---------- */
+
+/* A1-06 strip layout: long values ran off the page */
+body.plx-props-strip .metadata-property { flex: 0 1 auto !important; max-width: 100%; min-width: 0; }
+body.plx-props-strip .metadata-property-value { min-width: 0; }
+body.plx-props-strip .multi-select-container { flex-wrap: wrap; }
+
+/* A1-07 strip layout: hovering inserted the "Add property" key into the flow
+   and pushed the note 16 px down. It now stays in the flow, hidden. */
+body.plx-props-strip .metadata-container .metadata-add-button { display: flex !important; visibility: hidden; }
+body.plx-props-strip .metadata-container:is(:hover, :focus-within) .metadata-add-button { visibility: visible; }
+
+/* A1-08 tucked layout: hovering the label pushed the whole page down ~300 px.
+   The panel now opens OVER the page (no reflow); and only one disclosure
+   mark (the theme's), not Obsidian's ⊟ as well. */
+body.plx-props-tucked .metadata-container { position: relative; }
+body.plx-props-tucked .metadata-container:is(:hover, :focus-within) .metadata-content {
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  z-index: 20;
+  background: var(--plx-paper);
+  border: 1px solid var(--plx-rule-strong);
+  box-shadow: var(--plx-float);
+  padding: 4px 8px;
+}
+body.plx-props-tucked .metadata-properties-heading .collapse-indicator { display: none; }
+
+/* A1-09 a stray "·" separator inside every boxed tag chip */
+.metadata-property[data-property-key="tags"] .multi-select-pill[data-tag-kind]::after,
+.metadata-property .multi-select-pill:has(+ .multi-select-pill)[data-tag-kind]::after { content: none !important; }
+
+/* A1-10 margin layout: long links were cut mid-glyph; checkbox off-column */
+body.plx-props-margin .metadata-property-value :is(.metadata-link-inner, .metadata-link) {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+body.plx-props-margin .metadata-property-value .metadata-input-checkbox { margin-inline-start: 0; }
+
+/* A1-17 Univers kerning ate the word space before capitals in chips */
+.multi-select-pill-content { font-kerning: none; }
+
+/* A1-19 code is shown exactly as typed: no "->" → arrow ligature */
+:is(code, pre, .cm-inline-code, .HyperMD-codeblock) { font-variant-ligatures: none; font-feature-settings: "calt" 0, "liga" 0; }

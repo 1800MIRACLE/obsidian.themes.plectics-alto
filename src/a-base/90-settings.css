@@ -1,0 +1,8 @@
+/* ==========================================================================
+   90 · STYLE SETTINGS: moved (Plectics Alto, 2026-11-17)
+   The old "Plectics" section that lived here is merged with "Plectics-6" into
+   one section, "Plectics Alto" (id plectics-alto), declared in
+   b-layer/69-settings6.css. Every option kept its id and class value; the
+   Dark palette and Cyan accent options are gone (dark mode is Blue-steel).
+   Option list: docs/SETTINGS.md.
+   ========================================================================== */

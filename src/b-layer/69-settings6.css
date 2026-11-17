@@ -1,0 +1,808 @@
+/* ==========================================================================
+   PLECTICS ALTO · 69 · STYLE SETTINGS (the whole option list, one section)
+   One section, "Plectics Alto" (id plectics-alto), grouped the way a user
+   looks for things, most-used first:
+     Text · Interface · Dark mode · Icons and file list ·
+     Notes and properties · Typed tags · Canvas
+   Every option id and class value is the one it had in the old "Plectics"
+   and "Plectics-6" sections, so the CSS that reads them is unchanged. Only
+   the section id is new (plectics-alto), so choices saved under the old
+   sections start from the defaults once. Full list: docs/SETTINGS.md.
+   Each option is a body class or a variable; with Style Settings off the
+   theme still works (docs/SETTINGS.md lists the few looks that differ).
+   Removed for Alto: Dark palette, Blue-steel / From Plectics, Cyan accent in
+   dark mode. Dark mode is always Blue-steel (64-dark-y2k.css).
+   Below the settings block: the look of the Style Settings panel itself.
+   ========================================================================== */
+
+/* @settings
+
+name: Plectics Alto
+id: plectics-alto
+settings:
+  -
+    id: plx-g-text
+    title: Text
+    type: heading
+    level: 1
+    collapsed: true
+  -
+    id: plx-body-font
+    title: Reading font
+    description: The face of note text. Sizes are matched, so every face reads at the same size. Faces marked (if installed) are free fonts you install yourself; without one, a similar built-in or system face is used.
+    type: class-select
+    allowEmpty: false
+    default: plx-body-constantia
+    options:
+      - label: Constantia
+        value: plx-body-constantia
+      - label: Georgia
+        value: plx-body-georgia
+      - label: Palatino Linotype
+        value: plx-body-palatino
+      - label: Sitka Text
+        value: plx-body-sitka
+      - label: EB Garamond (if installed)
+        value: plx-body-garamond
+      - label: IBM Plex Serif (if installed)
+        value: plx-body-serif
+      - label: CMU Serif (matches LaTeX maths) (if installed)
+        value: plx-body-cmu
+      - label: CMU Concrete (if installed)
+        value: plx-body-concrete
+      - label: IBM Plex Sans (if installed)
+        value: plx-body-plex
+      - label: Inter (if installed)
+        value: plx-body-inter
+      - label: Instrument Sans (if installed)
+        value: plx-body-instrument
+      - label: Golos Text (if installed)
+        value: plx-body-golos
+      - label: Verdana
+        value: plx-body-verdana
+  -
+    id: plx-display-font
+    title: Title font
+    description: Note titles and the two largest headings. Smaller headings stay in EB Garamond.
+    type: class-select
+    allowEmpty: false
+    default: plx-display-alto
+    options:
+      - label: Alto Garamond Condensed (built in)
+        value: plx-display-alto
+      - label: Apple Garamond (if installed)
+        value: plx-display-apple
+      - label: EB Garamond (if installed)
+        value: plx-display-eb
+  -
+    id: plx-headings-sans
+    title: Sans-serif headings
+    description: Titles and all headings in the interface sans (Archivo) instead of Garamond.
+    type: class-toggle
+    default: false
+  -
+    id: plx-wide-lines
+    title: Wider reading column
+    description: Works with Obsidian's "Readable line length" on.
+    type: class-toggle
+    default: false
+  -
+    id: plx-g-interface
+    title: Interface
+    type: heading
+    level: 1
+    collapsed: true
+  -
+    id: plx-use-accent
+    title: Use Obsidian's accent colour
+    description: Links and highlights take your accent colour instead of the theme's own. Very pale or grey accents read poorly.
+    type: class-toggle
+    default: false
+  -
+    id: plx-chicago
+    title: Classic Mac font
+    description: Chicago, the 1984 Macintosh face, on window titles and alerts, or also on menus, buttons and tabs. Uses the free ChicagoFLF font if installed; otherwise the caps face.
+    type: class-select
+    allowEmpty: false
+    default: plx-chicago-titles
+    options:
+      - label: "Off"
+        value: plx-chicago-off
+      - label: Titles and alerts
+        value: plx-chicago-titles
+      - label: Titles, menus and buttons
+        value: plx-chicago-system7
+  -
+    id: plx-ui-mono
+    title: Monospaced interface
+    description: The whole interface in the mono face.
+    type: class-toggle
+    default: false
+  -
+    id: plx-flat
+    title: Flat buttons
+    description: Buttons and ribbon keys without bevels. The Metal finish keeps its own.
+    type: class-toggle
+    default: false
+  -
+    id: plx-chamfer
+    title: Angled corners
+    description: 45° cuts on tabs and labels.
+    type: class-toggle
+    default: false
+  -
+    id: plx-slider-segmented
+    title: Segmented sliders
+    description: Sliders drawn as a row of LCD cells.
+    type: class-toggle
+    default: false
+  -
+    id: plx-g-dark
+    title: Dark mode
+    type: heading
+    level: 1
+    collapsed: true
+  -
+    id: plx6-y2k-metal
+    title: Metal finish
+    description: Dark mode is blue steel. This makes its bars and keys brushed, bevelled metal instead of flat. Light mode is not affected.
+    type: class-toggle
+    default: false
+  -
+    id: plx-g-icons
+    title: Icons and file list
+    type: heading
+    level: 1
+    collapsed: true
+  -
+    id: plx-ff
+    title: Colour icons
+    description: Farm-Fresh 16 px colour icons instead of line icons (FatCow, CC BY 3.0 US).
+    type: class-toggle
+    default: false
+  -
+    id: plx-ff-scope
+    title: Show colour icons in
+    description: Used when Colour icons is on.
+    type: class-select
+    allowEmpty: false
+    default: plx-ff-files
+    options:
+      - label: Files and tabs
+        value: plx-ff-files
+      - label: Everywhere (also menus and buttons)
+        value: plx-ff-all
+  -
+    id: plx-ff-iconize
+    title: Where Iconize set an icon
+    description: Used when Colour icons is on. Your Iconize settings stay as they are.
+    type: class-select
+    allowEmpty: false
+    default: plx-ff-iconize-keep
+    options:
+      - label: Keep the Iconize icon
+        value: plx-ff-iconize-keep
+      - label: Use the colour icon
+        value: plx-ff-iconize-hide
+  -
+    id: plx-no-file-icons
+    title: Hide file-type icons
+    description: No icon in front of files and folders in the file list.
+    type: class-toggle
+    default: false
+  -
+    id: plx-no-tree-lines
+    title: Hide tree lines
+    description: No connector lines between folders and their files.
+    type: class-toggle
+    default: false
+  -
+    id: plx-g-notes
+    title: Notes and properties
+    type: heading
+    level: 1
+    collapsed: true
+  -
+    id: plx-props-layout
+    title: Properties layout
+    description: How the properties at the top of a note are drawn.
+    type: class-select
+    allowEmpty: false
+    default: plx-props-panel
+    options:
+      - label: Panel (framed, boxed values)
+        value: plx-props-panel
+      - label: Ledger (two-column table)
+        value: plx-props-ledger
+      - label: Strip (one line under the title)
+        value: plx-props-strip
+      - label: Margin (card on the right, reading view)
+        value: plx-props-margin
+      - label: LCD (recessed display)
+        value: plx-props-lcd
+      - label: Tucked (shown on hover)
+        value: plx-props-tucked
+  -
+    id: plx-prop-fs
+    title: Properties text size
+    type: variable-number-slider
+    default: 13
+    min: 9.5
+    max: 14
+    step: 0.5
+    format: px
+  -
+    id: plx-properties-hide-add
+    title: Hide "Add property"
+    type: class-toggle
+    default: false
+  -
+    id: plx-properties-reading-hidden
+    title: Hide properties in reading view
+    type: class-toggle
+    default: false
+  -
+    id: plx-no-kicker
+    title: Hide the note-type label
+    description: The small ARTICLE / PERSON / MEMO label above the title of notes with a type-… cssclass.
+    type: class-toggle
+    default: false
+  -
+    id: plx-bg-grid
+    title: Grid paper behind notes
+    description: A fine engineering grid on the page.
+    type: class-toggle
+    default: false
+  -
+    id: plx-bg-gradient
+    title: Teal glow at the top of notes
+    description: The Plectics cover gradient, fading into the page.
+    type: class-toggle
+    default: false
+  # ===================== TYPED TAGS GROUP =====================
+  # The tag options (CSS in b-layer/84-tag-options.css) live here, merged from
+  # the former section plectics-alto-tags; their ids are unchanged.
+  # "Plain tags" stays (84 reads plx-tags-plain as its Plain preset).
+  -
+    id: plx-g-tags
+    title: Typed tags
+    type: heading
+    level: 1
+    collapsed: true
+  -
+    id: plx-tags-plain
+    title: Plain tags
+    description: Tags as coloured text, without boxes.
+    type: class-toggle
+    default: false
+
+  -
+    id: plx-tgp
+    title: Style
+    description: "How tags look in notes, in Properties and in the Tag pane. Plectics is the theme's own look. Obsidian, coloured fills each tag with a tint of its family colour; Obsidian, half fills the part before the first / solidly. Path shades the part after the /. The splits need the Typed Pages plugin."
+    type: class-select
+    allowEmpty: false
+    default: plx-tgp-plectics
+    options:
+      - label: Plectics (default)
+        value: plx-tgp-plectics
+      - label: Path (split at /)
+        value: plx-tgp-path
+      - label: Obsidian, coloured
+        value: plx-tgp-obsidian
+      - label: Obsidian, half (split at /)
+        value: plx-tgp-ohalf
+      - label: Label
+        value: plx-tgp-label
+      - label: Plain
+        value: plx-tgp-plain
+  -
+    id: plx-tg-now
+    title: Now
+    type: info-text
+    markdown: true
+    description: "#topic #type/article #status/draft #status/stable #status/empty #meta/home #author/name"
+  -
+    id: plx-tg-g-groups
+    title: Custom tag groups
+    type: heading
+    level: 2
+    collapsed: false
+  -
+    id: plx-tg-groups-note
+    title: Your own tag families
+    type: info-text
+    description: "Up to three groups of your own, each a prefix and a colour. Set the prefixes (for example project for #project and #project/alpha) in the Typed Pages plugin settings; pick the colours here. Without the plugin these colours are not used."
+  -
+    id: plx-tagu-custom-1
+    title: Group 1
+    description: "Prefix: Typed Pages › Custom 1 prefix"
+    type: variable-themed-color
+    format: hex
+    opacity: false
+    default-light: "#84418a"
+    default-dark: "#d9a3dc"
+  -
+    id: plx-tagu-custom-2
+    title: Group 2
+    description: "Prefix: Typed Pages › Custom 2 prefix"
+    type: variable-themed-color
+    format: hex
+    opacity: false
+    default-light: "#5b6618"
+    default-dark: "#c3cf7c"
+  -
+    id: plx-tagu-custom-3
+    title: Group 3
+    description: "Prefix: Typed Pages › Custom 3 prefix"
+    type: variable-themed-color
+    format: hex
+    opacity: false
+    default-light: "#2c5f92"
+    default-dark: "#94bdea"
+  -
+    id: plx-tg-g-adv
+    title: Advanced (overrides)
+    type: heading
+    level: 2
+    collapsed: true
+  -
+    id: plx-tg-adv-note
+    title: Overrides
+    type: info-text
+    description: "Each option left at From style follows the Style above. Any other choice wins over the Style, whichever Style it is. The specimen under Style shows the result."
+  -
+    id: plx-tg-colour
+    title: "Colour by"
+    description: "Family: each family its own hue. One colour: the accent. Ink: no colour."
+    type: class-select
+    allowEmpty: false
+    default: plx-tg-colour-style
+    options:
+      - label: From style
+        value: plx-tg-colour-style
+      - label: Family
+        value: plx-tg-colour-family
+      - label: One colour (accent)
+        value: plx-tg-colour-accent
+      - label: Ink (no colour)
+        value: plx-tg-colour-ink
+  -
+    id: plx-tg-apply
+    title: "Colour applies to"
+    type: class-select
+    allowEmpty: false
+    default: plx-tg-apply-style
+    options:
+      - label: From style
+        value: plx-tg-apply-style
+      - label: Text and frame
+        value: plx-tg-apply-both
+      - label: Text only
+        value: plx-tg-apply-text
+      - label: Frame only
+        value: plx-tg-apply-frame
+  -
+    id: plx-tg-corner
+    title: "Corners"
+    type: class-select
+    allowEmpty: false
+    default: plx-tg-corner-style
+    options:
+      - label: From style
+        value: plx-tg-corner-style
+      - label: Square
+        value: plx-tg-corner-square
+      - label: Slightly rounded (3 px)
+        value: plx-tg-corner-round
+      - label: Pill
+        value: plx-tg-corner-pill
+      - label: Chamfered (label cut)
+        value: plx-tg-corner-cut
+  -
+    id: plx-tg-frame
+    title: "Frame"
+    type: class-select
+    allowEmpty: false
+    default: plx-tg-frame-style
+    options:
+      - label: From style
+        value: plx-tg-frame-style
+      - label: Coloured
+        value: plx-tg-frame-colour
+      - label: Neutral (rule grey)
+        value: plx-tg-frame-neutral
+      - label: None
+        value: plx-tg-frame-none
+  -
+    id: plx-tg-fweight
+    title: "Frame weight"
+    type: class-select
+    allowEmpty: false
+    default: plx-tg-fweight-style
+    options:
+      - label: From style
+        value: plx-tg-fweight-style
+      - label: 1 px
+        value: plx-tg-fweight-1
+      - label: 1.5 px
+        value: plx-tg-fweight-15
+  -
+    id: plx-tg-fill
+    title: "Fill"
+    description: "Solid: a filled label; its text turns light or dark to stay readable."
+    type: class-select
+    allowEmpty: false
+    default: plx-tg-fill-style
+    options:
+      - label: From style
+        value: plx-tg-fill-style
+      - label: Tint
+        value: plx-tg-fill-tint
+      - label: Solid
+        value: plx-tg-fill-solid
+      - label: None
+        value: plx-tg-fill-none
+  -
+    id: plx-tg-face
+    title: "Face"
+    type: class-select
+    allowEmpty: false
+    default: plx-tg-face-style
+    options:
+      - label: From style
+        value: plx-tg-face-style
+      - label: Mono
+        value: plx-tg-face-mono
+      - label: Interface
+        value: plx-tg-face-ui
+      - label: Same as text
+        value: plx-tg-face-text
+  -
+    id: plx-tgo-size
+    title: Size
+    description: "92 is the Plectics size (0.76 em in notes, 11.5 px in Properties); other values scale from it. Applies to every Style."
+    type: variable-number-slider
+    default: 92
+    min: 85
+    max: 110
+    step: 1
+  -
+    id: plx-tg-hash
+    title: "The # mark"
+    type: class-select
+    allowEmpty: false
+    default: plx-tg-hash-style
+    options:
+      - label: From style
+        value: plx-tg-hash-style
+      - label: Shown in family colour
+        value: plx-tg-hash-shown
+      - label: Dimmed
+        value: plx-tg-hash-dim
+      - label: Hidden
+        value: plx-tg-hash-hidden
+  -
+    id: plx-tg-g-family
+    title: Family colours
+    type: heading
+    level: 2
+    collapsed: true
+  -
+    id: plx-tg-family-note
+    title: Family colours
+    type: info-text
+    description: "Used by every Style that colours by family. Each colour has a light and a dark (Blue-steel) value; a colour you leave alone keeps the theme's own."
+  -
+    id: plx-tagu-topic
+    title: Topic colour
+    description: "Tags without a family prefix"
+    type: variable-themed-color
+    format: hex
+    opacity: false
+    default-light: "#1f6f6a"
+    default-dark: "#74bdf0"
+  -
+    id: plx-tagu-type
+    title: Type colour
+    description: "type/… (legacy form/…)"
+    type: variable-themed-color
+    format: hex
+    opacity: false
+    default-light: "#4f5aa0"
+    default-dark: "#aab0f0"
+  -
+    id: plx-tagu-status
+    title: Status colour
+    description: "status/…"
+    type: variable-themed-color
+    format: hex
+    opacity: false
+    default-light: "#8a6414"
+    default-dark: "#e8b85f"
+  -
+    id: plx-tagu-stable
+    title: Stable colour
+    description: "status/stable"
+    type: variable-themed-color
+    format: hex
+    opacity: false
+    default-light: "#3a7348"
+    default-dark: "#98d0a2"
+  -
+    id: plx-tagu-absent
+    title: Absent colour
+    description: "status/empty, status/trash"
+    type: variable-themed-color
+    format: hex
+    opacity: false
+    default-light: "#9a4b5a"
+    default-dark: "#ec9eac"
+  -
+    id: plx-tagu-meta
+    title: Meta colour
+    description: "meta/…"
+    type: variable-themed-color
+    format: hex
+    opacity: false
+    default-light: "#5c6670"
+    default-dark: "#aeb6cc"
+  -
+    id: plx-tagu-author
+    title: Author colour
+    description: "author/…"
+    type: variable-themed-color
+    format: hex
+    opacity: false
+    default-light: "#a3542a"
+    default-dark: "#f0a17a"
+  -
+    id: plx-tg-g-where
+    title: Where tags are styled
+    type: heading
+    level: 2
+    collapsed: true
+  -
+    id: plx-tg-where
+    title: Apply to
+    description: "Inline tags are the ones in Reading view and Live Preview; chips are the tags in the Properties box."
+    type: class-select
+    allowEmpty: false
+    default: plx-tg-where-all
+    options:
+      - label: Inline tags and Properties chips
+        value: plx-tg-where-all
+      - label: Inline tags only
+        value: plx-tg-where-inline
+  -
+    id: plx-tg-pane
+    title: Tag pane follows the tag style
+    description: "On: each row in the Tag pane is drawn as a tag, in the Topic colour (the pane gives no per-tag hook for families). Off (default): as before."
+    type: class-toggle
+    default: false
+  # =================== end of TYPED TAGS GROUP ===================
+  -
+    id: plx-g-canvas
+    title: Canvas
+    type: heading
+    level: 1
+    collapsed: true
+  -
+    id: plx-canvas-dots
+    title: Dots instead of grid
+    description: The canvas background as a dot pattern.
+    type: class-toggle
+    default: false
+  -
+    id: plx-canvas-fine
+    title: Finer grid
+    description: Hairlines every 10 units.
+    type: class-toggle
+    default: false
+  -
+    id: plx-canvas-no-frame
+    title: Hide the canvas frame
+    description: Removes the stepped border around the canvas. Card keys, zoom controls and readouts stay.
+    type: class-toggle
+    default: false
+
+*/
+
+/* ---------- The Style Settings panel: an instrument panel ----------
+   Was: Garamond section titles floating between hairlines, serif
+   descriptions, nested groups indented behind thin left rules, a loose
+   "info" row. Now:
+     section  a slate title band (condensed caps; Chicago when Chicago is on)
+     group    a legend chip on top of one boxed panel of rows
+     rows     sans name, sans description in ink-3, the "Default:" line in mono
+   Specificity is raised with .modal.mod-settings because main Plectics
+   (60-plugins, 91-qa-fixes) styles the same elements with !important. */
+
+/* section: slate title band */
+.modal.mod-settings .vertical-tab-content .style-settings-heading[data-level="0"] {
+  margin: 12px 0 0 !important;
+  padding: 0 6px 0 10px !important;
+  min-height: 30px;
+  background: var(--plx-band) !important;
+  border: 1px solid var(--plx-rule-strong) !important;
+  border-radius: 0 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+.modal.mod-settings .style-settings-heading[data-level="0"] .setting-item-name {
+  font-family: var(--plx-ui-cond) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--plx-slate-ink) !important;
+}
+body:not(.plx-chicago-off) .modal.mod-settings .style-settings-heading[data-level="0"] .setting-item-name {
+  font-family: var(--plx6-chicago) !important;
+  font-weight: 400 !important;
+  font-synthesis: none;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.modal.mod-settings .style-settings-heading[data-level="0"] .clickable-icon { color: var(--plx-slate-ink) !important; }
+.modal.mod-settings .style-settings-heading[data-level="0"] .style-settings-collapse-indicator::before { color: var(--plx-slate-ink) !important; }
+.modal.mod-settings .style-settings-heading[data-level="0"] .clickable-icon:hover { color: var(--plx-teal) !important; background: transparent; }
+/* section body: one casing under the band */
+.modal.mod-settings .style-settings-heading[data-level="0"] + .style-settings-container {
+  margin: 0 0 4px !important;
+  padding: 4px 12px 14px !important;
+  background: var(--plx-case-hi);
+  border: 1px solid var(--plx-rule) !important;
+  border-top: 0 !important;
+}
+/* no indented left rules */
+.modal.mod-settings .style-settings-container { border-inline-start: 0 !important; padding-inline-start: 0; }
+.modal.mod-settings .style-settings-container .style-settings-container { padding-inline: 0 !important; margin: 0 !important; }
+
+/* group: legend chip + one boxed panel */
+.modal.mod-settings .style-settings-heading[data-level="1"] {
+  margin: 12px 0 0 !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.modal.mod-settings .style-settings-heading[data-level="1"] .setting-item-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 14px 3px 8px;
+  font-family: var(--plx-ui-cond) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  color: var(--plx-label-ink) !important;
+  background: var(--plx-label-bg);
+  clip-path: var(--plx-clip-tr);
+}
+.modal.mod-settings .style-settings-heading[data-level="1"] .style-settings-collapse-indicator::before { color: var(--plx-label-ink) !important; }
+.modal.mod-settings .style-settings-heading[data-level="1"] .setting-item-control { display: none; }  /* per-group export key: the section band has one */
+.modal.mod-settings .style-settings-heading[data-level="1"] + .style-settings-container {
+  padding: 0 12px !important;
+  background: var(--plx-paper);
+  border: 1px solid var(--plx-rule) !important;
+}
+
+/* rows */
+.modal.mod-settings .style-settings-container > .setting-item:not(.setting-item-heading) {
+  margin: 0 !important;
+  padding: 9px 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-top: 1px solid var(--plx-rule-soft) !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  align-items: center;
+}
+.modal.mod-settings .style-settings-container > .setting-item:not(.setting-item-heading):first-child,
+.modal.mod-settings .style-settings-container > .style-settings-heading + .setting-item { border-top: 0 !important; }
+.modal.mod-settings .style-settings-container .setting-item-name {
+  font-family: var(--plx-ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--plx-ink);
+}
+.modal.mod-settings .style-settings-container .setting-item-description {
+  font-family: var(--plx-ui) !important;
+  font-size: 12px !important;
+  line-height: 1.4;
+  color: var(--plx-ink-3);
+  max-width: 62ch;
+  padding-top: 2px;
+}
+.modal.mod-settings .style-settings-container .setting-item-description small {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--plx-mono);
+  font-size: 10.5px;
+  color: var(--plx-ink-4);
+}
+.modal.mod-settings .style-settings-container .setting-item-description small strong { font-weight: 400; }
+.modal.mod-settings .style-settings-container .setting-item-control { gap: 8px; flex-shrink: 0; }
+.modal.mod-settings .style-settings-container .setting-item-control select.dropdown { min-width: 170px; }
+/* the per-row reset key: quiet until hovered */
+.modal.mod-settings .style-settings-container .setting-item-control > .extra-setting-button { opacity: 0.45; }
+.modal.mod-settings .style-settings-container .setting-item:hover .setting-item-control > .extra-setting-button { opacity: 1; }
+/* info rows (main Plectics may use them): a caution note, amber edge */
+.modal.mod-settings .style-settings-info-text {
+  border-inline-start: 3px solid var(--plx-amber) !important;
+  background: var(--plx-amber-wash) !important;
+  padding-inline: 10px !important;
+}
+
+/* ---------- Level 2: sub-groups inside a group panel ----------
+   (Used once the Tags group merges in: its Preset / Colour / Shape ... headings
+   become level 2.) A quiet caps label on a rule inside the parent panel; no
+   chip, no second box, no per-group keys. */
+.modal.mod-settings .style-settings-heading[data-level="2"] {
+  margin: 0 !important;
+  padding: 12px 0 4px !important;
+  min-height: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-top: 1px solid var(--plx-rule) !important;
+  box-shadow: none !important;
+}
+.modal.mod-settings .style-settings-container > .style-settings-heading[data-level="2"]:first-child { border-top: 0 !important; }
+.modal.mod-settings .style-settings-heading[data-level="2"] .setting-item-name {
+  font-family: var(--plx-ui-cond) !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--plx-ink-2) !important;
+}
+.modal.mod-settings .style-settings-heading[data-level="2"] .setting-item-control { display: none; }
+.modal.mod-settings .style-settings-heading[data-level="2"] + .style-settings-container {
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+
+/* ---------- State chip after a row name ----------
+   Draws nothing by itself: a row shows it only where some rule sets
+   `content` (84-tag-options uses it for "overrides style"). The Alto rows
+   here set none. */
+.modal.mod-settings .setting-item[data-id] > .setting-item-info > .setting-item-name::after {
+  margin-left: 8px;
+  padding: 1px 6px;
+  font: 700 9.5px/1.4 var(--plx-ui-cond);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--plx-amber);
+  border: 1px solid currentColor;
+  vertical-align: 1px;
+}
+
+/* ---------- Nothing looks disabled ----------
+   81-audit-a4 (A4-16) dims the Metal control in light mode and the two
+   colour-icon follow-ups while colour icons are off. Their descriptions say
+   when they apply; the controls stay at full strength. */
+.modal.mod-settings .vertical-tab-content .setting-item:is([data-id="plx6-y2k-metal"], [data-id="plx-ff-scope"], [data-id="plx-ff-iconize"]) :is(.setting-item-control, .setting-item-info) { opacity: 1 !important; }
+
+/* ---------- The one preview: Classic Mac font ----------
+   A small title plate in the face the option gives now (Chicago when on, the
+   interface face when Off), under the description. */
+.modal.mod-settings .setting-item[data-id="plx-chicago"] > .setting-item-info::after {
+  content: "Window Title";
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 12px;
+  font: 400 12px/16px var(--plx-ui);
+  font-synthesis: none;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--plx-ink);
+  background: var(--plx-paper-2);
+  border: 1px solid var(--plx-rule-strong);
+}
+body:not(.plx-chicago-off) .modal.mod-settings .setting-item[data-id="plx-chicago"] > .setting-item-info::after {
+  font-family: var(--plx6-chicago);
+}
