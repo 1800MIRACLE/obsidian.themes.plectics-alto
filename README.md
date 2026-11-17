@@ -10,6 +10,23 @@ Plectics Alto is an Obsidian theme with light and dark modes, serif typography, 
 
 ![Light mode](screenshots/light.png)
 
+<details>
+<summary>More screenshots</summary>
+
+![Paper note and Properties in light mode](screenshots/light-paper-note.jpg)
+
+![Mathematical and collapsible callouts](screenshots/light-math-callouts.jpg)
+
+![Graph view in light mode](screenshots/light-graph.jpg)
+
+![State diagram beside Graph view in dark mode](screenshots/dark-split-graph.jpg)
+
+![File explorer and article layout in dark mode](screenshots/dark-explorer.jpg)
+
+![Canvas cards and connections in dark mode](screenshots/dark-canvas.jpg)
+
+</details>
+
 ## Features
 
 - Light mode and a blue-grey **Blue-steel** dark mode, with an optional Metal finish.
