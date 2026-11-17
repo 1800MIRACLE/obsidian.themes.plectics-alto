@@ -42,6 +42,21 @@ D16, D32 = SRC / "16", SRC / "32"
 C16, C32 = HERE / "ff-compose" / "out" / "16", HERE / "ff-compose" / "out" / "32"
 
 
+def without_text(data):
+    """Keep PNG rendering chunks byte-for-byte; omit embedded editor text."""
+    if not data.startswith(b"\x89PNG\r\n\x1a\n"):
+        raise ValueError("not a PNG")
+    chunks, offset = [data[:8]], 8
+    while offset < len(data):
+        end = offset + 12 + int.from_bytes(data[offset:offset + 4], "big")
+        if end > len(data) or end - offset < 12:
+            raise ValueError("truncated PNG chunk")
+        if data[offset + 4:offset + 8] not in (b"tEXt", b"zTXt", b"iTXt"):
+            chunks.append(data[offset:end])
+        offset = end
+    return b"".join(chunks)
+
+
 def png(name, size):
     a = (D16 if size == 16 else D32) / f"{name}.png"
     b = (C16 if size == 16 else C32) / f"{name}.png"
@@ -123,8 +138,8 @@ SVG_ALL = {
 
 
 def uri(name):
-    s16 = base64.b64encode(png(name, 16).read_bytes()).decode()
-    s32 = base64.b64encode(png(name, 32).read_bytes()).decode()
+    s16 = base64.b64encode(without_text(png(name, 16).read_bytes())).decode()
+    s32 = base64.b64encode(without_text(png(name, 32).read_bytes())).decode()
     return (f'image-set(url("data:image/png;base64,{s16}") 1x, '
             f'url("data:image/png;base64,{s32}") 2x)')
 

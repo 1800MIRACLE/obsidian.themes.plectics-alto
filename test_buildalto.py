@@ -4,6 +4,8 @@ import io
 import pathlib
 import sys
 import tempfile
+import struct
+import zlib
 
 import unittest
 from unittest.mock import patch
@@ -11,6 +13,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 import buildalto
 import buildvariants
+import gen_farmfresh
 
 
 class BuildTargets(unittest.TestCase):
@@ -64,6 +67,30 @@ class SourceChecks(unittest.TestCase):
                 with self.subTest(file=f.name):
                     self.assertEqual(buildalto.balance(text), 0)
                     self.assertFalse(any(ord(ch) < 32 and ch not in "\t\n\r" for ch in text))
+
+    def test_png_text_removal_preserves_rendering_chunks(self):
+        def chunk(kind, content):
+            return struct.pack(">I", len(content)) + kind + content + struct.pack(">I", zlib.crc32(kind + content))
+        for path in (buildalto.HERE / "icons" / "farm-fresh").rglob("*.png"):
+            original = path.read_bytes()
+            with self.subTest(icon=path.name):
+                clean = gen_farmfresh.without_text(original)
+                text = b"".join(chunk(kind, b"editor\0metadata") for kind in (b"tEXt", b"iTXt", b"zTXt"))
+                self.assertEqual(gen_farmfresh.without_text(clean[:8] + text + clean[8:]), clean)
+                self.assertEqual(gen_farmfresh.without_text(clean), clean)
+                # Every non-text chunk, including its CRC, stays identical and ordered.
+                offset = 8
+                kept = [original[:8]]
+                while offset < len(original):
+                    size, kind = struct.unpack(">I4s", original[offset:offset + 8])
+                    raw = original[offset:offset + size + 12]
+                    if kind not in (b"tEXt", b"iTXt", b"zTXt"):
+                        kept.append(raw)
+                    offset += size + 12
+                self.assertEqual(clean, b"".join(kept))
+        for invalid in (b"not png", b"\x89PNG\r\n\x1a\n\0", b"\x89PNG\r\n\x1a\n\0\0\0\x20IDAT"):
+            with self.assertRaises(ValueError):
+                gen_farmfresh.without_text(invalid)
 
 
 class Variants(unittest.TestCase):
