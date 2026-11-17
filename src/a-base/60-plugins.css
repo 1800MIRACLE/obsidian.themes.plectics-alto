@@ -1,0 +1,279 @@
+/* ==========================================================================
+   60 · PLUGINS & CORE VIEWS
+   Compatibility for common community plugins:
+   Style Settings, Iconize (tree: 20), File Explorer Note Count (tree: 20),
+   Recent Files (tree: 20), Callout Copy Buttons (callouts: 40), Homepage,
+   Widgets, Tag Wrangler, Multi-Tag, Advanced Canvas, Excalidraw,
+   Agent Client — plus core Canvas, Graph, Bases, Outline, Calendar/Kanban
+   (installed, disabled) so enabling them later stays on-theme.
+   ========================================================================== */
+
+/* ---------- Typography options (Style Settings) ---------- */
+body.plx-display-eb { --plx-display: var(--plx-serif); --plx-display-weight: 500; }
+body.plx-body-plex { --font-text-theme: var(--plx-sans); }
+body.plx-body-inter { --font-text-theme: "Inter", var(--plx-sans); }
+body.plx-body-instrument { --font-text-theme: "Instrument Sans", var(--plx-sans); }
+body.plx-body-golos { --font-text-theme: "Golos Text", var(--plx-sans); }
+body.plx-body-verdana { --font-text-theme: Verdana, var(--plx-sans); }
+body.plx-body-serif { --font-text-theme: var(--plx-text-serif); }
+body.plx-body-sitka { --font-text-theme: "Sitka Text", var(--plx-text-serif); }
+body.plx-body-georgia { --font-text-theme: Georgia, var(--plx-text-serif); }
+body.plx-body-constantia { --font-text-theme: var(--plx-reading); }
+body.plx-body-palatino { --font-text-theme: "Palatino Linotype", "Book Antiqua", var(--plx-text-serif); }
+body.plx-body-concrete { --font-text-theme: "CMU Concrete", var(--plx-text-serif); }
+body.plx-body-cmu { --font-text-theme: "CMU Serif", "Constantia", "IBM Plex Serif", Georgia, serif; }   /* A4-10: was the Constantia stack */
+body.plx-body-garamond { --font-text-theme: var(--plx-serif); }
+body.plx-ui-mono { --font-interface-theme: var(--plx-mono); }
+body.plx-headings-sans {
+  --h1-font: var(--plx-ui); --h2-font: var(--plx-ui); --h3-font: var(--plx-ui); --h4-font: var(--plx-ui);
+  --inline-title-font: var(--plx-ui);
+}
+body.plx-flat .clickable-icon:hover,
+body.plx-flat button:not(.clickable-icon),
+body.plx-flat .side-dock-ribbon-action,
+body.plx-flat .nav-action-button { box-shadow: none !important; background-image: none !important; }
+body.plx-wide-lines { --file-line-width: 58rem; }
+
+/* ---------- Style Settings plugin's own panel ---------- */
+.style-settings-heading {
+  border-bottom: 1px solid var(--plx-rule-soft);
+  padding: 6px 0;
+}
+.style-settings-heading[data-level="0"] .setting-item-name { font-family: var(--plx-serif); font-size: 1.2em; }
+.style-settings-collapse-indicator { color: var(--plx-ink-3); }
+.style-settings-container { border-inline-start: 1px solid var(--plx-rule-soft); padding-inline-start: 10px; }
+
+/* Canvas, Graph and Bases live in 70-views.css */
+
+/* ---------- Outline (core) ---------- */
+.workspace-leaf-content[data-type="outline"] .tree-item-inner { font-size: 12.5px; }
+
+/* ---------- Homepage plugin ---------- */
+.nv-command-pill {
+  font-family: var(--plx-mono);
+  border: 1px solid var(--plx-rule) !important;
+  border-radius: var(--plx-r) !important;
+  background: var(--plx-key-face) !important;
+}
+
+/* ---------- Widgets plugin (countdown, counter, quote) ---------- */
+.Countdown_Container, .Counter__container, .Quote_Container {
+  border: 1px solid var(--plx-rule-strong);
+  border-radius: var(--plx-r);
+  background: var(--plx-eink);
+  box-shadow: var(--plx-recessed);
+  color: var(--plx-eink-ink);
+  padding: 8px 12px;
+}
+.Countdown_Item, .Counter__counter {
+  font-family: var(--plx-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--plx-lcd-ink);
+}
+.Countdown_To, .Counter__text {
+  font-family: var(--plx-ui-cond); text-transform: uppercase; letter-spacing: var(--plx-track);
+  font-size: var(--plx-fs-label); color: color-mix(in srgb, var(--plx-lcd-ink) 70%, transparent);
+}
+.Quote_Text { font-family: var(--plx-quote-font); font-style: var(--plx-quote-style); font-size: 1.15em; color: var(--plx-ink); }
+.Quote_Container { background: var(--plx-paper-2); color: var(--plx-ink); box-shadow: none; border-color: var(--plx-rule); }
+.Quote_Author { font-family: var(--plx-ui-cond); text-transform: uppercase; letter-spacing: var(--plx-track); font-size: 11px; color: var(--plx-ink-3); }
+.WidgetConfig__container input { font-family: var(--plx-ui); }
+
+/* ---------- Tag Wrangler / Multi-Tag / tag pane ---------- */
+.workspace-leaf-content[data-type="tag"] .tag-pane-tag-text,
+.workspace-leaf-content[data-type="tag"] .tree-item-inner-text { font-family: var(--plx-mono); font-size: 12px; }
+.tag-pane-tag-count, .workspace-leaf-content[data-type="tag"] .tree-item-flair {
+  font-family: var(--plx-mono); font-size: 10.5px; background: transparent; color: var(--plx-ink-3);
+}
+
+/* ---------- Excalidraw — keep its canvas untouched, theme only the chrome ---------- */
+.excalidraw .Island, .excalidraw .App-toolbar {
+  border-radius: var(--plx-r) !important;
+  box-shadow: var(--plx-float) !important;
+}
+.excalidraw .ToolIcon__icon { border-radius: var(--plx-r-key) !important; }
+.excalidraw-plugin .excalidraw .layer-ui__wrapper { font-family: var(--plx-ui); }
+
+/* ---------- Agent Client (ACP chat) ---------- */
+.agent-client-chat-input-textarea {
+  font-family: var(--plx-ui) !important;
+  background: var(--plx-well) !important;
+  border: 1px solid var(--plx-rule) !important;
+  border-top-color: var(--plx-rule-strong) !important;
+  border-radius: var(--plx-r) !important;
+  box-shadow: var(--plx-recessed) !important;
+}
+.agent-client-chat-send-button {
+  background: linear-gradient(180deg, var(--plx-teal-bright), var(--plx-teal)) !important;
+  color: var(--text-on-accent) !important;
+  border-radius: var(--plx-r-key) !important;
+  border: 1px solid var(--plx-teal-deep) !important;
+}
+.agent-client-message-renderer { font-size: 13px; }
+.agent-client-message-permission-request {
+  border: 1px dashed var(--plx-amber) !important;   /* provisional / needs decision */
+  background: var(--plx-amber-wash) !important;
+  border-radius: var(--plx-r) !important;
+}
+.agent-client-permission-option {
+  border: 1px solid var(--plx-rule) !important;
+  border-radius: var(--plx-r-key) !important;
+  background: var(--plx-key-face) !important;
+  box-shadow: var(--plx-raised) !important;
+}
+.agent-client-loading-dot { background: var(--plx-teal) !important; border-radius: 0 !important; }
+.agent-client-floating-button {
+  border-radius: var(--plx-r-key) !important;
+  background: var(--plx-key-face) !important;
+  border: 1px solid var(--plx-rule-strong) !important;
+  box-shadow: var(--plx-float) !important;
+  color: var(--plx-teal) !important;
+}
+
+/* ---------- Kanban / Calendar (installed, currently disabled) ---------- */
+.kanban-plugin__lane {
+  background: var(--plx-case-hi) !important;
+  border: 1px solid var(--plx-rule) !important;
+  border-radius: var(--plx-r) !important;
+}
+.kanban-plugin__lane-header-wrapper { border-bottom: 1px solid var(--plx-rule-soft); }
+.kanban-plugin__lane-title-text { font-family: var(--plx-ui-cond); text-transform: uppercase; letter-spacing: var(--plx-track); }
+.kanban-plugin__item {
+  border: 1px solid var(--plx-rule) !important;
+  border-radius: var(--plx-r) !important;
+  background: var(--plx-paper) !important;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05) !important;
+}
+#calendar-container .day, #calendar-container .week-num { font-family: var(--plx-mono); font-size: 11px; }
+#calendar-container .today { color: var(--plx-teal) !important; font-weight: 700; }
+#calendar-container .active { background: var(--plx-lcd) !important; color: var(--plx-lcd-ink) !important; border-radius: 0; }
+#calendar-container .title { font-family: var(--plx-serif); }
+
+/* ---------- Plectics Instruments plugin hooks (styles ship with plugin) ---------- */
+.plx-instrument { --plx-instrument-radius: var(--plx-r); }
+
+/* ---------- Widgets clock: a seven-segment readout ----------
+   Uses the installed "Seven Segment" face (local font; falls back to the mono
+   face). Light = Casio LCD window, dark segments. Dark = amber VFD with glow,
+   like the theme's other dark displays. The unlit "8" segments sit behind the
+   digits: right-aligned and clipped to the time's own width, so they line up
+   for HH:mm and HH:mm:ss alike. */
+.Clock_Face {
+  --plx-seg-font: "Seven Segment", "7-Segment", var(--plx-mono);
+  --plx-seg-bg: color-mix(in srgb, var(--plx-lcd) 70%, #c9d3c6);
+  --plx-seg-ink: #17211f;
+  --plx-seg-ghost: rgba(23, 33, 31, 0.075);
+  --plx-seg-glow: none;
+  width: fit-content;
+  min-width: 15rem;
+  margin: 1.2em auto 1.6em;
+  padding: 12px 22px 10px;
+  background: var(--plx-seg-bg);
+  border: 1px solid var(--plx-rule-strong);
+  border-radius: var(--plx-r-key);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.22), inset 0 0 0 4px color-mix(in srgb, var(--plx-seg-bg) 70%, #000 6%), 0 1px 0 var(--plx-hl);
+  text-align: center;
+  line-height: 1;
+}
+.theme-dark .Clock_Face {
+  --plx-seg-bg: #110d07;
+  --plx-seg-ink: #f2b445;
+  --plx-seg-ghost: rgba(242, 180, 69, 0.075);
+  --plx-seg-glow: 0 0 6px rgba(242, 180, 69, 0.55), 0 0 1px rgba(242, 180, 69, 0.9);
+  border-color: #000;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+.Clock_Face .Clock_Divider { display: none; }
+.Clock_Face .Clock__time-container { gap: 8px; align-items: flex-end; }
+.Clock_Face .Clock__time {
+  position: relative;
+  overflow: hidden;
+  font-family: var(--plx-seg-font);
+  font-size: 58px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--plx-seg-ink);
+  text-shadow: var(--plx-seg-glow);
+  letter-spacing: 0.02em;
+}
+.Clock_Face .Clock__time::before {
+  content: "88:88:88";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  color: var(--plx-seg-ghost);
+  text-shadow: none;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 0;
+}
+.Clock_Face .Clock__time-container:has(.Clock__am-pm) .Clock__am-pm { display: none; }   /* the 12-hour format already prints AM/PM inside the time */
+.Clock_Face .Clock__am-pm {
+  font-family: var(--plx-seg-font);
+  font-size: 20px;
+  line-height: 1;
+  padding-bottom: 6px;
+  color: var(--plx-seg-ink);
+  text-shadow: var(--plx-seg-glow);
+}
+.Clock_Face .Clock_Date {
+  margin-top: 8px;
+  font-family: var(--plx-mono);
+  font-size: 10.5px;
+  line-height: 1;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--plx-seg-ink) 72%, transparent);
+  text-shadow: var(--plx-seg-glow);
+}
+
+/* ---------- Plectics World Clock: a row of zone displays ----------
+   One row of equal columns that never wraps. Each display is a size
+   container, so its digits, label and date scale with its own width: a
+   narrower window just gives smaller numbers. */
+.plx-clocks {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: clamp(4px, 1.5vw, 12px);
+  margin: 1.2em 0 1.6em;
+}
+.plx-clocks .Clock_Face.plx-zone {
+  container-type: inline-size;
+  width: auto;
+  min-width: 0;
+  margin: 0;
+  padding: clamp(4px, 5cqi, 9px) clamp(3px, 4cqi, 10px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+}
+.plx-clocks .plx-zone .Clock__time-container { width: 100%; justify-content: center; }
+.plx-clocks .plx-zone .Clock__time { font-size: clamp(14px, 30cqi, 46px); white-space: nowrap; }
+.plx-clocks .plx-zone .Clock__time::before { content: "88:88"; }
+.plx-clocks .plx-zone-label {
+  margin-bottom: clamp(2px, 3cqi, 5px);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--plx-ui-cond);
+  font-size: clamp(7px, 6.5cqi, 10.5px);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-kerning: none;
+  color: color-mix(in srgb, var(--plx-seg-ink) 78%, transparent);
+  text-shadow: var(--plx-seg-glow);
+}
+.plx-clocks .plx-zone .Clock_Date {
+  margin-top: clamp(2px, 3cqi, 6px);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: clamp(6.5px, 5.8cqi, 9.5px);
+  letter-spacing: 0.1em;
+}
+.plx-clocks-error { font-family: var(--plx-mono); font-size: 12px; color: var(--plx-red); }

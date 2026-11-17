@@ -1,0 +1,125 @@
+/* ==========================================================================
+   PLECTICS ALTO · 67 · CHICAGO   (loads after the plugin rules in 62 so it wins ties)
+   ChicagoFLF (the 1984 Macintosh system face) is already used by Plectics
+   for graph node labels and the home-page windows. Plectics-6 extends it to
+   the places where the classic Mac used it: window title bars, alert boxes,
+   menus and push buttons. Never for reading text, data or numbers.
+
+   Style Settings → Plectics Alto → Interface → Classic Mac font:
+     plx-chicago-off       none of this
+     plx-chicago-titles    (default) window/dialog titles, alerts (notices),
+                           canvas group labels, the tree's root strip,
+                           settings group titles, Kanban lanes, calendar month
+     plx-chicago-system7   + menus, dialog buttons, tab and view titles,
+                           tooltips, suggestion titles
+   The default rules read body:not(.plx-chicago-off), so "Titles" also
+   holds with no class at all (Style Settings not installed).
+
+   Rules: one weight only (ChicagoFLF has no bold; no faux bold, no
+   synthetic italic), mixed case, no tracking, 12px nominal — the size the
+   face was drawn for. If ChicagoFLF is not installed the stack falls back
+   to the condensed label face and layout does not move.
+   ========================================================================== */
+
+body {
+  --plx6-chicago: "ChicagoFLF", "Chicago", var(--plx-ui-cond);
+  --plx6-chicago-fs: 12px;
+}
+
+/* ---------- titles: window bars, dialogs, alerts ---------- */
+body:not(.plx-chicago-off) :is(
+  .modal:not(.mod-settings) .modal-header,
+  .modal:not(.mod-settings) > .modal-title,
+  .modal:not(.mod-settings) .modal-header .modal-title,
+  .titlebar-text,
+  .notice,
+  .vertical-tab-header-group-title,
+  .oz-explorer-root-nav-folder-title,
+  #calendar-container .title,
+  #calendar-container .title .month,
+  .kanban-plugin__lane-title-text,
+  .kanban-plugin__lane-title-text :is(.markdown-preview-view, p)
+) {
+  font-family: var(--plx6-chicago);
+  font-weight: 400;
+  font-synthesis: none;
+  letter-spacing: 0;
+  text-transform: none;
+}
+body:not(.plx-chicago-off) :is(
+  .modal:not(.mod-settings) .modal-header,
+  .modal:not(.mod-settings) > .modal-title,
+  .modal:not(.mod-settings) .modal-header .modal-title,
+  .titlebar-text,
+  .notice,
+  .oz-explorer-root-nav-folder-title,
+  .kanban-plugin__lane-title-text,
+  .kanban-plugin__lane-title-text :is(.markdown-preview-view, p)
+) {
+  font-size: var(--plx6-chicago-fs);
+}
+/* the calendar month is a heading: Chicago a size up */
+body:not(.plx-chicago-off) #calendar-container .title .month { font-size: 14px; }
+/* notices: a Mac alert box — square, 1px frame, hard 2px drop shadow */
+body:not(.plx-chicago-off) .notice {
+  border-radius: 0;
+  box-shadow: 2px 2px 0 var(--plx-rule-strong);
+  line-height: 1.35;
+}
+body:not(.plx-chicago-off) .vertical-tab-header-group-title {
+  font-size: 11px;
+}
+/* canvas groups: the label is a window title tab */
+body:not(.plx-chicago-off) .canvas-node-group > .canvas-group-label:not([contenteditable="true"]) {
+  font-family: var(--plx6-chicago) !important;   /* base rule uses !important */
+  font-weight: 400 !important;
+  font-synthesis: none;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  font-size: var(--plx6-chicago-fs) !important;
+}
+
+/* ---------- System 7: menus, buttons, tabs, tooltips ---------- */
+body.plx-chicago-system7 :is(
+  .menu-item-title,
+  .menu-item.is-label,
+  .menu-group-label,
+  .modal button,
+  .workspace-tab-header-inner-title,
+  .view-header-title,
+  .tooltip,
+  .suggestion-item .suggestion-title,
+  .prompt-instructions
+) {
+  font-family: var(--plx6-chicago);
+  font-weight: 400;
+  font-synthesis: none;
+  letter-spacing: 0;
+}
+body.plx-chicago-system7 :is(.menu-item-title, .modal button, .workspace-tab-header-inner-title,
+  .view-header-title, .tooltip, .suggestion-item .suggestion-title) {
+  font-size: var(--plx6-chicago-fs);
+}
+/* the active tab was 600 weight: Chicago has one weight, so mark it by ink */
+body.plx-chicago-system7 .workspace-tab-header.is-active .workspace-tab-header-inner-title {
+  font-weight: 400;
+  color: var(--plx-ink);
+}
+body.plx-chicago-system7 .menu-item.is-label,
+body.plx-chicago-system7 .menu-group-label {
+  text-transform: none;
+}
+
+/* ---------- Calendar header: one face ----------
+   It mixed four faces (Chicago month, mono year, condensed TODAY key,
+   bold condensed weekdays). Now the whole header (month, year, Today
+   key, weekday names) is Chicago, and the day numbers stay mono (data). */
+body:not(.plx-chicago-off) #calendar-container :is(.title .month, .title .year, .reset-button, th) {
+  font-family: var(--plx6-chicago) !important;   /* the plugin rules in 62 set these with ids */
+  font-weight: 400 !important;
+  font-synthesis: none;
+  letter-spacing: 0 !important;
+}
+body:not(.plx-chicago-off) #calendar-container .title .year { font-size: 14px; color: var(--plx-ink-3); }
+body:not(.plx-chicago-off) #calendar-container .reset-button { font-size: 12px; text-transform: none !important; }
+body:not(.plx-chicago-off) #calendar-container th { font-size: 11px; text-transform: none !important; }

@@ -1,0 +1,866 @@
+/* ==========================================================================
+   70 · VIEWS — Bases, Graph, Canvas
+   Bases read as a laboratory database on an instrument (wikitable rules,
+   condensed-caps column labels, mono readouts). The graph sits on Casio
+   graph-screen paper with ChicagoFLF labels. Canvas nodes are panels on a
+   dot-grid board; blue marks the selection range only.
+   Class names verified against Obsidian 1.15 DOM (bases-*, graph-*, canvas-*).
+   ========================================================================== */
+
+/* ---------- 0. Local tokens: scoped to the graph panes that use them ---------- */
+.workspace-leaf-content:is([data-type="graph"], [data-type="localgraph"]) > .view-content {
+  /* engineering graph paper: minor 12px, major every 5 cells */
+  --plx-v-grid-cell: 12px;
+  --plx-v-grid-major: 60px;
+  --plx-v-grid-minor-ink: color-mix(in srgb, var(--plx-teal) 5%, transparent);
+  --plx-v-grid-major-ink: color-mix(in srgb, var(--plx-teal) 11%, transparent);
+}
+.theme-dark .workspace-leaf-content:is([data-type="graph"], [data-type="localgraph"]) > .view-content {
+  --plx-v-grid-minor-ink: color-mix(in srgb, var(--plx-teal) 7%, transparent);
+  --plx-v-grid-major-ink: color-mix(in srgb, var(--plx-teal) 14%, transparent);
+}
+
+/* ==========================================================================
+   1 · BASES
+   ========================================================================== */
+
+/* ---------- 1.1 Obsidian bases variables ---------- */
+.theme-light, .theme-dark {
+  --bases-header-height: 34px;
+  --bases-header-border-width: 0 0 1px 0;
+  --bases-toolbar-badge-display: inline-flex;
+
+  --bases-table-row-height: 24px;
+  --bases-table-font-size: 12px;
+  --bases-table-border-color: var(--plx-rule-soft);
+  --bases-table-header-color: var(--plx-ink-2);
+  --bases-table-header-weight: 600;
+  --bases-table-header-background: var(--plx-paper-2);
+  --bases-table-header-background-hover: var(--plx-lcd-2);
+  --bases-table-header-icon-display: flex;
+  --bases-table-row-background-hover: var(--plx-lcd-2);
+  --bases-table-group-background: var(--plx-case-hi);
+  --bases-table-group-gap: 8px;
+  --bases-table-summary-background: var(--plx-paper-2);
+  --bases-table-summary-background-hover: var(--plx-lcd-2);
+  --bases-table-cell-radius-active: 0;
+  --bases-table-cell-radius-focus: 0;
+  --bases-table-cell-shadow-active: inset 0 0 0 1px var(--plx-teal);
+  --bases-table-cell-shadow-focus: 0 0 0 2px var(--plx-teal);
+  --bases-table-cell-background-active: var(--plx-well);
+  --bases-table-cell-background-disabled: var(--plx-paper-2);
+  --bases-table-cell-background-selected: var(--plx-blue-wash);   /* selection range = blue */
+  --bases-table-container-border-radius: 0;
+
+  --bases-group-heading-property-size: var(--plx-fs-label);
+  --bases-group-heading-property-color: var(--plx-slate-ink);
+  --bases-group-heading-value-size: var(--plx-fs-small);
+  --bases-group-heading-value-color: var(--plx-ink);
+  --bases-group-heading-value-weight: 600;
+
+  --bases-cards-background: var(--plx-paper);
+  --bases-cards-radius: var(--plx-r);
+  --bases-cards-shadow: 0 0 0 1px var(--plx-rule);
+  --bases-cards-shadow-hover: 0 0 0 1px var(--plx-teal);
+  --bases-cards-cover-background: var(--plx-paper-2);
+  --bases-cards-font-size: 12px;
+  --bases-cards-line-height: 22px;
+
+  --bases-kanban-column-background: var(--plx-case-hi);
+  --bases-kanban-column-radius: var(--plx-r);
+  --bases-kanban-card-radius: var(--plx-r);
+  --bases-kanban-card-shadow: 0 0 0 1px var(--plx-rule);
+  --bases-kanban-card-shadow-hover: 0 0 0 1px var(--plx-teal);
+  --bases-kanban-card-shadow-focus: 0 0 0 2px var(--plx-teal);
+
+  --bases-embed-border-width: 1px;
+  --bases-embed-border-color: var(--plx-rule-strong);
+  --bases-embed-border-radius: 0 0 var(--plx-r) var(--plx-r);
+  --bases-filter-input-background: var(--plx-well);
+  --bases-property-menu-item-radius: 0;
+}
+
+/* ---------- 1.2 Header strip / toolbar — a row of small keys ---------- */
+.bases-header {
+  background: var(--plx-case-hi);
+  border-color: var(--plx-rule);
+  gap: 6px;
+}
+.bases-toolbar { column-gap: 3px; font-family: var(--plx-ui); }
+.bases-toolbar .bases-toolbar-item { margin: 0; }
+.bases-toolbar .text-icon-button {
+  margin: 0;
+  height: 22px;
+  padding: 0 7px 0 5px;
+  gap: 4px;
+  font-family: var(--plx-ui-cond);
+  font-size: var(--plx-fs-label);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--plx-track);
+  color: var(--plx-ink-2);
+  background: var(--plx-key-face);
+  border: 1px solid var(--plx-rule);
+  border-bottom-color: var(--plx-rule-strong);
+  border-radius: var(--plx-r-key);
+  box-shadow: var(--plx-raised);
+  --icon-size: 13px;
+  --icon-stroke: 1.75px;
+}
+.bases-toolbar .text-icon-button .text-button-icon { color: var(--plx-ink-3); }
+.bases-toolbar .text-icon-button:hover { color: var(--plx-ink); border-color: var(--plx-rule-strong); background: var(--plx-key-face); }
+.bases-toolbar .text-icon-button:hover .text-button-icon { color: var(--plx-teal); }
+.bases-toolbar .text-icon-button:active,
+.bases-toolbar .bases-toolbar-item.has-active-menu .text-icon-button {
+  background: var(--plx-key-face-down);
+  box-shadow: var(--plx-pressed);
+}
+/* a key whose function is engaged (sort/filter set): teal legend */
+.bases-toolbar .bases-toolbar-item:not(.bases-toolbar-views-menu):not(.bases-toolbar-result-count) .text-icon-button.is-active,
+.bases-toolbar .bases-toolbar-item:not(.bases-toolbar-views-menu):not(.bases-toolbar-result-count) .text-icon-button.is-active .text-button-icon { color: var(--plx-teal); }
+/* counter on a key: mono digits on a tiny lcd plate */
+.bases-toolbar .toolbar-badge {
+  --flair-background: var(--plx-lcd);
+  display: var(--bases-toolbar-badge-display);
+  align-items: center;
+  height: 14px;
+  min-width: 14px;
+  justify-content: center;
+  padding: 0 3px;
+  margin-inline-start: 1px;
+  opacity: 1;
+  font-family: var(--plx-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--plx-lcd-ink);
+  background: var(--plx-lcd);
+  border-radius: 1px;
+  box-shadow: var(--plx-recessed);
+}
+.bases-toolbar .toolbar-badge:empty { display: none; }
+.bases-toolbar .mod-error .toolbar-badge, .bases-toolbar .toolbar-badge.mod-error { background: var(--plx-red); color: var(--plx-paper); }
+
+/* view switcher: the one wide key, legend in normal case */
+.bases-toolbar .bases-toolbar-views-menu .text-icon-button {
+  font-family: var(--plx-ui);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--plx-ink);
+  padding-inline: 6px 4px;
+}
+.bases-toolbar .bases-toolbar-views-menu .text-button-icon:not(.mod-aux) { color: var(--plx-teal); }
+.bases-toolbar .bases-toolbar-views-menu .text-button-icon.mod-aux { color: var(--plx-ink-3); --icon-size: 11px; }
+
+/* result count: an LCD readout, not a key */
+.bases-toolbar .bases-toolbar-result-count { margin-inline: 4px auto; }
+.bases-toolbar .bases-toolbar-result-count .text-icon-button {
+  height: 20px;
+  padding: 0 7px;
+  font-family: var(--plx-mono);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+  color: var(--plx-lcd-ink);
+  background: var(--plx-lcd);
+  border: 1px solid var(--plx-rule);
+  border-radius: 1px;
+  box-shadow: var(--plx-recessed);
+}
+.bases-toolbar .bases-toolbar-result-count .text-button-label { font-size: 11px; font-variant-numeric: tabular-nums; }
+.bases-toolbar .bases-toolbar-result-count .text-icon-button:hover { color: var(--plx-lcd-ink); background: var(--plx-lcd); border-color: var(--plx-rule-strong); }
+.bases-toolbar .bases-toolbar-result-count .text-icon-button.is-active { color: var(--plx-lcd-ink); box-shadow: var(--plx-recessed), inset 0 0 0 1px var(--plx-teal); }
+
+/* search row under the toolbar: a recessed well */
+.bases-search-row { background: var(--plx-case-hi); border-color: var(--plx-rule); }
+.bases-search-row .search-input-container input {
+  font-family: var(--plx-mono);
+  font-size: 12px;
+  background: var(--plx-well);
+  border: 1px solid var(--plx-rule);
+  border-radius: 1px;
+  box-shadow: var(--plx-recessed);
+}
+.bases-search-row .document-search-count { font-family: var(--plx-mono); font-size: 11px; color: var(--plx-ink-3); }
+
+/* error strip: red is error only */
+.bases-error:not(:empty) {
+  font-family: var(--plx-mono);
+  font-size: 11.5px;
+  color: var(--plx-red);
+  background: var(--plx-red-wash);
+  border-bottom: 1px solid var(--plx-red);
+  padding: 4px 10px;
+}
+
+/* ---------- 1.3 Table — a wikitable on an instrument ---------- */
+.bases-view { font-family: var(--plx-ui); }
+.bases-view[data-view-type="table"] { background: var(--plx-case-hi); }
+
+/* column labels: condensed caps, 2px strong rule beneath */
+.bases-thead {
+  background-color: var(--bases-table-header-background);
+  box-shadow: inset 0 -2px 0 var(--plx-rule-strong);
+}
+.bases-thead .bases-td { box-shadow: -1px 0 0 var(--plx-rule-soft); }
+.bases-thead .bases-td:first-child { box-shadow: none; }
+.bases-table-header-label {
+  font-family: var(--plx-ui-cond);
+  font-size: var(--plx-fs-label);
+  text-transform: uppercase;
+  letter-spacing: var(--plx-track);
+  align-items: center;
+  gap: 5px;
+  padding-inline: 7px;
+  padding-bottom: 2px;      /* sit above the 2px rule */
+  --icon-size: 11px;
+  --icon-stroke: 2px;
+}
+.bases-table-header-icon { color: var(--plx-ink-4); }
+.bases-thead .bases-td.mod-formula .bases-table-header-icon { color: var(--plx-violet); }
+.bases-thead .bases-td[data-sort] .bases-table-header-name { color: var(--plx-ink); }
+.bases-table-header-sort { color: var(--plx-teal); padding-bottom: 2px; }
+.bases-thead .bases-td:hover .bases-table-header-icon { color: var(--plx-ink-3); }
+.bases-table-header-resizer { inset-inline-end: -3px; }
+.bases-table-header-resizer:hover, .bases-table-header-resizer.is-active { background: var(--plx-teal); }
+
+/* body */
+.bases-tbody { background: var(--plx-paper); }
+.bases-tr { box-shadow: 0 -1px 0 var(--plx-rule-soft); }
+.bases-td { box-shadow: -1px 0 0 var(--plx-rule-soft); }
+.bases-tbody .bases-td:first-child { box-shadow: none; }
+.bases-tbody .bases-tr:hover { background-color: var(--plx-lcd-2); }
+.bases-table-cell {
+  font-size: var(--bases-table-font-size);
+  color: var(--plx-ink);
+  padding-inline: 7px;
+}
+.bases-table-cell.markdown-rendered { font-size: var(--bases-table-font-size); line-height: var(--bases-table-row-height); }
+.bases-td .metadata-input, .bases-td .metadata-input-longtext { font-size: var(--bases-table-font-size); }
+
+/* numbers, dates, durations: mono, tabular */
+.bases-table-cell:is([data-property-type="number"], [data-property-type="date"], [data-property-type="datetime"]),
+.bases-td :is(.metadata-input-number, .metadata-input.mod-date, .metadata-input.mod-datetime) {
+  font-family: var(--plx-mono);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--plx-ink-2);
+  letter-spacing: 0;
+}
+
+/* the file-name column is a reference: teal, dotted underline */
+.bases-td .internal-link,
+.bases-cards-property.mod-title .internal-link {
+  color: var(--plx-teal);
+  text-decoration: underline dotted;
+  text-decoration-color: color-mix(in srgb, var(--plx-teal) 60%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  font-weight: 500;
+}
+.bases-td .internal-link:hover { color: var(--plx-teal-bright); text-decoration-style: solid; }
+.bases-td .internal-link.is-unresolved { color: var(--plx-red); text-decoration-style: dashed; text-decoration-color: var(--plx-red); }
+.bases-td .external-link { color: var(--plx-teal); }
+
+/* tags & list values in a cell: small plates */
+.bases-td a.tag, .bases-cards-line a.tag, .bases-list-item a.tag {
+  font-size: 10.5px;
+  line-height: 15px;
+  padding: 0 4px;
+}
+.bases-td .value-list-container { gap: 3px; }
+
+/* empty cell: a faint dash — absence is marked, not blank */
+.bases-table-cell.bases-rendered-value:empty::before,
+.bases-td .value-list-container:empty::before {
+  content: "–";
+  color: var(--plx-ink-4);
+  font-family: var(--plx-mono);
+}
+.bases-table-cell[disabled="true"] { background: var(--plx-hatch), var(--plx-paper-2); }
+
+/* active cell / range */
+.bases-td:focus-within { border-radius: 0; }
+.bases-table-container:focus .bases-table-active-cell { box-shadow: 0 0 0 2px var(--plx-teal); }
+.bases-table-container:focus .bases-table-active-cell.mod-selection { box-shadow: 0 0 0 1px var(--plx-blue); }
+.bases-table-container:focus .bases-table-selection { mix-blend-mode: normal; }
+
+/* add-column key at the end of the header */
+.bases-table-container .add-column-button,
+.bases-thead .add-column-button { color: var(--plx-ink-3); }
+
+/* ---------- 1.4 Groups: condensed-caps chamfered label chips ---------- */
+.bases-group-heading {
+  gap: 8px;
+  align-items: center;
+  font-family: var(--plx-ui);
+}
+.bases-table .bases-group-heading {
+  padding-inline-start: 0;
+  margin-top: 2px;
+}
+.bases-group-heading .bases-group-property {
+  display: var(--bases-group-heading-property-display);
+  flex: 0 0 auto;
+  height: 17px;
+  line-height: 17px;
+  padding: 0 13px 0 7px;
+  font-family: var(--plx-ui-cond);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--plx-track);
+  color: var(--plx-label-ink);
+  background: var(--plx-label-bg);
+  clip-path: var(--plx-clip-br);
+}
+.bases-group-heading .bases-group-value {
+  font-family: var(--plx-ui);
+  color: var(--plx-ink);
+}
+.bases-group-heading .collapse-icon { color: var(--plx-ink-3); }
+.bases-group-heading.mod-collapsible:hover .bases-group-value { color: var(--plx-teal); }
+/* the null group (no value) is an absence: hatched chip */
+.bases-group-heading .bases-group-value:empty::before { content: "none"; font-family: var(--plx-mono); color: var(--plx-ink-3); }
+
+/* ---------- 1.5 Summaries / footer: mono readouts ---------- */
+.bases-table-footer { box-shadow: 0 -2px 0 var(--plx-rule-strong); }
+.bases-table-group-summary-row.bases-tr { background: var(--plx-paper-2); box-shadow: 0 -1px 0 var(--plx-rule); }
+.bases-table-summary-cell .summary-content { font-family: var(--plx-mono); font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--plx-ink); min-width: 0; max-width: 100%; overflow: hidden; }
+.bases-table-summary-cell .summary-function-value { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bases-table-summary-cell .summary-function-name,
+.bases-table-summary-cell .placeholder {
+  font-family: var(--plx-ui-cond);
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: var(--plx-track);
+  color: var(--plx-ink-3);
+}
+.bases-table-summary-cell .summary-function-value { font-family: var(--plx-mono); color: var(--plx-ink); }
+.bases-table-group-summary-row.bases-tr .summary-function-value { color: var(--plx-ink-2); }
+
+/* ---------- 1.6 Cards: bordered plates, hover changes the rule ---------- */
+.bases-view[data-view-type="cards"] { background: var(--plx-case-hi); }
+.bases-cards-item {
+  transition: box-shadow 80ms;
+  font-family: var(--plx-ui);
+}
+.bases-cards-item:hover { box-shadow: var(--bases-cards-shadow-hover); }
+.bases-cards-item:focus-visible { outline: 2px solid var(--plx-teal); outline-offset: 1px; }
+.bases-cards-cover {
+  background-color: var(--plx-paper-2);
+  background-image: var(--plx-hatch);   /* no image = absent */
+  border-bottom: 1px solid var(--plx-rule);
+}
+.bases-cards-cover[style*="url("] { background-image: none; }
+.bases-cards-cover:has(img) { background-image: none; }
+.bases-cards-property.mod-title .bases-cards-line {
+  font-family: var(--plx-serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--plx-ink);
+}
+.bases-cards-property.mod-title .internal-link { font-weight: 600; text-decoration-color: transparent; color: var(--plx-ink); }
+.bases-cards-item:hover .bases-cards-property.mod-title .internal-link { color: var(--plx-teal); text-decoration-color: color-mix(in srgb, var(--plx-teal) 60%, transparent); }
+.bases-cards-label {
+  font-family: var(--plx-ui-cond);
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: var(--plx-track);
+  color: var(--plx-ink-3);
+}
+.bases-cards-line { font-size: 12px; color: var(--plx-ink); }
+.bases-cards-line:empty::before,
+.bases-cards-line .value-list-container:empty::before { content: "–"; color: var(--plx-ink-4); font-family: var(--plx-mono); }
+.bases-cards-property:is([data-property-type="number"], [data-property-type="date"], [data-property-type="datetime"]) .bases-cards-line,
+.bases-cards-line:is([data-property-type="number"], [data-property-type="date"], [data-property-type="datetime"]) {
+  font-family: var(--plx-mono);
+  font-size: 11.5px;
+  color: var(--plx-ink-2);
+}
+.is-grouped .bases-cards-container .bases-cards-group { border-color: var(--plx-rule); }
+
+/* ---------- 1.7 Kanban (1.15) ---------- */
+.bases-kanban-column { border: 1px solid var(--plx-rule); }
+.bases-kanban-column-header { border-bottom: 1px solid var(--plx-rule); }
+.bases-kanban-column-count { font-family: var(--plx-mono); font-size: 11px; color: var(--plx-ink-3); }
+.bases-kanban-card-label {
+  font-family: var(--plx-ui-cond); font-size: 9.5px; text-transform: uppercase;
+  letter-spacing: var(--plx-track); color: var(--plx-ink-3);
+}
+
+/* ---------- 1.8 List view: a register ---------- */
+.bases-list-item { font-family: var(--plx-ui); font-size: 12.5px; }
+.bases-list-item .bases-rendered-value.markdown-rendered { font-size: 13px; }
+.bases-list-item .internal-link {
+  color: var(--plx-teal);
+  text-decoration: underline dotted;
+  text-decoration-color: color-mix(in srgb, var(--plx-teal) 60%, transparent);
+  text-underline-offset: 3px;
+}
+.bases-list-item .list-number { font-family: var(--plx-mono); font-size: 11px; color: var(--plx-ink-3); }
+.bases-list-item .bases-rendered-value:is([data-property-type="number"], [data-property-type="date"], [data-property-type="datetime"]) {
+  font-family: var(--plx-mono); font-size: 11px; color: var(--plx-ink-2); font-variant-numeric: tabular-nums;
+}
+/* ", " separators become a centred interpunct */
+.bases-list-item .bases-list-separator { font-size: 0; }
+.bases-list-item .bases-list-separator::before {
+  content: "·";
+  font-size: 13px;
+  font-family: var(--plx-mono);
+  color: var(--plx-ink-4);
+  padding-inline: 7px;
+}
+.bases-list-group .bases-group-heading { margin: 10px 0 4px; }
+
+/* ---------- 1.9 Toolbar menus (views, sort, filter, properties, results) ---------- */
+.bases-toolbar-menu-container { font-family: var(--plx-ui); }
+.bases-toolbar-menu-container-header,
+.bases-toolbar-menu .bases-toolbar-menu-header {
+  border-bottom: 1px solid var(--plx-rule-soft);
+}
+.bases-toolbar-menu .bases-toolbar-section-header,
+.bases-toolbar-menu-header-title {
+  font-family: var(--plx-ui-cond);
+  font-size: var(--plx-fs-label);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--plx-track);
+  color: var(--plx-ink-3);
+  padding-block: 6px 4px;
+}
+.bases-toolbar-menu .bases-toolbar-section-header .flair {
+  font-family: var(--plx-mono); font-size: 10px; letter-spacing: 0;
+  background: var(--plx-lcd); color: var(--plx-lcd-ink); border-radius: 1px;
+}
+.bases-toolbar-menu-item {
+  border-radius: 0;
+  min-height: 24px;
+  font-size: 12.5px;
+}
+.bases-toolbar-menu .bases-toolbar-menu-item:hover,
+.bases-toolbar-menu .bases-toolbar-menu-item.is-selected {
+  background: var(--plx-lcd-2);
+  color: var(--plx-ink);
+}
+.bases-toolbar-menu .bases-toolbar-menu-item.is-selected :is(.bases-toolbar-menu-item-info-icon, .bases-toolbar-menu-item-icon) { color: var(--plx-ink-2); }
+.bases-toolbar-menu .bases-toolbar-menu-item.mod-hidden .bases-toolbar-menu-item-name { color: var(--plx-ink-3); }
+.bases-toolbar-menu-item.is-active, .bases-toolbar-menu-item.mod-active { background: var(--plx-lcd); color: var(--plx-lcd-ink); }
+.bases-toolbar-menu-item-info-icon, .bases-toolbar-menu-item-icon { color: var(--plx-ink-3); }
+.bases-toolbar-menu-item-value, .bases-group-row-count { font-family: var(--plx-mono); font-size: 11px; color: var(--plx-ink-3); }
+.bases-toolbar-menu-action { font-family: var(--plx-ui); font-size: 12px; color: var(--plx-teal); }
+.bases-toolbar-menu-action:hover { background: var(--plx-lcd-2); }
+.bases-toolbar-menu-action.mod-destructive, .bases-toolbar-menu .mod-destructive { color: var(--plx-red); }
+.bases-property-visibility-button { color: var(--plx-ink-3); }
+
+/* filter builder: a little logic panel */
+.bases-filter-page .bases-query-container,
+.bases-query-container {
+  font-family: var(--plx-ui);
+  font-size: 12px;
+}
+.bases-filter-page .filter-group {
+  border: 1px solid var(--plx-rule-soft);
+  border-radius: 0;
+  background: var(--plx-paper-2);
+}
+.bases-filter-page .filter-group .filter-group {
+  background: var(--plx-paper);
+  border-color: var(--plx-rule);
+  border-inline-start: 2px solid var(--plx-rule-strong);
+}
+.bases-filter-page .filter-row .grip-handle { color: var(--plx-ink-4); }
+.bases-filter-page .combobox-button {
+  font-size: 12px;
+  border-radius: 0;
+}
+.bases-filter-page .filter-row-error:not(:empty) { color: var(--plx-red); font-family: var(--plx-mono); font-size: 11px; }
+.bases-filter-page .filter-group-statements,
+.bases-filter-page .filter-row { gap: 4px; }
+.bases-filter-page :is(.conjunction, .filter-group-conjunction, select.dropdown) { font-family: var(--plx-ui-cond); text-transform: uppercase; letter-spacing: var(--plx-track); font-size: 11px; }
+.bases-filter-page input[type="text"], .bases-filter-page .metadata-input-longtext,
+.bases-filter-page .cm-editor, .bases-filter-page .mod-cm {
+  font-family: var(--plx-mono);
+  font-size: 11.5px;
+}
+.bases-formula-error, .bases-filter-query-message.mod-error, .bases-formula-error-message { color: var(--plx-red); font-family: var(--plx-mono); font-size: 11px; }
+
+/* ---------- 1.10 Embedded base: a framed exhibit ---------- */
+.workspace-leaf-content[data-type="markdown"] .block-language-base {
+  --bases-header-border-width: 0 0 1px 0;
+  --bases-header-padding-start: 6px;
+  --bases-header-padding-end: 6px;
+  position: relative;
+  margin-block: 0.6em 0.4em;
+}
+.workspace-leaf-content[data-type="markdown"] :is(.block-language-base, .bases-embed) .bases-header {
+  background: var(--plx-case-hi);
+  border: 1px solid var(--plx-rule-strong);
+  border-bottom-color: var(--plx-rule);
+  border-radius: var(--plx-r) var(--plx-r) 0 0;
+}
+.workspace-leaf-content[data-type="markdown"] :is(.block-language-base, .bases-embed) .bases-view {
+  border-top-width: 0;
+  background: var(--plx-case-hi);
+}
+.workspace-leaf-content[data-type="markdown"] :is(.block-language-base, .bases-embed) .bases-view[data-view-type="table"] { --bases-embed-padding: 0; }
+.workspace-leaf-content[data-type="markdown"] :is(.block-language-base, .bases-embed) .bases-view { scrollbar-gutter: auto; }
+/* exhibit plate above the frame (one per block: reading view and live preview
+   both wrap the base in .block-language-base) */
+.workspace-leaf-content[data-type="markdown"] .block-language-base::before {
+  content: "BASE · EXHIBIT";
+  display: inline-block;
+  height: 15px;
+  line-height: 15px;
+  padding: 0 14px 0 7px;
+  clip-path: var(--plx-clip-tr);
+  background: var(--plx-label-bg);
+  color: var(--plx-label-ink);
+  font-family: var(--plx-ui-cond);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  border-radius: var(--plx-r) 0 0 0;
+}
+.hover-popover .block-language-base::before, .canvas-node .block-language-base::before { display: none; }
+
+/* ==========================================================================
+   2 · GRAPH
+   ========================================================================== */
+
+/* ChicagoFLF node labels.
+   Obsidian's graph renderer (PIXI) hard-codes the label font stack
+   'ui-sans-serif, -apple-system, …' — it never reads CSS. On Windows/Linux
+   Chromium treats `ui-sans-serif` as an ordinary family name, so a local
+   @font-face of that name re-points the graph's first choice at ChicagoFLF.
+   No theme or Obsidian stack reaches ui-sans-serif before an installed font,
+   and no installed plugin uses it, so the alias is effectively graph-only.
+   If ChicagoFLF is missing, the face fails and the stack falls through. */
+@font-face {
+  font-family: "ui-sans-serif";
+  src: local("ChicagoFLF"), local("Chicago"), local("ChicagoFLF Regular");
+  font-display: block;
+}
+
+.theme-light, .theme-dark {
+  --graph-text: var(--plx-ink-2);
+  --graph-line: color-mix(in srgb, var(--plx-rule) 85%, transparent);
+  --graph-node: var(--plx-ink-3);
+  --graph-node-unresolved: var(--plx-ink-4);
+  --graph-node-focused: var(--plx-teal);
+  --graph-node-tag: var(--plx-amber);
+  --graph-node-attachment: var(--plx-steel);
+  --graph-controls-width: 236px;
+}
+.theme-dark { --graph-node: var(--plx-ink-2); }
+.graph-view.color-fill-highlight, .graph-view.color-line-highlight { color: var(--plx-teal); }
+.graph-view.color-circle { color: var(--plx-teal); }
+.graph-view.color-arrow { color: var(--plx-ink-3); opacity: 0.7; }
+
+/* graph paper behind the (transparent) PIXI canvas */
+.workspace-leaf-content:is([data-type="graph"], [data-type="localgraph"]) > .view-content {
+  background:
+    linear-gradient(to right, var(--plx-v-grid-major-ink) 1px, transparent 1px) 0 0 / var(--plx-v-grid-major) var(--plx-v-grid-major),
+    linear-gradient(to bottom, var(--plx-v-grid-major-ink) 1px, transparent 1px) 0 0 / var(--plx-v-grid-major) var(--plx-v-grid-major),
+    linear-gradient(to right, var(--plx-v-grid-minor-ink) 1px, transparent 1px) 0 0 / var(--plx-v-grid-cell) var(--plx-v-grid-cell),
+    linear-gradient(to bottom, var(--plx-v-grid-minor-ink) 1px, transparent 1px) 0 0 / var(--plx-v-grid-cell) var(--plx-v-grid-cell),
+    var(--plx-paper);
+  background-position: -1px -1px;
+}
+/* keep the label face warm: an invisible glyph so ChicagoFLF is loaded
+   before PIXI measures its first label */
+.workspace-leaf-content:is([data-type="graph"], [data-type="localgraph"]) > .view-content::after {
+  content: "Aa";
+  font-family: "ui-sans-serif";
+  position: absolute;
+  inset-inline-start: 0;
+  bottom: 0;
+  font-size: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---------- controls: a floating instrument panel ---------- */
+.graph-controls {
+  font-family: var(--plx-ui);
+  background: var(--plx-paper);
+  border-radius: var(--plx-r);
+  top: 10px;
+  inset-inline-end: 10px;
+}
+.graph-controls:not(.is-close) {
+  border: 1px solid var(--plx-rule-strong);
+  box-shadow: var(--plx-float);
+  padding-top: 0;
+}
+/* title band across the open panel */
+.graph-controls:not(.is-close)::before {
+  content: "GRAPH · CONTROLS";
+  display: block;
+  height: 26px;
+  line-height: 26px;
+  padding: 0 10px;
+  background: var(--plx-band);
+  color: var(--plx-slate-ink);
+  font-family: var(--plx-ui-cond);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+.graph-controls-button.mod-close, .graph-controls-button.mod-reset {
+  top: 4px;
+  padding: 2px;
+  color: var(--plx-slate-ink);
+  border-radius: 2px;
+  --icon-size: 14px;
+}
+.graph-controls-button.mod-close { inset-inline-end: 6px; }
+.graph-controls-button.mod-reset { inset-inline-end: 28px; }
+.graph-controls-button.mod-close:hover, .graph-controls-button.mod-reset:hover { background: rgba(255, 255, 255, 0.14); color: var(--plx-slate-ink); }
+/* closed: a column of keys */
+.graph-controls.is-close {
+  background: transparent;
+  border: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.graph-controls.is-close .graph-controls-button {
+  padding: 4px;
+  background: var(--plx-key-face);
+  border: 1px solid var(--plx-rule);
+  border-bottom-color: var(--plx-rule-strong);
+  border-radius: var(--plx-r-key);
+  box-shadow: var(--plx-raised);
+  margin: 0;
+  --icon-size: 15px;
+}
+.graph-controls.is-close .graph-controls-button:hover { color: var(--plx-teal); }
+.graph-controls-button.mod-animate.is-active, .graph-controls-button.mod-animate:active { background: var(--plx-key-face-down); box-shadow: var(--plx-pressed); }
+
+.graph-control-section {
+  padding: 4px 10px 2px;
+  border-bottom: 1px solid var(--plx-rule-soft);
+}
+.graph-control-section > .tree-item-self { padding-inline-start: 18px; min-height: 22px; align-items: center; }
+.graph-control-section > .tree-item-self .collapse-icon { color: var(--plx-ink-3); opacity: 1; width: 22px; margin-inline-start: -20px; }
+/* the semiotic [-]/[+] fold marks, restated here (a generic tree rule blanks the expanded one) */
+.graph-control-section > .tree-item-self .collapse-icon::before { content: var(--plx-mark-open); font-family: var(--plx-mono); font-size: 10px; color: var(--plx-ink-3); }
+.graph-control-section.is-collapsed > .tree-item-self .collapse-icon::before { content: var(--plx-mark-closed); color: var(--plx-teal); }
+.graph-control-section-header {
+  font-family: var(--plx-ui-cond);
+  font-size: var(--plx-fs-label);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--plx-ink-2);
+}
+.graph-control-section > .tree-item-self:hover .graph-control-section-header { color: var(--plx-teal); }
+.graph-control-section .tree-item-children { padding: 2px 0 4px; }
+.graph-control-section:last-child .tree-item-children { padding-bottom: 8px; }
+.graph-controls .setting-item { padding: 3px 0; margin: 0; }
+.graph-controls .setting-item-name { font-size: 11.5px; color: var(--plx-ink); }
+.graph-controls .setting-item.mod-slider .setting-item-control { padding-top: 4px; gap: 6px; }
+.graph-controls .slider-value {
+  font-family: var(--plx-mono); font-size: 10.5px; color: var(--plx-lcd-ink);
+  background: var(--plx-lcd); padding: 0 4px; border-radius: 1px; box-shadow: var(--plx-recessed);
+}
+.graph-controls input[type="text"], .graph-controls .search-input-container input {
+  font-family: var(--plx-mono);
+  font-size: 11.5px;
+  height: 24px;
+}
+.graph-controls .mod-cta, .graph-color-button-container button { width: 100%; }
+.graph-color-group { gap: 2px; }
+.graph-color-group input[type="color"] {
+  border: 1px solid var(--plx-rule-strong);
+  border-radius: 1px;
+}
+
+/* local graph in a sidebar: same paper, tighter panel */
+.workspace-leaf-content[data-type="localgraph"] .graph-controls { top: 6px; inset-inline-end: 6px; --graph-controls-width: 210px; }
+.workspace-split:not(.mod-root) .graph-controls.is-close { background-color: transparent; }
+
+/* ==========================================================================
+   3 · CANVAS (core + Advanced Canvas)
+   ========================================================================== */
+.theme-light, .theme-dark {
+  --canvas-background: var(--plx-paper);
+  --canvas-dot-pattern: color-mix(in srgb, var(--plx-teal) 22%, transparent);
+  --canvas-card-label-color: var(--plx-ink-3);
+  --canvas-controls-radius: var(--plx-r-key);
+  --canvas-controls-icon-size: 15px;
+}
+.theme-dark { --canvas-dot-pattern: color-mix(in srgb, var(--plx-teal) 26%, transparent); }
+.canvas-wrapper {
+  --shadow-stationary: 0 1px 0 rgba(0, 0, 0, 0.05);
+  --shadow-border-accent: 0 0 0 2px var(--plx-blue);   /* blue = selection */
+}
+.canvas-background circle { fill: var(--canvas-dot-pattern); }
+
+/* nodes: panels — 1px strong rule, 3px radius; leave border-style alone so
+   Advanced Canvas dashed (= provisional) / dotted (= reference) still read */
+.canvas-node-container {
+  border-width: 1px;
+  border-color: var(--plx-rule-strong);
+  border-radius: var(--plx-r);
+  background-color: var(--plx-paper);
+  box-shadow: var(--shadow-stationary);
+}
+.canvas-node.is-themed .canvas-node-container {
+  border-color: color-mix(in srgb, var(--canvas-color) 75%, var(--plx-rule-strong));
+  box-shadow: var(--shadow-stationary);
+}
+.canvas-node.is-themed:not(.canvas-node-group) .canvas-node-content {
+  background-color: color-mix(in srgb, var(--canvas-color) 7%, transparent);
+}
+.canvas-node.is-selected .canvas-node-container,
+.canvas-node.is-focused .canvas-node-container,
+.canvas-node.is-selected.is-themed .canvas-node-container,
+.canvas-node.is-focused.is-themed .canvas-node-container {
+  border-color: var(--plx-blue);
+  box-shadow: 0 0 0 2px var(--plx-blue-wash), 0 0 0 1px var(--plx-blue);
+}
+.canvas-node.is-dragging .canvas-node-container { box-shadow: var(--plx-float); }
+
+/* markdown inside a node: undo the transclusion panel from the reading module */
+.canvas-node .canvas-node-content.markdown-embed {
+  border: 0;
+  margin: 0;
+  border-radius: 0;
+  background-color: transparent;
+}
+.canvas-node .canvas-node-content.markdown-embed > .markdown-embed-content { padding: 0; max-height: none; }
+.canvas-node .canvas-node-content .markdown-preview-view { padding: 6px 12px; font-size: 13px; }
+.canvas-node .markdown-preview-view::-webkit-scrollbar { width: 6px; }
+
+/* file-node label (above the panel) */
+.canvas-node-label {
+  font-family: var(--plx-ui-cond);
+  text-transform: uppercase;
+  letter-spacing: var(--plx-track);
+  font-size: 11px;
+  color: var(--plx-ink-3);
+}
+
+/* groups: a hatched-free tinted field with a slate chamfered tab */
+.canvas-node-group .canvas-node-container { background-color: transparent; border-color: var(--plx-rule); }
+.canvas-node-group .canvas-node-content { background-color: color-mix(in srgb, var(--plx-teal) 4%, transparent); }
+.canvas-node-group.is-themed .canvas-node-content { background-color: color-mix(in srgb, var(--canvas-color) 6%, transparent); }
+.canvas-group-label,
+.canvas-node-group.is-themed .canvas-group-label:not([contenteditable="true"]) {
+  background: var(--plx-label-bg);
+  color: var(--plx-label-ink);
+  font-family: var(--plx-ui-cond);
+  font-weight: 700;
+  font-size: 1.15em;
+  text-transform: uppercase;
+  letter-spacing: var(--plx-track);
+  border-radius: var(--plx-r) 0 0 0;
+  clip-path: var(--plx-clip-tr);
+  padding: 2px 18px 2px 9px;
+  top: calc(-1px * var(--zoom-multiplier));
+}
+/* a coloured group keeps its colour as a key-line under the tab */
+.canvas-node-group.is-themed .canvas-group-label:not([contenteditable="true"]) {
+  box-shadow: inset 0 -3px 0 var(--canvas-color);
+}
+.canvas-node-group.is-themed .canvas-group-label:not([contenteditable="true"]).mod-foreground-dark,
+.canvas-node-group.is-themed .canvas-group-label:not([contenteditable="true"]).mod-foreground-light { color: var(--plx-label-ink); }
+.canvas-group-label[contenteditable="true"] { clip-path: none; background: var(--plx-well); color: var(--plx-ink); box-shadow: 0 0 0 2px var(--plx-teal); }
+.canvas-node-group .collapse-button { color: var(--plx-ink-3); }
+
+/* selection rectangle: the blue range */
+.canvas-selection {
+  background-color: var(--plx-blue-wash);
+  border: 1px solid var(--plx-blue);
+}
+.canvas-selection.mod-group-selection {
+  border: 1px dashed var(--plx-blue);
+  border-radius: 0;
+  background-color: color-mix(in srgb, var(--plx-blue) 4%, transparent);
+}
+
+/* edges & edge labels: small mono plates */
+.canvas-edges path.canvas-display-path { stroke-width: calc(1.5px * var(--zoom-multiplier)); }
+.canvas-edges g.is-focused path.canvas-display-path,
+.canvas:not(.is-connecting) .canvas-edges g:hover path.canvas-display-path { stroke-width: calc(3px * var(--zoom-multiplier)); }
+.canvas-path-label {
+  font-family: var(--plx-mono);
+  font-size: calc(11px * var(--zoom-multiplier));
+  color: var(--plx-ink-2);
+  background-color: var(--plx-paper);
+  border: 1px solid var(--plx-rule);
+  border-radius: 1px;
+  padding: calc(1px * var(--zoom-multiplier)) calc(5px * var(--zoom-multiplier));
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+}
+.canvas-path-label-wrapper.is-themed .canvas-path-label { border-color: color-mix(in srgb, var(--canvas-color) 70%, var(--plx-rule)); }
+.canvas-path-label.is-editing { box-shadow: 0 0 0 2px var(--plx-teal); }
+
+/* card menu (bottom) and controls (right): key toolbars */
+.canvas-card-menu {
+  background: var(--plx-case-hi);
+  border: 1px solid var(--plx-rule-strong);
+  border-radius: var(--plx-r);
+  box-shadow: var(--plx-float);
+  padding: 3px;
+  gap: 3px;
+}
+.canvas-card-menu .canvas-card-menu-button {
+  padding: 5px 7px;
+  color: var(--plx-ink-2);
+  background: var(--plx-key-face);
+  border: 1px solid var(--plx-rule);
+  border-bottom-color: var(--plx-rule-strong);
+  border-radius: var(--plx-r-key);
+  box-shadow: var(--plx-raised);
+  --icon-size: 18px;
+  --icon-stroke: 1.5px;
+}
+.canvas-card-menu .canvas-card-menu-button svg,
+.theme-dark .canvas-card-menu .canvas-card-menu-button svg { fill: transparent; }
+.canvas-card-menu .canvas-card-menu-button:hover { color: var(--plx-teal); }
+.canvas-card-menu .canvas-card-menu-button:active { background: var(--plx-key-face-down); box-shadow: var(--plx-pressed); }
+.canvas-card-menu .canvas-card-menu-divider { background: var(--plx-rule); margin: 2px 1px; }
+
+.canvas-controls { gap: 6px; top: 8px; inset-inline-end: 8px; }
+.canvas-control-group {
+  background: var(--plx-case-hi);
+  border: 1px solid var(--plx-rule-strong);
+  border-radius: var(--plx-r-key);
+  box-shadow: var(--plx-raised), 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+.canvas-control-item {
+  padding: 6px;
+  color: var(--plx-ink-2);
+  background: var(--plx-key-face);
+  border-bottom: 1px solid var(--plx-rule);
+  box-shadow: inset 0 1px 0 var(--plx-hl);
+}
+.canvas-control-item:hover { color: var(--plx-teal); background: var(--plx-key-face); }
+.canvas-control-item:active { background: var(--plx-key-face-down); box-shadow: var(--plx-pressed); }
+.canvas-control-item.is-active,
+.canvas-control-item[data-toggled="true"] { color: var(--plx-lcd-ink); background: var(--plx-lcd); box-shadow: var(--plx-pressed); }
+.canvas-control-item.is-disabled svg { color: var(--plx-ink-4); }
+
+/* node-hover toolbar (colour, delete, zoom…) */
+.canvas-menu-container .canvas-menu {
+  background: var(--plx-case-hi);
+  border: 1px solid var(--plx-rule-strong);
+  border-radius: var(--plx-r);
+  box-shadow: var(--plx-float);
+  padding: 2px;
+}
+.canvas-menu button { color: var(--plx-ink-2); border-radius: 2px; }
+.canvas-menu button:hover { color: var(--plx-teal); background: var(--plx-lcd-2); }
+.canvas-menu button.mod-warning:hover { color: var(--plx-red); background: var(--plx-red-wash); }
+
+/* read-only canvases (Advanced Canvas option) */
+.canvas-wrapper.mod-readonly[data-hide-background-grid-when-in-readonly="true"] .canvas-background { opacity: 0; }
+
+/* canvas embedded in a note */
+.internal-embed.canvas-embed { border: 1px solid var(--plx-rule-strong); border-radius: var(--plx-r); }
+

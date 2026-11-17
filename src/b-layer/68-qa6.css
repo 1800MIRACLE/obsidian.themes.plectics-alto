@@ -1,0 +1,165 @@
+/* ==========================================================================
+   PLECTICS ALTO · QA FIXES (screenshot pass, 2026-11-15)
+   Fixes for problems seen in Obsidian 1.15.1.
+   ========================================================================== */
+
+/* ---------- 1 · Settings: plugin rows had no inner side gap ----------
+   Obsidian 1.15 draws an ungrouped setting (most plugin tabs: Iconize,
+   Kanban, Calendar …) as its own card, but the theme's `.setting-item
+   { padding: 9px 0 }` removed the card's side padding: labels touched the
+   card's left edge, buttons and values its right edge. Grouped rows
+   (.setting-items) get their gap from the group box and are left alone. */
+.vertical-tab-content .setting-item:not(.setting-item-heading):not(.setting-items > .setting-item):not(.style-settings-container > .setting-item) {
+  padding: 10px 14px !important;   /* beats the theme's `padding: 9px 0` (!important in 10-workspace) */
+  border: 1px solid var(--plx-rule-soft);
+  border-radius: 0;   /* settings are sharp-cornered */
+  background: var(--plx-paper);
+}
+/* settings window: every panel, well and key square */
+.modal.mod-settings :is(.setting-items, .setting-group, .checkbox-container, .vertical-tab-nav-item, .style-settings-container > .setting-item) { border-radius: 0 !important; }
+.vertical-tab-content .setting-item:not(.setting-item-heading):not(.setting-items > .setting-item):not(.style-settings-container > .setting-item) + .setting-item:not(.setting-item-heading) {
+  margin-top: -3px;   /* stacked plugin rows read as one list, not loose cards */
+}
+/* control cluster: a real gap between a value readout, its slider and keys */
+.vertical-tab-content .setting-item-control { gap: 10px; }
+/* plugin sub-headings ("Visibility of icons"): an instrument label, flush */
+.vertical-tab-content .setting-item-heading:not(.style-settings-heading) .setting-item-name {
+  font-family: var(--plx-ui-cond);
+  font-size: var(--plx-fs-label);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--plx-track);
+  color: var(--plx-ink-2);
+}
+.vertical-tab-content > .setting-item-heading:not(.style-settings-heading) { padding: 14px 0 6px !important; }
+/* plugins that write their own <h3> sub-headings (Iconize "Visibility of icons") */
+.vertical-tab-content > h3 {
+  margin: 18px 0 6px;
+  padding: 0;
+  font-family: var(--plx-ui-cond);
+  font-size: var(--plx-fs-label);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--plx-track);
+  color: var(--plx-ink-2);
+}
+
+/* ---------- 2 · Sliders: moved to 72-controls.css §7 (the control family) ---------- */
+
+/* ---------- 3 · Kanban ribbon key and tab icon were blank ----------
+   Kanban asks for the Lucide "trello" icon, which Obsidian 1.15 no longer
+   ships, so its ribbon key was empty. Draw a board glyph in its place. */
+.side-dock-ribbon-action[aria-label="Create new board"]:empty::before,
+.workspace-tab-header[data-type="kanban"] .workspace-tab-header-inner-icon:empty::before {
+  content: "";
+  width: var(--icon-size, 18px);
+  height: var(--icon-size, 18px);
+  background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2'/%3E%3Cpath d='M8 7v7'/%3E%3Cpath d='M12 7v4'/%3E%3Cpath d='M16 7v9'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2'/%3E%3Cpath d='M8 7v7'/%3E%3Cpath d='M12 7v4'/%3E%3Cpath d='M16 7v9'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+body.plx-ff .side-dock-ribbon-action[aria-label="Create new board"]:empty::before,
+body.plx-ff .workspace-tab-header[data-type="kanban"] .workspace-tab-header-inner-icon:empty::before {
+  -webkit-mask: none;
+          mask: none;
+  width: 16px;
+  height: 16px;
+  background: var(--ff-kanban_board) center / 16px 16px no-repeat;
+}
+
+/* ---------- 4 · Calendar "Today" key: label sat at the top of its 22 px key ---------- */
+#calendar-container .reset-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* ---------- 5 · Kanban "+ Add a card": the space after "+" collapsed in the flex key ---------- */
+.kanban-plugin__item-button-plus { margin-inline-end: 0.35em; }
+
+/* ---------- 6 · Graph controls: sliders did not line up ----------
+   The value readout took the width of its text (-1.30 / 0.16 / 20.00 / 30),
+   so each fader started at a different x. Fixed-width readout, fader fills
+   the rest; empty descriptions no longer add a blank line. */
+.graph-controls .setting-item.mod-slider .setting-item-control { padding-top: 2px; gap: 8px; }
+.graph-controls .slider-value {
+  flex: none;
+  box-sizing: border-box;
+  width: 46px;            /* fits "-1.30" / "20.00"; every fader starts at the same x */
+  text-align: right;
+}
+.graph-controls .setting-item.mod-slider { row-gap: 2px; }
+.graph-controls .setting-item.mod-slider input[type="range"] { flex: 1 1 auto; min-width: 0; }
+.graph-controls .setting-item-description:empty { display: none; }
+
+/* ---------- 7 · Canvas connections: solid, cased, with a real arrowhead ----------
+   Request: "draw arrows better". Main Plectics draws edges
+   as 2 px round dots 8 px apart: on the grid they read as a faint guide, not
+   a connection, and the 13 px head looked detached. Plectics-6:
+     line    solid 2 px (zoom-scaled) in the identity colour, round caps
+     casing  the edge's own invisible hit path, painted 6 px wide in the canvas
+             wall colour under the line, so the edge separates from the grid
+     head    filled triangle scaled ×1.6 about its tip (the tip stays exactly
+             on the endpoint), with a casing outline
+     hover / focus / selected: 3 px; selected = selection blue
+   Coloured edges (mod-canvas-color-*) keep their colour. Routing (which side
+   an edge leaves from, S-curves, shared start points) is Obsidian's, not CSS. */
+.canvas-edges path.canvas-display-path {
+  stroke-dasharray: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: calc(2px * var(--zoom-multiplier));
+}
+.canvas-edges path.canvas-interaction-path {
+  stroke: var(--plx-cv-wall, var(--plx-paper));
+  stroke-opacity: 0.85;
+  stroke-width: calc(6px * var(--zoom-multiplier));
+  stroke-linecap: round;
+}
+.canvas-edges polygon.canvas-path-end {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  transform: scale(1.6);
+  stroke: var(--plx-cv-wall, var(--plx-paper));
+  stroke-width: calc(1.5px * var(--zoom-multiplier));
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+}
+.canvas-edges g:is(.is-focused, .is-selected) path.canvas-display-path,
+.canvas:not(.is-connecting) .canvas-edges g:hover path.canvas-display-path {
+  stroke-width: calc(3px * var(--zoom-multiplier));
+}
+.canvas-edges g:is(.is-focused, .is-selected) polygon.canvas-path-end { fill: var(--plx-blue); }
+.canvas-edges g:is(.is-focused, .is-selected) path.canvas-interaction-path,
+.canvas:not(.is-connecting) .canvas-edges g:hover path.canvas-interaction-path {
+  stroke-width: calc(8px * var(--zoom-multiplier));
+}
+
+/* ---------- 8 · Canvas selection toolbar: keys at rest, not only on hover ----------
+   Request: the buttons above a selected card or group
+   (delete, colour, zoom to selection, align, edit …) should "poke out as
+   buttons" all the time, like the canvas zoom keys. */
+.canvas-menu-container .canvas-menu { gap: 4px; padding: 4px; }
+.canvas-menu button.clickable-icon {
+  background: var(--plx-key-face);
+  border: 1px solid var(--plx-rule-strong);
+  border-radius: var(--plx-r-key);
+  box-shadow: inset 0 1px 0 var(--plx-hl), 0 1px 0 rgba(0, 0, 0, 0.18);
+  color: var(--plx-ink-2);
+}
+.canvas-menu button.clickable-icon:hover {
+  background: var(--plx-key-top);
+  border-color: var(--plx-teal);
+  color: var(--plx-teal);
+}
+.canvas-menu button.clickable-icon:active,
+.canvas-menu button.clickable-icon.is-active {
+  background: var(--plx-key-face-down);
+  box-shadow: var(--plx-pressed);
+}
+.canvas-menu button.clickable-icon.mod-warning:hover {
+  border-color: var(--plx-red);
+  color: var(--plx-red);
+  background: var(--plx-red-wash);
+}

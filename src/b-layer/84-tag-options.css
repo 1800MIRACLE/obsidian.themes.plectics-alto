@@ -1,0 +1,485 @@
+/* ==========================================================================
+   PLECTICS ALTO · 84 · TAG APPEARANCE OPTIONS (docs/TAG-OPTIONS.md)
+   Typed tags (Style Settings: Plectics Alto › Typed tags):
+     Style            Plectics (default) · Path · Obsidian · Label · Plain
+     Now              ONE live specimen of the current pick (real tags)
+     Custom tag groups  three colours; prefixes live in Typed Pages
+     Advanced         overrides, collapsed (each "From style" by default)
+   Every option is a body class or a variable, so the theme works without
+   Style Settings.
+
+   HOW IT COMBINES
+   · Plectics is the default. Obsidian (an option) fills pill tags with a tint
+     of the family colour, text in the family colour; "Obsidian, half" is the
+     same with the part before the first "/" solidly filled (section 4b).
+   · Style plx-tgp-plectics sets nothing: the rules in section 3 stay off and
+     tags are drawn by 35-tags / 91-qa-fixes W14 exactly as before.
+   · Obsidian, Label, Plain are bundles of variables (section 2).
+   · Path keeps the Plectics look and adds the split (section 4); the split
+     needs the plugin's <span class="plx-tg-rest">.
+   · Advanced: an option left at "From style" adds a do-nothing class
+     (plx-tg-<option>-style). Any other value sets its variables on body
+     AFTER the bundles, so it wins over every Style, Plectics included
+     (choosing one switches the section-3 rules on).
+   · Size, family colours, group colours and Where apply under every Style.
+     A colour you never touched is not written by Style Settings, so each
+     palette keeps its own hues.
+   · The old "Plain tags" toggle (plx-tags-plain, main section) acts as the
+     Plain style while Style is Plectics.
+
+   VARIABLES (on body)
+     --plx-tg-acc 0|1   hue = accent      --plx-tg-ink 0|1  hue = ink
+     --plx-tg-ct  1|0   colour on text    --plx-tg-cf  1|0  colour on frame+fill
+     --plx-tg-fr  1|0   frame drawn       --plx-tg-frn 0|1  frame neutral grey
+     --plx-tg-fw        frame width       --plx-tg-fp       fill strength (%)
+     --plx-tg-solid 0|1 text picked for a solid fill
+     --plx-tg-r radius  --plx-tg-cut clip-path  --plx-tg-pad side padding
+     --plx-tg-font --plx-tg-wt --plx-tg-tt --plx-tg-ls   face, weight, case, tracking
+     --plx-tgo-size     92 = the Plectics size (slider)
+     --plx-tg-hash      # strength: 1 full, 0.45 dimmed, 0 hidden
+   Unset = the per-surface Plectics value (inline 42 % frame / 10 % fill /
+   2 px; chips 50 % / 8 % / 1 px; # at 70 % on chips).
+   ========================================================================== */
+
+/* (The typed-tags settings live in 69-settings6.css → Plectics Alto › Typed tags; merged 2026-11-17. Option ids unchanged.) */
+
+/* ==========================================================================
+   1 · COLOURS: the Custom group tokens, and your picked colours
+   ========================================================================== */
+.theme-light {
+  --plx-tagc-custom-1: #84418a;
+  --plx-tagc-custom-2: #5b6618;
+  --plx-tagc-custom-3: #2c5f92;
+}
+.theme-dark {
+  --plx-tagc-custom-1: #d9a3dc;
+  --plx-tagc-custom-2: #c3cf7c;
+  --plx-tagc-custom-3: #94bdea;
+}
+
+/* Inline tags by family prefix, reading your colour first (--plx-tagu-*,
+   written by Style Settings only once you change it). Stable and absent use
+   doubled classes so they win over the status/ family.
+   Not gated by plx-tags-plain: that class is the Plain preset now. */
+body:not(.plx-tgu-off) :is(a.tag, .cm-hashtag) { --plx-tag-h: var(--plx-tagu-topic, var(--plx-tagc-topic)); }
+/* TYPE (type/, legacy form/) */
+body:not(.plx-tgu-off) a.tag[href^="#type/" i],
+body:not(.plx-tgu-off) a.tag[href^="#form/" i],
+body:not(.plx-tgu-off) .cm-hashtag[class*="cm-tag-type"]:not(.cm-tag-type),
+body:not(.plx-tgu-off) .cm-hashtag[class*="cm-tag-form"]:not(.cm-tag-form) {
+  --plx-tag-h: var(--plx-tagu-type, var(--plx-tagc-form));
+}
+/* STATUS */
+body:not(.plx-tgu-off) a.tag[href^="#status/" i],
+body:not(.plx-tgu-off) .cm-hashtag[class*="cm-tag-status"]:not(.cm-tag-status) {
+  --plx-tag-h: var(--plx-tagu-status, var(--plx-tagc-status));
+}
+/* SETTLED */
+body:not(.plx-tgu-off) a.tag.tag[href="#status/stable" i],
+body:not(.plx-tgu-off) .cm-hashtag.cm-hashtag.cm-hashtag.cm-tag-statusstable {
+  --plx-tag-h: var(--plx-tagu-stable, var(--plx-tagc-stable));
+}
+/* ABSENT */
+body:not(.plx-tgu-off) a.tag.tag[href="#status/empty" i],
+body:not(.plx-tgu-off) a.tag.tag[href="#status/trash" i],
+body:not(.plx-tgu-off) .cm-hashtag.cm-hashtag.cm-hashtag.cm-tag-statusempty,
+body:not(.plx-tgu-off) .cm-hashtag.cm-hashtag.cm-hashtag.cm-tag-statustrash {
+  --plx-tag-h: var(--plx-tagu-absent, var(--plx-tagc-absent));
+}
+/* META */
+body:not(.plx-tgu-off) a.tag[href^="#meta/" i],
+body:not(.plx-tgu-off) .cm-hashtag[class*="cm-tag-meta"]:not(.cm-tag-meta) {
+  --plx-tag-h: var(--plx-tagu-meta, var(--plx-tagc-meta));
+}
+/* AUTHOR (91-qa-fixes W14, 81-audit-a4 A4-15) */
+body:not(.plx-tgu-off) a.tag[href^="#author/" i],
+body:not(.plx-tgu-off) .cm-hashtag[class*="cm-tag-author"] {
+  --plx-tag-h: var(--plx-tagu-author, var(--plx-tagc-author));
+}
+/* CUSTOM 1–3 (Custom tag groups): the Typed Pages plugin marks those tags with
+   data-tag-kind="custom-N"; their inline rules are in section 4. */
+
+/* Chips (and Tag pane rows, if marked) by data-tag-kind from the plugin (W14 again,
+   reading your colour first; same weights, later in the file). */
+:is(.multi-select-pill, .tag-pane-tag, .plx-tg-tok)[data-tag-kind="topic"]  { --plx-k: var(--plx-tagu-topic, var(--plx-tagc-topic)); }
+:is(.multi-select-pill, .tag-pane-tag, .plx-tg-tok)[data-tag-kind="type"]   { --plx-k: var(--plx-tagu-type, var(--plx-tagc-form)); }
+:is(.multi-select-pill, .tag-pane-tag, .plx-tg-tok)[data-tag-kind="status"] { --plx-k: var(--plx-tagu-status, var(--plx-tagc-status)); }
+:is(.multi-select-pill, .tag-pane-tag, .plx-tg-tok)[data-tag-kind="author"] { --plx-k: var(--plx-tagu-author, var(--plx-tagc-author)); }
+:is(.multi-select-pill, .tag-pane-tag, .plx-tg-tok)[data-tag-kind="meta"]   { --plx-k: var(--plx-tagu-meta, var(--plx-tagc-meta)); }
+:is(.multi-select-pill, .tag-pane-tag, .plx-tg-tok)[data-tag-kind="custom-1"] { --plx-k: var(--plx-tagu-custom-1, var(--plx-tagc-custom-1)); }
+:is(.multi-select-pill, .tag-pane-tag, .plx-tg-tok)[data-tag-kind="custom-2"] { --plx-k: var(--plx-tagu-custom-2, var(--plx-tagc-custom-2)); }
+:is(.multi-select-pill, .tag-pane-tag, .plx-tg-tok)[data-tag-kind="custom-3"] { --plx-k: var(--plx-tagu-custom-3, var(--plx-tagc-custom-3)); }
+:is(.multi-select-pill, .tag-pane-tag, .plx-tg-tok):not([data-tag-kind^="custom"])[data-tag="status/stable" i] { --plx-k: var(--plx-tagu-stable, var(--plx-tagc-stable)); }
+:is(.multi-select-pill, .tag-pane-tag, .plx-tg-tok):not([data-tag-kind^="custom"]):is([data-tag="status/empty" i], [data-tag="status/trash" i]) { --plx-k: var(--plx-tagu-absent, var(--plx-tagc-absent)); }
+/* W14 draws every chip with a data-tag-kind, custom kinds included */
+
+/* ==========================================================================
+   2 · STYLES: bundles of variables (Plectics and Path set none)
+   ========================================================================== */
+body:is(.plx-tgp-obsidian, .plx-tgp-ohalf) {
+  --plx-tg-acc: 0;
+  --plx-tg-ink: initial;
+  --plx-tg-ct: initial;
+  --plx-tg-cf: initial;
+  --plx-tg-fr: 0;
+  --plx-tg-frn: initial;
+  --plx-tg-fw: initial;
+  --plx-tg-fp: 16%;
+  --plx-tg-solid: initial;
+  --plx-tg-r: 999px;
+  --plx-tg-cut: initial;
+  --plx-tg-pad: 0.62em;
+  --plx-tg-font: var(--plx-ui);
+  --plx-tg-wt: initial;
+  --plx-tg-tt: initial;
+  --plx-tg-ls: initial;
+  --plx-tg-hash: initial;
+}
+body.plx-tgp-label {
+  --plx-tg-acc: initial;
+  --plx-tg-ink: initial;
+  --plx-tg-ct: initial;
+  --plx-tg-cf: initial;
+  --plx-tg-fr: 0;
+  --plx-tg-frn: initial;
+  --plx-tg-fw: initial;
+  --plx-tg-fp: 100%;
+  --plx-tg-solid: 1;
+  --plx-tg-r: 0;
+  --plx-tg-cut: polygon(0 0, calc(100% - 0.5em) 0, 100% 0.5em, 100% 100%, 0 100%);
+  --plx-tg-pad: 0.5em;
+  --plx-tg-font: var(--plx-ui-cond);
+  --plx-tg-wt: 700;
+  --plx-tg-tt: uppercase;
+  --plx-tg-ls: 0.06em;
+  --plx-tg-hash: initial;
+}
+body.plx-tgp-plain,
+body.plx-tags-plain.plx-tgp-plectics {
+  --plx-tg-acc: initial;
+  --plx-tg-ink: initial;
+  --plx-tg-ct: initial;
+  --plx-tg-cf: initial;
+  --plx-tg-fr: 0;
+  --plx-tg-frn: initial;
+  --plx-tg-fw: initial;
+  --plx-tg-fp: 0%;
+  --plx-tg-solid: initial;
+  --plx-tg-r: initial;
+  --plx-tg-cut: initial;
+  --plx-tg-pad: 0;
+  --plx-tg-font: initial;
+  --plx-tg-wt: initial;
+  --plx-tg-tt: initial;
+  --plx-tg-ls: initial;
+  --plx-tg-hash: initial;
+}
+
+/* ---------- 2b · Advanced overrides: after the bundles, so they win ---------- */
+body.plx-tg-colour-family { --plx-tg-acc: 0; --plx-tg-ink: 0; }
+body.plx-tg-colour-accent { --plx-tg-acc: 1; --plx-tg-ink: 0; }
+body.plx-tg-colour-ink { --plx-tg-acc: 0; --plx-tg-ink: 1; }
+body.plx-tg-apply-both { --plx-tg-ct: 1; --plx-tg-cf: 1; }
+body.plx-tg-apply-text { --plx-tg-ct: 1; --plx-tg-cf: 0; }
+body.plx-tg-apply-frame { --plx-tg-ct: 0; --plx-tg-cf: 1; }
+body.plx-tg-corner-square { --plx-tg-r: initial; --plx-tg-cut: none; --plx-tg-pad: initial; }
+body.plx-tg-corner-round { --plx-tg-r: 3px; --plx-tg-cut: none; --plx-tg-pad: initial; }
+body.plx-tg-corner-pill { --plx-tg-r: 999px; --plx-tg-cut: none; --plx-tg-pad: 0.62em; }
+body.plx-tg-corner-cut { --plx-tg-r: 0; --plx-tg-cut: polygon(0 0, calc(100% - 0.5em) 0, 100% 0.5em, 100% 100%, 0 100%); --plx-tg-pad: 0.5em; }
+body.plx-tg-frame-colour { --plx-tg-fr: 1; --plx-tg-frn: 0; }
+body.plx-tg-frame-neutral { --plx-tg-fr: 1; --plx-tg-frn: 1; }
+body.plx-tg-frame-none { --plx-tg-fr: 0; }
+body.plx-tg-fweight-1 { --plx-tg-fw: 1px; }
+body.plx-tg-fweight-15 { --plx-tg-fw: 1.5px; }
+body.plx-tg-fill-tint { --plx-tg-fp: initial; --plx-tg-solid: 0; }
+body.plx-tg-fill-solid { --plx-tg-fp: 100%; --plx-tg-solid: 1; }
+body.plx-tg-fill-none { --plx-tg-fp: 0%; --plx-tg-solid: 0; }
+body.plx-tg-face-mono { --plx-tg-font: var(--plx-mono); --plx-tg-wt: 400; --plx-tg-tt: none; --plx-tg-ls: 0; }
+body.plx-tg-face-ui { --plx-tg-font: var(--plx-ui); --plx-tg-wt: 400; --plx-tg-tt: none; --plx-tg-ls: 0; }
+body.plx-tg-face-text { --plx-tg-font: inherit; --plx-tg-wt: 400; --plx-tg-tt: none; --plx-tg-ls: 0; }
+body.plx-tg-hash-shown { --plx-tg-hash: 1; }
+body.plx-tg-hash-dim { --plx-tg-hash: 0.45; }
+body.plx-tg-hash-hidden { --plx-tg-hash: 0; }
+
+/* ==========================================================================
+   3 · THE TAG RULES: on under Obsidian / Label / Plain, under any Advanced
+   override, and in the Tag pane when that toggle is on; off under plain Plectics
+   ========================================================================== */
+/* the colour arithmetic (per element, so each tag reads its own family) */
+:is(body:is(.plx-tgp-obsidian, .plx-tgp-ohalf), body.plx-tgp-label, body.plx-tgp-plain, body.plx-tags-plain.plx-tgp-plectics, body.plx-tg-colour-family, body.plx-tg-colour-accent, body.plx-tg-colour-ink, body.plx-tg-apply-both, body.plx-tg-apply-text, body.plx-tg-apply-frame, body.plx-tg-corner-square, body.plx-tg-corner-round, body.plx-tg-corner-pill, body.plx-tg-corner-cut, body.plx-tg-frame-colour, body.plx-tg-frame-neutral, body.plx-tg-frame-none, body.plx-tg-fweight-1, body.plx-tg-fweight-15, body.plx-tg-fill-tint, body.plx-tg-fill-solid, body.plx-tg-fill-none, body.plx-tg-face-mono, body.plx-tg-face-ui, body.plx-tg-face-text, body.plx-tg-hash-shown, body.plx-tg-hash-dim, body.plx-tg-hash-hidden) :is(a.tag, .cm-hashtag),
+:is(body:is(.plx-tgp-obsidian, .plx-tgp-ohalf), body.plx-tgp-label, body.plx-tgp-plain, body.plx-tags-plain.plx-tgp-plectics, body.plx-tg-colour-family, body.plx-tg-colour-accent, body.plx-tg-colour-ink, body.plx-tg-apply-both, body.plx-tg-apply-text, body.plx-tg-apply-frame, body.plx-tg-corner-square, body.plx-tg-corner-round, body.plx-tg-corner-pill, body.plx-tg-corner-cut, body.plx-tg-frame-colour, body.plx-tg-frame-neutral, body.plx-tg-frame-none, body.plx-tg-fweight-1, body.plx-tg-fweight-15, body.plx-tg-fill-tint, body.plx-tg-fill-solid, body.plx-tg-fill-none, body.plx-tg-face-mono, body.plx-tg-face-ui, body.plx-tg-face-text, body.plx-tg-hash-shown, body.plx-tg-hash-dim, body.plx-tg-hash-hidden):not(.plx-tg-where-inline) .metadata-property[data-property-key="tags"] .multi-select-pill,
+body.plx-tg-pane .workspace-leaf-content[data-type="tag"] .tag-pane-tag > .tree-item-inner > .tree-item-inner-text {
+  --plx-tg-H: color-mix(in srgb, var(--plx-teal) calc(var(--plx-tg-acc, 0) * 100%), color-mix(in srgb, var(--plx-ink-2) calc(var(--plx-tg-ink, 0) * 100%), var(--plx-tg-fam)));
+  --plx-tg-fb: color-mix(in srgb, var(--plx-tg-H) calc(var(--plx-tg-cf, 1) * 100%), var(--plx-ink-3));
+  --plx-tg-tx: color-mix(in srgb, var(--plx-tg-H) calc(var(--plx-tg-ct, 1) * 100%), var(--plx-ink-2));
+  /* on a solid fill: black or white by the fill's lightness (>= 4.5:1 for any fill) */
+  --plx-tg-on: lch(from var(--plx-tg-fb) clamp(0, (50 - l) * 1000, 100) 0 0);
+  --plx-tg-c: color-mix(in srgb, var(--plx-tg-on) calc(var(--plx-tg-solid, 0) * 100%), var(--plx-tg-tx));
+  --plx-tg-line: color-mix(in srgb, color-mix(in srgb, var(--plx-rule) calc(var(--plx-tg-frn, 0) * 100%), color-mix(in srgb, var(--plx-tg-fb) var(--plx-tg-frp0), transparent)) calc(var(--plx-tg-fr, 1) * 100%), transparent);
+  --plx-tg-bg: color-mix(in srgb, var(--plx-tg-fb) var(--plx-tg-fp, var(--plx-tg-fp0)), transparent);
+  --plx-tg-bg-hover: color-mix(in srgb, var(--plx-tg-fb) min(100%, calc(var(--plx-tg-fp, var(--plx-tg-fp0)) + 8%)), transparent);
+  --plx-tg-hc: color-mix(in srgb, var(--plx-tg-c) calc(var(--plx-tg-hash, var(--plx-tg-hash0)) * 100%), transparent);
+}
+
+/* ---------- inline tags: Reading view, Live Preview, the specimen ---------- */
+:is(body:is(.plx-tgp-obsidian, .plx-tgp-ohalf), body.plx-tgp-label, body.plx-tgp-plain, body.plx-tags-plain.plx-tgp-plectics, body.plx-tg-colour-family, body.plx-tg-colour-accent, body.plx-tg-colour-ink, body.plx-tg-apply-both, body.plx-tg-apply-text, body.plx-tg-apply-frame, body.plx-tg-corner-square, body.plx-tg-corner-round, body.plx-tg-corner-pill, body.plx-tg-corner-cut, body.plx-tg-frame-colour, body.plx-tg-frame-neutral, body.plx-tg-frame-none, body.plx-tg-fweight-1, body.plx-tg-fweight-15, body.plx-tg-fill-tint, body.plx-tg-fill-solid, body.plx-tg-fill-none, body.plx-tg-face-mono, body.plx-tg-face-ui, body.plx-tg-face-text, body.plx-tg-hash-shown, body.plx-tg-hash-dim, body.plx-tg-hash-hidden) :is(a.tag, .cm-hashtag) {
+  --plx-tg-fam: var(--plx-tag-h);
+  --plx-tg-frp0: 42%; --plx-tg-fp0: 10%; --plx-tg-hash0: 1;
+  color: var(--plx-tg-c);
+  background-color: var(--plx-tg-bg);
+  border: var(--plx-tg-fw, 1px) solid var(--plx-tg-line);
+  border-radius: var(--plx-tg-r, 2px);
+  clip-path: var(--plx-tg-cut, none);
+  font-family: var(--plx-tg-font, var(--plx-mono));
+  font-weight: var(--plx-tg-wt, 400);
+  text-transform: var(--plx-tg-tt, none);
+  letter-spacing: var(--plx-tg-ls, 0);
+  text-decoration: none;
+}
+:is(body:is(.plx-tgp-obsidian, .plx-tgp-ohalf), body.plx-tgp-label, body.plx-tgp-plain, body.plx-tags-plain.plx-tgp-plectics, body.plx-tg-colour-family, body.plx-tg-colour-accent, body.plx-tg-colour-ink, body.plx-tg-apply-both, body.plx-tg-apply-text, body.plx-tg-apply-frame, body.plx-tg-corner-square, body.plx-tg-corner-round, body.plx-tg-corner-pill, body.plx-tg-corner-cut, body.plx-tg-frame-colour, body.plx-tg-frame-neutral, body.plx-tg-frame-none, body.plx-tg-fweight-1, body.plx-tg-fweight-15, body.plx-tg-fill-tint, body.plx-tg-fill-solid, body.plx-tg-fill-none, body.plx-tg-face-mono, body.plx-tg-face-ui, body.plx-tg-face-text, body.plx-tg-hash-shown, body.plx-tg-hash-dim, body.plx-tg-hash-hidden) :is(a.tag, .cm-hashtag):not(:is(.bases-td, .bases-cards-line, .bases-list-item) *) { padding-inline: var(--plx-tg-pad, 0.42em); }
+:is(body:is(.plx-tgp-obsidian, .plx-tgp-ohalf), body.plx-tgp-label, body.plx-tgp-plain, body.plx-tags-plain.plx-tgp-plectics, body.plx-tg-colour-family, body.plx-tg-colour-accent, body.plx-tg-colour-ink, body.plx-tg-apply-both, body.plx-tg-apply-text, body.plx-tg-apply-frame, body.plx-tg-corner-square, body.plx-tg-corner-round, body.plx-tg-corner-pill, body.plx-tg-corner-cut, body.plx-tg-frame-colour, body.plx-tg-frame-neutral, body.plx-tg-frame-none, body.plx-tg-fweight-1, body.plx-tg-fweight-15, body.plx-tg-fill-tint, body.plx-tg-fill-solid, body.plx-tg-fill-none, body.plx-tg-face-mono, body.plx-tg-face-ui, body.plx-tg-face-text, body.plx-tg-hash-shown, body.plx-tg-hash-dim, body.plx-tg-hash-hidden) a.tag:hover { background-color: var(--plx-tg-bg-hover); color: var(--plx-tg-c); border-color: var(--plx-tg-line); }
+/* Live Preview draws "#" and the name as two spans: one box, no seam */
+:is(body:is(.plx-tgp-obsidian, .plx-tgp-ohalf), body.plx-tgp-label, body.plx-tgp-plain, body.plx-tags-plain.plx-tgp-plectics, body.plx-tg-colour-family, body.plx-tg-colour-accent, body.plx-tg-colour-ink, body.plx-tg-apply-both, body.plx-tg-apply-text, body.plx-tg-apply-frame, body.plx-tg-corner-square, body.plx-tg-corner-round, body.plx-tg-corner-pill, body.plx-tg-corner-cut, body.plx-tg-frame-colour, body.plx-tg-frame-neutral, body.plx-tg-frame-none, body.plx-tg-fweight-1, body.plx-tg-fweight-15, body.plx-tg-fill-tint, body.plx-tg-fill-solid, body.plx-tg-fill-none, body.plx-tg-face-mono, body.plx-tg-face-ui, body.plx-tg-face-text, body.plx-tg-hash-shown, body.plx-tg-hash-dim, body.plx-tg-hash-hidden) .cm-hashtag.cm-hashtag.cm-hashtag-begin {
+  color: var(--plx-tg-hc) !important;
+  border-inline-end: none;
+  padding-inline-end: 0;
+  border-radius: var(--plx-tg-r, 2px) 0 0 var(--plx-tg-r, 2px);
+  clip-path: none;
+}
+:is(body:is(.plx-tgp-obsidian, .plx-tgp-ohalf), body.plx-tgp-label, body.plx-tgp-plain, body.plx-tags-plain.plx-tgp-plectics, body.plx-tg-colour-family, body.plx-tg-colour-accent, body.plx-tg-colour-ink, body.plx-tg-apply-both, body.plx-tg-apply-text, body.plx-tg-apply-frame, body.plx-tg-corner-square, body.plx-tg-corner-round, body.plx-tg-corner-pill, body.plx-tg-corner-cut, body.plx-tg-frame-colour, body.plx-tg-frame-neutral, body.plx-tg-frame-none, body.plx-tg-fweight-1, body.plx-tg-fweight-15, body.plx-tg-fill-tint, body.plx-tg-fill-solid, body.plx-tg-fill-none, body.plx-tg-face-mono, body.plx-tg-face-ui, body.plx-tg-face-text, body.plx-tg-hash-shown, body.plx-tg-hash-dim, body.plx-tg-hash-hidden) .cm-hashtag.cm-hashtag.cm-hashtag-end {
+  border-inline-start: none;
+  padding-inline-start: 0;
+  border-radius: 0 var(--plx-tg-r, 2px) var(--plx-tg-r, 2px) 0;
+}
+/* # hidden in Live Preview: shown again on the line being edited */
+body.plx-tg-hash-hidden .cm-line:not(.cm-active) .cm-hashtag.cm-hashtag.cm-hashtag-begin { display: none; }
+body.plx-tg-hash-hidden .cm-line:not(.cm-active) .cm-hashtag.cm-hashtag.cm-hashtag-end {
+  border-inline-start: var(--plx-tg-fw, 1px) solid var(--plx-tg-line);
+  padding-inline-start: var(--plx-tg-pad, 0.42em);
+  border-radius: var(--plx-tg-r, 2px);
+}
+/* # dimmed or hidden in Reading view: the "#" is part of the link text, so
+   the text is painted by a gradient clipped to the glyphs, its first 1ch
+   (one mono glyph) in the # colour. Hidden also pulls the text 1ch left. */
+body:is(.plx-tg-hash-dim, .plx-tg-hash-hidden) a.tag.tag.tag {
+  color: transparent;
+  background-image: linear-gradient(90deg, var(--plx-tg-hc) 0 1ch, var(--plx-tg-c) 1ch), linear-gradient(transparent, transparent);
+  background-clip: text, padding-box;
+  -webkit-background-clip: text, padding-box;
+  background-origin: content-box, padding-box;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+body.plx-tg-hash-hidden a.tag.tag.tag {
+  display: inline-block;
+  text-indent: -1ch;
+  background-image: linear-gradient(var(--plx-tg-c), var(--plx-tg-c)), linear-gradient(transparent, transparent);
+}
+
+/* ---------- Properties chips ---------- */
+:is(body:is(.plx-tgp-obsidian, .plx-tgp-ohalf), body.plx-tgp-label, body.plx-tgp-plain, body.plx-tags-plain.plx-tgp-plectics, body.plx-tg-colour-family, body.plx-tg-colour-accent, body.plx-tg-colour-ink, body.plx-tg-apply-both, body.plx-tg-apply-text, body.plx-tg-apply-frame, body.plx-tg-corner-square, body.plx-tg-corner-round, body.plx-tg-corner-pill, body.plx-tg-corner-cut, body.plx-tg-frame-colour, body.plx-tg-frame-neutral, body.plx-tg-frame-none, body.plx-tg-fweight-1, body.plx-tg-fweight-15, body.plx-tg-fill-tint, body.plx-tg-fill-solid, body.plx-tg-fill-none, body.plx-tg-face-mono, body.plx-tg-face-ui, body.plx-tg-face-text, body.plx-tg-hash-shown, body.plx-tg-hash-dim, body.plx-tg-hash-hidden):not(.plx-tg-where-inline) .metadata-property[data-property-key="tags"] .multi-select-pill {
+  --plx-tg-fam: var(--plx-k, var(--plx-tagu-topic, var(--plx-tagc-topic)));
+  --plx-tg-frp0: 50%; --plx-tg-fp0: 8%; --plx-tg-hash0: 0.7;
+  color: var(--plx-tg-c) !important;
+  background: var(--plx-tg-bg) !important;
+  border: var(--plx-tg-fw, 1px) solid var(--plx-tg-line) !important;
+  border-radius: var(--plx-tg-r, 1px) !important;
+  clip-path: var(--plx-tg-cut, none);
+  padding-inline: var(--plx-tg-pad, 6px) !important;
+  font-family: var(--plx-tg-font, var(--plx-mono)) !important;
+  font-weight: var(--plx-tg-wt, 400);
+  text-transform: var(--plx-tg-tt, none);
+  letter-spacing: var(--plx-tg-ls, 0);
+}
+body.plx-tg-face-text:not(.plx-tg-where-inline) .metadata-property[data-property-key="tags"] .multi-select-pill { font-family: var(--plx-small) !important; }
+:is(body:is(.plx-tgp-obsidian, .plx-tgp-ohalf), body.plx-tgp-label, body.plx-tgp-plain, body.plx-tags-plain.plx-tgp-plectics, body.plx-tg-colour-family, body.plx-tg-colour-accent, body.plx-tg-colour-ink, body.plx-tg-apply-both, body.plx-tg-apply-text, body.plx-tg-apply-frame, body.plx-tg-corner-square, body.plx-tg-corner-round, body.plx-tg-corner-pill, body.plx-tg-corner-cut, body.plx-tg-frame-colour, body.plx-tg-frame-neutral, body.plx-tg-frame-none, body.plx-tg-fweight-1, body.plx-tg-fweight-15, body.plx-tg-fill-tint, body.plx-tg-fill-solid, body.plx-tg-fill-none, body.plx-tg-face-mono, body.plx-tg-face-ui, body.plx-tg-face-text, body.plx-tg-hash-shown, body.plx-tg-hash-dim, body.plx-tg-hash-hidden):not(.plx-tg-where-inline) .metadata-property[data-property-key="tags"] .multi-select-pill:hover {
+  background: var(--plx-tg-bg-hover) !important;
+  border-color: var(--plx-tg-line) !important;
+  color: var(--plx-tg-c) !important;
+}
+:is(body:is(.plx-tgp-obsidian, .plx-tgp-ohalf), body.plx-tgp-label, body.plx-tgp-plain, body.plx-tags-plain.plx-tgp-plectics, body.plx-tg-colour-family, body.plx-tg-colour-accent, body.plx-tg-colour-ink, body.plx-tg-apply-both, body.plx-tg-apply-text, body.plx-tg-apply-frame, body.plx-tg-corner-square, body.plx-tg-corner-round, body.plx-tg-corner-pill, body.plx-tg-corner-cut, body.plx-tg-frame-colour, body.plx-tg-frame-neutral, body.plx-tg-frame-none, body.plx-tg-fweight-1, body.plx-tg-fweight-15, body.plx-tg-fill-tint, body.plx-tg-fill-solid, body.plx-tg-fill-none, body.plx-tg-face-mono, body.plx-tg-face-ui, body.plx-tg-face-text, body.plx-tg-hash-shown, body.plx-tg-hash-dim, body.plx-tg-hash-hidden):not(.plx-tg-where-inline) .metadata-property[data-property-key="tags"] .multi-select-pill .multi-select-pill-content::before { color: var(--plx-tg-hc) !important; }
+body.plx-tg-hash-hidden:not(.plx-tg-where-inline) .metadata-property[data-property-key="tags"] .multi-select-pill .multi-select-pill-content::before { content: none !important; }
+body.plx-tg-hash-hidden:not(.plx-tg-where-inline) .metadata-property[data-property-key="tags"] .metadata-property-value .multi-select-pill .multi-select-pill-content { padding-inline-start: 0; text-indent: 0; }
+/* no separator "·" inside a boxed chip (A1-09) */
+:is(body:is(.plx-tgp-obsidian, .plx-tgp-ohalf), body.plx-tgp-label, body.plx-tgp-plain, body.plx-tags-plain.plx-tgp-plectics, body.plx-tg-colour-family, body.plx-tg-colour-accent, body.plx-tg-colour-ink, body.plx-tg-apply-both, body.plx-tg-apply-text, body.plx-tg-apply-frame, body.plx-tg-corner-square, body.plx-tg-corner-round, body.plx-tg-corner-pill, body.plx-tg-corner-cut, body.plx-tg-frame-colour, body.plx-tg-frame-neutral, body.plx-tg-frame-none, body.plx-tg-fweight-1, body.plx-tg-fweight-15, body.plx-tg-fill-tint, body.plx-tg-fill-solid, body.plx-tg-fill-none, body.plx-tg-face-mono, body.plx-tg-face-ui, body.plx-tg-face-text, body.plx-tg-hash-shown, body.plx-tg-hash-dim, body.plx-tg-hash-hidden):not(.plx-tg-where-inline) .metadata-property[data-property-key="tags"] .multi-select-pill::after { content: none !important; }
+
+/* ---------- Size (slider): every Style; 92 = exactly the Plectics size ---------- */
+body :is(a.tag, .cm-hashtag):not(:is(.bases-td, .bases-cards-line, .bases-list-item) *) { font-size: calc(0.76em * var(--plx-tgo-size, 92) / 92); }
+body:not(.plx-tg-where-inline) .metadata-property[data-property-key="tags"] .multi-select-pill:not(#plx-tg) { font-size: calc(11.5px * var(--plx-tgo-size, 92) / 92) !important; }
+
+/* ---------- Tag pane rows (opt-in toggle; Topic colour, family only if a row carries data-tag-kind) ---------- */
+body.plx-tg-pane .workspace-leaf-content[data-type="tag"] .tag-pane-tag > .tree-item-inner > .tree-item-inner-text {
+  --plx-tg-fam: var(--plx-k, var(--plx-tagu-topic, var(--plx-tagc-topic)));
+  --plx-tg-frp0: 42%; --plx-tg-fp0: 10%; --plx-tg-hash0: 0.7;
+  display: inline-block;
+  max-width: 100%;
+  color: var(--plx-tg-c);
+  background-color: var(--plx-tg-bg);
+  border: var(--plx-tg-fw, 1px) solid var(--plx-tg-line);
+  border-radius: var(--plx-tg-r, 2px);
+  clip-path: var(--plx-tg-cut, none);
+  padding: 0 var(--plx-tg-pad, 0.42em);
+  font-family: var(--plx-tg-font, var(--plx-mono));
+  font-size: calc(11.5px * var(--plx-tgo-size, 92) / 92);
+  font-weight: var(--plx-tg-wt, 400);
+  text-transform: var(--plx-tg-tt, none);
+  letter-spacing: var(--plx-tg-ls, 0);
+  line-height: 1.45;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body.plx-tg-pane.plx-tg-face-text .workspace-leaf-content[data-type="tag"] .tag-pane-tag > .tree-item-inner > .tree-item-inner-text { font-family: var(--plx-ui); }
+body.plx-tg-pane .workspace-leaf-content[data-type="tag"] .tag-pane-tag .tag-pane-tag-parent { color: var(--plx-tg-hc); }
+body.plx-tg-pane .workspace-leaf-content[data-type="tag"] .tag-pane-tag:hover > .tree-item-inner > .tree-item-inner-text { background-color: var(--plx-tg-bg-hover); }
+
+/* ==========================================================================
+   4 · PATH STYLE: the tag splits at its first "/"
+   The namespace (#type, #author) is unshaded and muted; the rest from the
+   "/" on (/article, /name/surname) is shaded in the family colour.
+   Why this way round: the leaf is the information, the namespace is the
+   filing; the eye lands on the shaded part. Tags with no "/" keep the
+   Plectics look (one piece). The plugin wraps the rest in
+   <span class="plx-tg-rest"> (Reading view, Properties, Live Preview); the
+   text itself is untouched. Advanced overrides still apply.
+   ========================================================================== */
+/* Reading view and the specimen */
+body.plx-tgp-path a.tag:has(> .plx-tg-rest) {
+  color: var(--plx-ink-3);
+  background-color: transparent;
+  padding-inline-end: 0;
+}
+body.plx-tgp-path a.tag > .plx-tg-rest {
+  padding-inline: 0.12em var(--plx-tg-pad, 0.42em);
+  color: var(--plx-tg-c, var(--plx-tag-h));
+  background-color: color-mix(in srgb, var(--plx-tg-fb, var(--plx-tag-h)) var(--plx-tg-fp, 10%), transparent);
+  border-radius: 0 var(--plx-tg-r, 1px) var(--plx-tg-r, 1px) 0;
+}
+body.plx-tgp-path:is(.plx-tg-hash-dim, .plx-tg-hash-hidden) a.tag > .plx-tg-rest { color: transparent; }
+/* Live Preview: the rest is marked inside the name span */
+body.plx-tgp-path .cm-hashtag.cm-hashtag.cm-hashtag-end:has(.plx-tg-rest),
+body.plx-tgp-path .cm-hashtag.cm-hashtag.cm-hashtag-begin:has(+ .cm-hashtag-end .plx-tg-rest) {
+  color: var(--plx-ink-3) !important;
+  background-color: transparent;
+}
+body.plx-tgp-path .cm-hashtag.cm-hashtag.cm-hashtag-end:has(.plx-tg-rest) { padding-inline-end: 0; }
+body.plx-tgp-path .cm-hashtag-end .plx-tg-rest {
+  padding-inline: 0.12em var(--plx-tg-pad, 0.42em);
+  color: var(--plx-tg-c, var(--plx-tag-h));
+  background-color: color-mix(in srgb, var(--plx-tg-fb, var(--plx-tag-h)) var(--plx-tg-fp, 10%), transparent);
+}
+/* Properties chips */
+body.plx-tgp-path:not(.plx-tg-where-inline) .metadata-property[data-property-key="tags"] .multi-select-pill:has(.plx-tg-rest) {
+  color: var(--plx-ink-3) !important;
+  background: transparent !important;
+  padding-inline-end: 0 !important;
+}
+body.plx-tgp-path:not(.plx-tg-where-inline) .metadata-property[data-property-key="tags"] .multi-select-pill:has(.plx-tg-rest) .multi-select-pill-content::before { color: var(--plx-ink-3) !important; }
+body.plx-tgp-path:not(.plx-tg-where-inline) .metadata-property[data-property-key="tags"] .multi-select-pill .plx-tg-rest {
+  padding-inline: 0.12em var(--plx-tg-pad, 6px);
+  color: var(--plx-tg-c, var(--plx-k));
+  background-color: color-mix(in srgb, var(--plx-tg-fb, var(--plx-k)) var(--plx-tg-fp, 10%), transparent);
+}
+
+/* ==========================================================================
+   4b · OBSIDIAN, HALF: the part before the first "/" is solidly filled in the
+   family colour (black or white text, by the fill's lightness); the rest
+   (the plugin's <span class="plx-tg-rest">) is a light tint, family text.
+   Without the plugin the whole tag is filled.
+   ========================================================================== */
+body.plx-tgp-ohalf { --plx-tg-fp: 100%; --plx-tg-solid: 1; }
+body.plx-tgp-ohalf a.tag > .plx-tg-rest,
+body.plx-tgp-ohalf .cm-hashtag-end .plx-tg-rest,
+body.plx-tgp-ohalf:not(.plx-tg-where-inline) .metadata-property[data-property-key="tags"] .multi-select-pill .plx-tg-rest {
+  margin-inline-end: calc(-1 * var(--plx-tg-pad, 0.62em));
+  padding-inline: 0.18em var(--plx-tg-pad, 0.62em);
+  color: var(--plx-tg-tx);
+  background-color: color-mix(in srgb, var(--plx-tg-fb) 16%, var(--background-primary));
+  border-radius: 0 var(--plx-tg-r, 999px) var(--plx-tg-r, 999px) 0;
+}
+
+/* ---------- Custom tag groups on inline tags (the plugin marks them) ---------- */
+body:not(.plx-tgu-off) a.tag.tag.tag[data-tag-kind="custom-1"],
+body:not(.plx-tgu-off) .cm-hashtag.cm-hashtag.cm-hashtag.cm-hashtag:is(:has(> .plx-tg-kind[data-tag-kind="custom-1"]), .cm-hashtag-begin:has(+ .cm-hashtag-end > .plx-tg-kind[data-tag-kind="custom-1"])) {
+  --plx-tag-h: var(--plx-tagu-custom-1, var(--plx-tagc-custom-1));
+}
+body:not(.plx-tgu-off) a.tag.tag.tag[data-tag-kind="custom-2"],
+body:not(.plx-tgu-off) .cm-hashtag.cm-hashtag.cm-hashtag.cm-hashtag:is(:has(> .plx-tg-kind[data-tag-kind="custom-2"]), .cm-hashtag-begin:has(+ .cm-hashtag-end > .plx-tg-kind[data-tag-kind="custom-2"])) {
+  --plx-tag-h: var(--plx-tagu-custom-2, var(--plx-tagc-custom-2));
+}
+body:not(.plx-tgu-off) a.tag.tag.tag[data-tag-kind="custom-3"],
+body:not(.plx-tgu-off) .cm-hashtag.cm-hashtag.cm-hashtag.cm-hashtag:is(:has(> .plx-tg-kind[data-tag-kind="custom-3"]), .cm-hashtag-begin:has(+ .cm-hashtag-end > .plx-tg-kind[data-tag-kind="custom-3"])) {
+  --plx-tag-h: var(--plx-tagu-custom-3, var(--plx-tagc-custom-3));
+}
+
+/* ==========================================================================
+   5 · THE SETTINGS PANEL: one live specimen under Style (69-settings6 look)
+   An info-text row rendered as Markdown, so its tags are real tags drawn by
+   the real rules: what you see is the current pick, overrides included.
+   ========================================================================== */
+.modal.mod-settings .style-settings-container > .setting-item.style-settings-info-text[data-id="plx-tg-now"] {
+  border-inline-start: 0 !important;
+  border-top: 0 !important;
+  background: transparent !important;
+  padding: 0 0 10px !important;
+  margin-top: -4px !important;
+}
+.modal.mod-settings .setting-item[data-id="plx-tg-now"] > .setting-item-info > .setting-item-name,
+.modal.mod-settings .setting-item[data-id="plx-tg-now"] > .setting-item-control { display: none; }
+.modal.mod-settings .setting-item[data-id="plx-tg-now"] .setting-item-description { max-width: none !important; padding: 0 !important; }
+.modal.mod-settings .setting-item[data-id="plx-tg-now"] .style-settings-markdown > p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 6px;
+  margin: 0;
+  padding: 8px 10px;
+  font-family: var(--plx-reading, var(--font-text));
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--plx-ink-2);
+  background: var(--plx-paper);
+  border: 1px solid var(--plx-teal);
+  box-shadow: inset 3px 0 0 var(--plx-teal);
+}
+.modal.mod-settings .setting-item[data-id="plx-tg-now"] a.tag { pointer-events: none; }
+.modal.mod-settings .setting-item[data-id="plx-tg-now"] .style-settings-markdown > p::before {
+  flex: 0 0 auto;
+  margin-inline-end: 4px;
+  font: 700 9.5px/1 var(--plx-ui-cond);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--plx-teal);
+  content: "Now · Plectics";
+}
+body.plx-tgp-path .modal.mod-settings .setting-item[data-id="plx-tg-now"] .style-settings-markdown > p::before { content: "Now · Path"; }
+body:is(.plx-tgp-obsidian, .plx-tgp-ohalf) .modal.mod-settings .setting-item[data-id="plx-tg-now"] .style-settings-markdown > p::before { content: "Now · Obsidian"; }
+body.plx-tgp-ohalf .modal.mod-settings .setting-item[data-id="plx-tg-now"] .style-settings-markdown > p::before { content: "Now · Obsidian, half"; }
+body.plx-tgp-label .modal.mod-settings .setting-item[data-id="plx-tg-now"] .style-settings-markdown > p::before { content: "Now · Label"; }
+:is(body.plx-tgp-plain, body.plx-tags-plain.plx-tgp-plectics) .modal.mod-settings .setting-item[data-id="plx-tg-now"] .style-settings-markdown > p::before { content: "Now · Plain"; }
+body:is(.plx-tg-colour-family, .plx-tg-colour-accent, .plx-tg-colour-ink, .plx-tg-apply-both, .plx-tg-apply-text, .plx-tg-apply-frame, .plx-tg-corner-square, .plx-tg-corner-round, .plx-tg-corner-pill, .plx-tg-corner-cut, .plx-tg-frame-colour, .plx-tg-frame-neutral, .plx-tg-frame-none, .plx-tg-fweight-1, .plx-tg-fweight-15, .plx-tg-fill-tint, .plx-tg-fill-solid, .plx-tg-fill-none, .plx-tg-face-mono, .plx-tg-face-ui, .plx-tg-face-text, .plx-tg-hash-shown, .plx-tg-hash-dim, .plx-tg-hash-hidden) .modal.mod-settings .setting-item[data-id="plx-tg-now"] .style-settings-markdown > p::after {
+  flex: 0 0 100%;
+  font: 400 10px/1.3 var(--plx-mono);
+  color: var(--plx-ink-3);
+  content: "with your Advanced overrides";
+}
+/* an override in use says so on its row */
+body:is(.plx-tg-colour-family, .plx-tg-colour-accent, .plx-tg-colour-ink) .modal.mod-settings .setting-item[data-id="plx-tg-colour"] > .setting-item-info > .setting-item-name::after { content: "overrides style"; }
+body:is(.plx-tg-apply-both, .plx-tg-apply-text, .plx-tg-apply-frame) .modal.mod-settings .setting-item[data-id="plx-tg-apply"] > .setting-item-info > .setting-item-name::after { content: "overrides style"; }
+body:is(.plx-tg-corner-square, .plx-tg-corner-round, .plx-tg-corner-pill, .plx-tg-corner-cut) .modal.mod-settings .setting-item[data-id="plx-tg-corner"] > .setting-item-info > .setting-item-name::after { content: "overrides style"; }
+body:is(.plx-tg-frame-colour, .plx-tg-frame-neutral, .plx-tg-frame-none) .modal.mod-settings .setting-item[data-id="plx-tg-frame"] > .setting-item-info > .setting-item-name::after { content: "overrides style"; }
+body:is(.plx-tg-fweight-1, .plx-tg-fweight-15) .modal.mod-settings .setting-item[data-id="plx-tg-fweight"] > .setting-item-info > .setting-item-name::after { content: "overrides style"; }
+body:is(.plx-tg-fill-tint, .plx-tg-fill-solid, .plx-tg-fill-none) .modal.mod-settings .setting-item[data-id="plx-tg-fill"] > .setting-item-info > .setting-item-name::after { content: "overrides style"; }
+body:is(.plx-tg-face-mono, .plx-tg-face-ui, .plx-tg-face-text) .modal.mod-settings .setting-item[data-id="plx-tg-face"] > .setting-item-info > .setting-item-name::after { content: "overrides style"; }
+body:is(.plx-tg-hash-shown, .plx-tg-hash-dim, .plx-tg-hash-hidden) .modal.mod-settings .setting-item[data-id="plx-tg-hash"] > .setting-item-info > .setting-item-name::after { content: "overrides style"; }
+/* Where: a readout of what is covered now */
+.modal.mod-settings .setting-item:is([data-id="plx-tg-where"], [data-id="plx-tg-pane"]) .setting-item-description::after {
+  display: block;
+  margin-top: 4px;
+  font: 400 10.5px/1.4 var(--plx-mono);
+  color: var(--plx-teal);
+}
+.modal.mod-settings .setting-item[data-id="plx-tg-where"] .setting-item-description::after { content: "Now: inline tags and Properties chips."; }
+body.plx-tg-where-inline .modal.mod-settings .setting-item[data-id="plx-tg-where"] .setting-item-description::after { content: "Now: inline tags only; chips keep the Plectics look."; }
+.modal.mod-settings .setting-item[data-id="plx-tg-pane"] .setting-item-description::after { content: "Now: plain text in the Tag pane."; }
+body.plx-tg-pane .modal.mod-settings .setting-item[data-id="plx-tg-pane"] .setting-item-description::after { content: "Now: Tag pane rows drawn as tags."; }

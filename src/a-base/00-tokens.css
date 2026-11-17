@@ -1,0 +1,559 @@
+/* ==========================================================================
+   PLECTICS — Obsidian theme
+   Casio scientific instrument × Xerox PARC workstation × academic wiki
+   Build: python build.py   (concatenates src/*.css → theme.css)
+   ==========================================================================
+
+   00 · TOKENS
+   Every module uses ONLY these --plx-* tokens (plus Obsidian's own
+   variables, which are mapped from them here). No raw hex outside this file.
+
+   PLECTICS SEMIOTIC STANDARD (short form, full text in STANDARD.md)
+   ─ Colour carries meaning, never decoration.
+       teal    identity, link, the active/selected thing, "you are here"
+       slate   chrome: title bands, instrument casing labels
+       ink     content
+       red     error / failure / destructive — and nothing else
+       amber   caution, draft, provisional
+       blue    selection range / compatibility (canvas, editor selection)
+       violet  formal objects (theorem family) — very low chroma
+   ─ Line style carries epistemic status.
+       solid 1px      fact, boundary, settled
+       double 3px     formal object (definition, theorem) — a closed claim
+       dashed         provisional, estimate, unresolved, not yet existing
+       dotted         reference / pointer to elsewhere (links, footnotes)
+       hatched fill   absent, negative, disabled
+   ─ Marks.
+       ■ filled square  complete / proven (∎)
+       □ hollow square  open
+       ▸ chevron        can expand        ◆ diamond  menu / more
+       §                section            ¶ paragraph anchor
+   ─ Labels are instrument labels: condensed caps, tracked +0.06em, small.
+   ========================================================================== */
+
+
+/* Caps headings / labels: Nimbus Sans L (Helvetica-class, Aperture signage feel).
+   "PLX Caps": weights < 550 → Regular, ≥ 550 → Bold. Archivo ExtraCondensed was
+   dropped: its caps sit high in the line box (user: "uncentered vertically"). */
+@font-face { font-family: "PLX Caps"; src: local("Nimbus Sans L Regular"), local("NimbusSanL-Reg"), local("Nimbus Sans L"); font-weight: 100 549; font-style: normal; }
+@font-face { font-family: "PLX Caps"; src: local("Nimbus Sans L Bold"), local("NimbusSanL-Bol"); font-weight: 550 900; font-style: normal; }
+
+/* ---------- 1. Fonts ----------
+   Shipped (embedded in b-layer/58-alto-fonts.css): Alto Garamond Condensed,
+   Archivo, PLX Caps (Nimbus Sans). Every other name is used only if installed;
+   see docs/FONT-LICENCES.md. */
+body {
+  /* Garamond for titles and headings — the academic voice */
+  --plx-serif: "EB Garamond", "Apple Garamond", "Garamond", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  /* Display Garamond for the article title and h1/h2: Alto Garamond Condensed
+     (shipped, EB Garamond at 80 % width). EB Garamond keeps h3/h4, theorem
+     heads and true small caps. */
+  --plx-display: "Alto Garamond Condensed", "EB Garamond", "Garamond", Georgia, serif;
+  --plx-display-weight: 400;
+  /* Reading text — IBM Plex Sans: screen-tuned, IBM design lineage */
+  --plx-sans: "IBM Plex Sans", "Archivo", "Segoe UI", Arial, sans-serif;
+  /* Default reading text — Constantia (user choice; Microsoft ClearType serif,
+     2005: screen-tuned, sturdy, period-appropriate). CMU Serif is an option. */
+  --plx-reading: "Constantia", "CMU Serif", "IBM Plex Serif", Georgia, serif;
+  /* Reading text, serif alternative */
+  --plx-text-serif: "IBM Plex Serif", "EB Garamond", Georgia, serif;
+  /* Interface — Archivo (shipped): a grotesque close in width to Univers */
+  --plx-ui: "Archivo", "Segoe UI", Arial, sans-serif;
+  /* Instrument labels — condensed */
+  --plx-ui-cond: "PLX Caps", "Nimbus Sans L", "Arial Narrow", sans-serif;
+  /* Early-Macintosh system face — graph node labels, occasional system labels */
+  --plx-chicago: "ChicagoFLF", "Chicago", var(--plx-ui-cond);
+  /* Small text: properties, footnotes, captions, descriptions */
+  --plx-small: "IBM Plex Serif", Georgia, serif;
+  /* Data, code, metadata (Berkeley Mono only if you own and install it) */
+  --plx-mono: "Berkeley Mono", "IBM Plex Mono", "JetBrains Mono", "Fragment Mono", Consolas, monospace;
+
+  --font-text-theme: var(--plx-reading);
+  --font-interface-theme: var(--plx-ui);
+  --font-monospace-theme: var(--plx-mono);
+  --font-print: var(--plx-text-serif);
+
+  /* Type scale (UI) — dense, like an instrument */
+  --plx-fs-label: 11px;   /* condensed caps labels */
+  --plx-fs-small: 12px;   /* metadata, counts */
+  --plx-fs-ui: 13px;      /* tree, menus, tabs */
+  --plx-track: 0.04em;      /* label tracking */
+
+  /* Quotations: readable upright reading face; Garamond only for the mark */
+  --plx-quote-font: var(--plx-reading);
+  --plx-quote-style: normal;
+
+  /* Collapse markers (semiotic §5): boxed minus = expanded, boxed plus = collapsed */
+  --plx-mark-open: "⊟";    /* boxed minus: expanded */
+  --plx-mark-closed: "⊞";  /* boxed plus: collapsed */
+  --plx-mark-font: "Segoe UI Symbol", "Cambria Math", "DejaVu Sans", var(--plx-ui);
+  --plx-mark-size: 12px;
+
+  /* Geometry */
+  --plx-r: 1px;             /* panels: essentially square (user: less rounded) */
+  --plx-r-key: 2px;         /* keys/buttons: barely softened corners */
+  --plx-cut: 7px;           /* chamfer: the small angled corner (Aperture signage) */
+  --plx-cut-s: 5px;
+  --plx-hair: 1px;
+  --plx-row: 24px;          /* tree / list row height */
+  --plx-gap: 6px;
+}
+
+/* ---------- 2. Palette — LIGHT ("Instrument Gray / Paper") ---------- */
+.theme-light {
+  /* Plectics teal (Drive identity: #045A5A #0F4545 #428585 #639696 #B3EAE8 #D6F0EF).
+     Fixed by default; Style Settings → "Follow Obsidian accent" re-derives it. */
+  --plx-teal:        #0a5c59;
+  --plx-teal-bright: #2f7f7b;
+  --plx-teal-deep:   #0f4545;
+  --plx-teal-wash:   rgba(10, 92, 89, 0.08);
+
+  --plx-case:       #d9dfde;   /* casing: ribbon, tab strip, status line */
+  --plx-case-hi:    #e7ebea;   /* sidebar body, toolbars */
+  --plx-case-lo:    #c9d1d0;   /* gutters between panes */
+  --plx-paper:      #fafbfa;   /* note surface */
+  --plx-paper-2:    #f1f3f3;   /* table headers, secondary paper (Drive cell fill #F1F3F4) */
+  --plx-well:       #ffffff;   /* input wells */
+  --plx-lcd:        #d3ece9;   /* selection / active row — Drive #D6F0EF */
+  --plx-lcd-2:      #e6f3f1;   /* hover */
+  --plx-lcd-ink:    #0f4545;
+  /* readout displays: matte e-ink paper, not a glowing LCD */
+  --plx-eink: #e8e9e4;
+  --plx-eink-ink: #262a29;
+  --plx-eink-rule: rgba(38, 42, 41, 0.22);
+
+  --plx-ink:        #263031;   /* body text (Drive #434343 → teal-tinted) */
+  --plx-ink-2:      #4b5656;   /* labels (Drive) */
+  --plx-ink-3:      #526563;   /* muted (Drive #748D8D, darkened to ≥4.5:1) */
+  --plx-ink-4:      #607170;   /* faint (Drive #C1CFCD, darkened to >=4.5:1 on paper) */
+
+  --plx-rule:        #a4b2b0;
+  --plx-rule-soft:   #c9d4d2;  /* Drive #C1CFCD */
+  --plx-rule-strong: #5f6f6e;  /* Drive grid #818989 → stronger */
+
+  --plx-slate:      #2e3d3e;   /* title bands */
+  --plx-slate-2:    #3c4b4b;   /* Drive meta #3C4B4B */
+  --plx-slate-ink:  #eef4f3;
+  /* filled chips (form tags, label tabs): background + on-colour ink */
+  --plx-label-bg:    #3c4b4b;
+  --plx-label-ink:   #eef4f3;
+
+  --plx-red:     #a8433a;  --plx-red-wash:    rgba(168, 67, 58, 0.08);
+  --plx-amber:   #8a6014;  --plx-amber-wash:  rgba(160, 118, 30, 0.09);
+  --plx-green:   #4f6e22;  --plx-green-wash:  rgba(79, 110, 34, 0.08);
+  --plx-blue:    #34628a;  --plx-blue-wash:   rgba(52, 98, 138, 0.08);
+  --plx-violet:  #5d5280;  --plx-violet-wash: rgba(93, 82, 128, 0.07);
+  --plx-steel:   #55707f;  --plx-steel-wash:  rgba(85, 112, 127, 0.08);
+
+  --plx-key-top:  #ffffff;
+  --plx-key-bot:  #dfe5e4;
+  --plx-key-face: linear-gradient(180deg, var(--plx-key-top) 0%, #f0f3f2 55%, var(--plx-key-bot) 100%);
+  --plx-key-face-down: linear-gradient(180deg, #cdd6d5 0%, #dbe2e1 100%);
+  --plx-band:     linear-gradient(180deg, #3c4b4b 0%, #2e3d3e 100%);
+  --plx-hl:       rgba(255, 255, 255, 0.9);
+
+  --plx-raised:   inset 0 1px 0 var(--plx-hl), inset 0 -1px 0 rgba(0,0,0,0.04), 0 1px 0 rgba(15,69,69,0.10);
+  --plx-pressed:  inset 0 1px 2px rgba(15,40,40,0.22);
+  --plx-recessed: inset 0 1px 2px rgba(15,40,40,0.09);
+  --plx-float:    0 1px 0 rgba(0,0,0,0.05), 0 6px 18px rgba(15,45,45,0.16), 0 0 0 1px rgba(0,0,0,0.03);
+  --plx-hatch:    repeating-linear-gradient(135deg, transparent 0 3px, rgba(15,69,69,0.08) 3px 4px);
+}
+
+/* ---------- 3. Palette — DARK ("Night instrument", rev 0.3) ----------
+   Dark is its own object, not light inverted. Light = a paper document on a
+   pale-gray instrument case. Dark = a lit display glass set into a black
+   bezel at night: the CASE is darker than the PAGE (as on a real device),
+   keys are black with printed legends, labels are black strips, and state is
+   shown by LAMPS (lit edges, glowing dots) rather than filled cells.
+   Identity stays Plectics teal so a link means the same thing in both modes;
+   amber is caution + highlights + phosphor displays only. */
+.theme-dark {
+  --plx-teal:        #5bbfc4;   /* identity / lamp */
+  --plx-teal-bright: #8ad3d6;
+  --plx-teal-deep:   #c8eef0;
+  --plx-teal-wash:   color-mix(in srgb, var(--plx-teal) 10%, transparent);
+  --plx-lamp-glow:   0 0 6px color-mix(in srgb, var(--plx-teal) 55%, transparent);
+  --plx-plate:       #2a2d31;   /* callout / figure plates: a lighter panel lifted on the glass */
+
+  --plx-case:       #0d0e0f;   /* bezel: matte black */
+  --plx-case-hi:    #121315;   /* sidebars: black, a breath lighter */
+  --plx-case-lo:    #060707;
+  --plx-paper:      #1b1d1f;   /* the lit glass */
+  --plx-paper-2:    #222428;
+  --plx-well:       #0b0c0d;   /* inputs: recessed into the black */
+  --plx-lcd:        color-mix(in srgb, var(--plx-teal) 7.5%, transparent);   /* active row: faint lit wash; the lamp bar carries it */
+  --plx-lcd-2:      #222426;   /* opaque: the Instruments plugin flattens translucent tokens to solid white */
+  --plx-lcd-ink:    #f2f4f5;
+  --plx-eink:       #232528;
+  --plx-eink-ink:   #e6e7e8;
+  --plx-eink-rule:  rgba(230, 231, 232, 0.16);
+
+  --plx-ink:        #e2e4e6;   /* soft white, never #fff on black */
+  --plx-ink-2:      #b8bcc0;
+  --plx-ink-3:      #8f949a;
+  --plx-ink-4:      #767b81;
+
+  --plx-rule:        #3a3d42;
+  --plx-rule-soft:   #2a2c30;
+  --plx-rule-strong: #6d7278;
+
+  --plx-slate:      #0b0c0d;   /* bands are black strips with printed legends */
+  --plx-slate-2:    #101113;
+  --plx-slate-ink:  #e6e8ea;
+  --plx-label-bg:    #0b0c0d;
+  --plx-label-ink:   #c9cdd1;
+
+  --plx-red:     #ec7468;  --plx-red-wash:    rgba(236, 116, 104, 0.12);
+  --plx-amber:   #e9a650;  --plx-amber-wash:  rgba(233, 166, 80, 0.12);   /* caution */
+  --plx-green:   #a9c77f;  --plx-green-wash:  rgba(169, 199, 127, 0.11);
+  --plx-blue:    #7fa6f2;  --plx-blue-wash:   rgba(127, 166, 242, 0.14);  /* selection */
+  --plx-violet:  #b9aee0;  --plx-violet-wash: rgba(185, 174, 224, 0.10);
+  --plx-steel:   #a9b3bd;  --plx-steel-wash:  rgba(169, 179, 189, 0.10);
+
+  /* black rubber keys, separated by a black gap, lit from above */
+  --plx-key-top:  #27292d;
+  --plx-key-bot:  #18191c;
+  --plx-key-face: linear-gradient(180deg, var(--plx-key-top) 0%, #1f2124 60%, var(--plx-key-bot) 100%);
+  --plx-key-face-down: linear-gradient(180deg, #0e0f11 0%, #16171a 100%);
+  --plx-band:     linear-gradient(180deg, #121315 0%, #08090a 100%);
+  --plx-hl:       rgba(255, 255, 255, 0.075);
+  --plx-fill:     color-mix(in srgb, var(--plx-teal) 72%, transparent);
+
+  --plx-raised:   inset 0 1px 0 var(--plx-hl), 0 0 0 1px #000, 0 1px 0 1px rgba(0,0,0,0.7);
+  --plx-pressed:  inset 0 1px 3px rgba(0,0,0,0.8), 0 0 0 1px #000;
+  --plx-recessed: inset 0 1px 3px rgba(0,0,0,0.7);
+  --plx-float:    0 0 0 1px #000, 0 10px 28px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.05);
+  --plx-hatch:    repeating-linear-gradient(135deg, transparent 0 3px, rgba(255,255,255,0.06) 3px 4px);
+}
+
+/* Chamfer helpers — clip one corner at a small angle.
+   Use on FILLED shapes (bands, labels, tabs, keys); bordered boxes use
+   .plx-cut-frame technique (border drawn by a background layer). */
+body {
+  --plx-clip-tr-on: polygon(0 0, calc(100% - var(--plx-cut)) 0, 100% var(--plx-cut), 100% 100%, 0 100%);
+  --plx-clip-br-on: polygon(0 0, 100% 0, 100% calc(100% - var(--plx-cut-s)), calc(100% - var(--plx-cut-s)) 100%, 0 100%);
+  --plx-clip-tl-br-on: polygon(var(--plx-cut) 0, 100% 0, 100% calc(100% - var(--plx-cut)), calc(100% - var(--plx-cut)) 100%, 0 100%, 0 var(--plx-cut));
+}
+/* Chamfers are OFF by default (user: "don't just slant everything");
+   Style Settings → Surface → "Angled corners" turns them back on. */
+body { --plx-clip-tr: none; --plx-clip-br: none; --plx-clip-tl-br: none; }
+body.plx-chamfer { --plx-clip-tr: var(--plx-clip-tr-on); --plx-clip-br: var(--plx-clip-br-on); --plx-clip-tl-br: var(--plx-clip-tl-br-on); }
+
+/* Follow Obsidian accent instead of fixed Plectics teal (Style Settings) */
+.theme-light.plx-use-accent {
+  --plx-teal: hsl(var(--accent-h), calc(var(--accent-s) * 0.7), calc(var(--accent-l) * 0.8));
+  --plx-teal-bright: hsl(var(--accent-h), calc(var(--accent-s) * 0.7), calc(var(--accent-l) * 1.1));
+  --plx-teal-wash: hsla(var(--accent-h), 40%, 40%, 0.08);
+}
+.theme-dark.plx-use-accent {
+  --plx-teal: hsl(var(--accent-h), calc(var(--accent-s) * 0.5), 60%);
+  --plx-teal-bright: hsl(var(--accent-h), calc(var(--accent-s) * 0.55), 70%);
+  --plx-teal-wash: hsla(var(--accent-h), 40%, 55%, 0.12);
+}
+
+/* ---------- 4. Map onto Obsidian variables ---------- */
+.theme-light, .theme-dark {
+  --color-accent: var(--plx-teal);
+  --color-accent-1: var(--plx-teal-bright);
+  --color-accent-2: var(--plx-teal-bright);
+
+  --background-primary: var(--plx-paper);
+  --background-primary-alt: var(--plx-paper-2);
+  --background-secondary: var(--plx-case-hi);
+  --background-secondary-alt: var(--plx-case);
+  --background-modifier-border: var(--plx-rule-soft);
+  --background-modifier-border-hover: var(--plx-rule);
+  --background-modifier-border-focus: var(--plx-rule-strong);
+  --background-modifier-hover: var(--plx-lcd-2);
+  --background-modifier-active-hover: var(--plx-lcd);
+  --background-modifier-form-field: var(--plx-well);
+  --background-modifier-error: var(--plx-red);
+  --background-modifier-success: var(--plx-green);
+
+  --text-normal: var(--plx-ink);
+  --text-muted: var(--plx-ink-2);
+  --text-faint: var(--plx-ink-3);
+  --text-accent: var(--plx-teal);
+  --text-accent-hover: var(--plx-teal-bright);
+  --text-on-accent: #f4f7f5;
+  --text-error: var(--plx-red);
+  --text-warning: var(--plx-amber);
+  --text-success: var(--plx-green);
+  --text-selection: rgba(66, 133, 133, 0.24);
+  --text-highlight-bg: rgba(214, 190, 90, 0.32);
+
+  --interactive-normal: var(--plx-key-top);
+  --interactive-hover: var(--plx-lcd-2);
+  --interactive-accent: var(--plx-teal);
+  --interactive-accent-hover: var(--plx-teal-bright);
+
+  --color-red: var(--plx-red);
+  --color-orange: var(--plx-amber);
+  --color-yellow: var(--plx-amber);
+  --color-green: var(--plx-green);
+  --color-cyan: var(--plx-teal-bright);
+  --color-blue: var(--plx-blue);
+  --color-purple: var(--plx-violet);
+  --color-pink: var(--plx-red);
+
+  /* radii */
+  --radius-s: var(--plx-r);
+  --radius-m: var(--plx-r);
+  --radius-l: 3px;
+  --radius-xl: 4px;
+  --button-radius: var(--plx-r-key);
+  --input-radius: var(--plx-r);
+  --checkbox-radius: 1px;
+  --tag-radius: 1px;
+  --callout-radius: var(--plx-r);
+  --embed-border-radius: 0;
+
+  /* borders */
+  --border-width: 1px;
+  --divider-color: var(--plx-rule);
+  --divider-width: 1px;
+  --divider-color-hover: var(--plx-teal);
+  --hr-color: var(--plx-rule);
+
+  /* shadows */
+  --shadow-s: var(--plx-float);
+  --shadow-l: var(--plx-float);
+  --input-shadow: var(--plx-raised);
+  --input-shadow-hover: var(--plx-raised);
+
+  /* typography */
+  --font-ui-smaller: 11.5px;
+  --font-ui-small: 12.5px;
+  --font-ui-medium: 13.5px;
+  --font-ui-large: 18px;
+  --line-height-normal: 1.6;
+  --line-height-tight: 1.3;
+  --bold-weight: 600;
+
+  /* chrome */
+  --titlebar-background: var(--plx-case);
+  --titlebar-background-focused: var(--plx-case);
+  --titlebar-text-color: var(--plx-ink-3);
+  --titlebar-text-color-focused: var(--plx-ink-2);
+  --titlebar-border-color: var(--plx-rule);
+  --ribbon-background: var(--plx-case);
+  --ribbon-background-collapsed: var(--plx-case);
+  --tab-container-background: var(--plx-case);
+  --tab-background-active: var(--plx-paper);
+  --tab-text-color: var(--plx-ink-3);
+  --tab-text-color-active: var(--plx-ink);
+  --tab-text-color-focused: var(--plx-ink-2);
+  --tab-text-color-focused-active: var(--plx-ink);
+  --tab-text-color-focused-active-current: var(--plx-ink);
+  --tab-outline-color: var(--plx-rule);
+  --tab-outline-width: 1px;
+  --tab-divider-color: var(--plx-rule);
+  --tab-radius: 0;
+  --tab-radius-active: 0;
+  --tab-curve: 0;
+  --tab-font-size: var(--plx-fs-ui);
+  --tab-font-weight: 400;
+  --tab-font-weight-active: 600;
+  --tab-max-width: 220px;
+  --tab-stacked-header-width: 28px;
+  --header-height: 34px;
+  --status-bar-background: var(--plx-case);
+  --status-bar-border-color: var(--plx-rule);
+  --status-bar-text-color: var(--plx-ink-2);
+  --status-bar-font-size: 11.5px;
+  --status-bar-radius: 0;
+  --scrollbar-bg: transparent;
+  --scrollbar-thumb-bg: var(--plx-rule-soft);
+  --scrollbar-active-thumb-bg: var(--plx-rule);
+
+  /* navigation */
+  --nav-item-size: var(--plx-fs-ui);
+  --nav-item-color: var(--plx-ink-2);
+  --nav-item-color-hover: var(--plx-ink);
+  --nav-item-color-active: var(--plx-lcd-ink);
+  --nav-item-color-selected: var(--plx-lcd-ink);
+  --nav-item-background-hover: var(--plx-lcd-2);
+  --nav-item-background-active: var(--plx-lcd);
+  --nav-item-background-selected: var(--plx-lcd);
+  --nav-item-padding: 3px 8px 3px 24px;
+  --nav-item-parent-padding: 3px 8px 3px 24px;
+  --nav-item-radius: 0;
+  --nav-item-weight-active: 600;
+  --nav-indentation-guide-color: var(--plx-rule-soft);
+  --nav-indentation-guide-width: 1px;
+  --nav-collapse-icon-color: var(--plx-ink-3);
+  --nav-collapse-icon-color-collapsed: var(--plx-ink-3);
+  --nav-heading-color: var(--plx-ink);
+  --nav-heading-color-hover: var(--plx-ink);
+
+  /* modals / menus */
+  --modal-background: var(--plx-paper);
+  --modal-border-color: var(--plx-rule-strong);
+  --modal-border-width: 1px;
+  --modal-radius: var(--plx-r);
+  --prompt-border-color: var(--plx-rule-strong);
+  --prompt-border-width: 1px;
+  --menu-background: var(--plx-paper);
+  --menu-border-color: var(--plx-rule-strong);
+  --menu-radius: var(--plx-r);
+  --menu-shadow: var(--plx-float);
+
+  /* editor content */
+  --h1-font: var(--plx-display);
+  --h2-font: var(--plx-display);
+  --h3-font: var(--plx-serif);
+  --h4-font: var(--plx-serif);
+  --h5-font: var(--plx-ui-cond);
+  --h6-font: var(--plx-ui-cond);
+  --inline-title-font: var(--plx-display);
+  --h1-size: 2.1em;   --h1-weight: var(--plx-display-weight); --h1-line-height: 1.15; --h1-color: var(--plx-ink);
+  --h2-size: 1.65em;  --h2-weight: var(--plx-display-weight); --h2-line-height: 1.2;  --h2-color: var(--plx-ink);
+  --h3-size: 1.32em;  --h3-weight: 600; --h3-line-height: 1.25; --h3-color: var(--plx-ink);
+  --h4-size: 1.12em;  --h4-weight: 600; --h4-line-height: 1.3;  --h4-color: var(--plx-ink);
+  --h5-size: 0.82em;  --h5-weight: 700; --h5-line-height: 1.4;  --h5-color: var(--plx-ink-2);
+  --h6-size: 0.76em;  --h6-weight: 600; --h6-line-height: 1.4;  --h6-color: var(--plx-ink-3);
+  --inline-title-size: 2.5em;
+  --inline-title-weight: var(--plx-display-weight);
+  --inline-title-line-height: 1.1;
+  --inline-title-color: var(--plx-ink);
+
+  --link-color: var(--plx-teal);
+  --link-color-hover: var(--plx-teal-bright);
+  --link-decoration: underline;
+  --link-decoration-hover: underline;
+  --link-decoration-thickness: 1px;
+  --link-unresolved-color: var(--plx-red);
+  --link-unresolved-opacity: 0.9;
+  --link-unresolved-decoration-style: dashed;
+  --link-unresolved-decoration-color: var(--plx-red);
+  --link-external-color: var(--plx-teal);
+  --link-external-color-hover: var(--plx-teal-bright);
+
+  --code-background: var(--plx-paper-2);
+  --code-normal: var(--plx-ink);
+  --code-size: 0.86em;
+  --code-radius: var(--plx-r);
+  --code-border-color: var(--plx-rule-soft);
+  --code-border-width: 1px;
+  --code-comment: var(--plx-ink-3);
+  --code-function: var(--plx-teal);
+  --code-keyword: var(--plx-violet);
+  --code-string: var(--plx-green);
+  --code-value: var(--plx-amber);
+  --code-tag: var(--plx-blue);
+  --code-operator: var(--plx-ink-2);
+  --code-property: var(--plx-steel);
+  --code-important: var(--plx-red);
+  --code-punctuation: var(--plx-ink-3);
+
+  --blockquote-border-color: var(--plx-rule-strong);
+  --blockquote-border-thickness: 2px;
+  --blockquote-color: var(--plx-ink-2);
+  --blockquote-font-style: normal;
+  --blockquote-style: normal;
+
+  --table-border-color: var(--plx-rule);
+  --table-header-background: var(--plx-paper-2);
+  --table-header-background-hover: var(--plx-lcd-2);
+  --table-header-font: var(--plx-ui-cond);
+  --table-header-size: 0.82em;
+  --table-header-weight: 600;
+  --table-header-color: var(--plx-ink);
+  --table-row-alt-background: transparent;
+  --table-row-background-hover: var(--plx-teal-wash);
+  --table-cell-vertical-alignment: top;
+  --table-selection: var(--text-selection);
+
+  --tag-background: transparent;
+  --tag-background-hover: var(--plx-teal-wash);
+  --tag-border-color: var(--plx-rule);
+  --tag-border-color-hover: var(--plx-teal);
+  --tag-border-width: 1px;
+  --tag-color: var(--plx-ink-2);
+  --tag-color-hover: var(--plx-teal);
+  --tag-size: 0.8em;
+  --tag-padding-x: 0.42em;
+  --tag-padding-y: 0.05em;
+  --tag-weight: 400;
+
+  --checkbox-color: var(--plx-teal);
+  --checkbox-color-hover: var(--plx-teal-bright);
+  --checkbox-border-color: var(--plx-rule-strong);
+  --checkbox-border-color-hover: var(--plx-teal);
+  --checklist-done-color: var(--plx-ink-3);
+  --checklist-done-decoration: line-through;
+
+  --list-marker-color: var(--plx-ink-3);
+  --list-marker-color-hover: var(--plx-teal);
+  --list-marker-color-collapsed: var(--plx-teal);
+  --list-bullet-size: 0.3em;
+  --list-indent: 2em;
+
+  --embed-background: transparent;
+  --embed-border-start: 2px solid var(--plx-teal);
+  --embed-padding: 0 0 0 1em;
+
+  --hr-thickness: 1px;
+  --metadata-divider-color: var(--plx-rule-soft);
+  --metadata-label-font: var(--plx-ui-cond);
+  --metadata-label-font-size: 11px;
+  --metadata-label-text-color: var(--plx-ink-3);
+  --metadata-input-font: var(--plx-ui);
+  --metadata-input-font-size: 12.5px;
+  --metadata-input-text-color: var(--plx-ink);
+  --metadata-property-radius: 0;
+  --metadata-property-background-hover: var(--plx-lcd-2);
+  --metadata-property-background-active: var(--plx-lcd);
+  --metadata-border-color: var(--plx-rule);
+  --metadata-border-width: 1px;
+  --metadata-border-radius: var(--plx-r);
+  --metadata-padding: 4px 8px;
+  --metadata-gap: 0;
+
+  --callout-border-width: 1px;
+  --callout-border-opacity: 1;
+  --callout-padding: 0;
+  --callout-title-padding: 4px 10px;
+  --callout-title-size: 11.5px;
+  --callout-title-weight: 700;
+  --callout-content-padding: 6px 12px 8px;
+  --callout-blend-mode: normal;
+
+  --icon-size: 16px;
+  --icon-stroke: 1.6px;
+  --icon-s: 14px;
+  --icon-s-stroke: 1.6px;
+  --icon-xs: 12px;
+  --icon-xs-stroke: 1.8px;
+  --icon-color: var(--plx-ink-2);
+  --icon-color-hover: var(--plx-ink);
+  --icon-color-active: var(--plx-teal);
+  --icon-color-focused: var(--plx-ink);
+  --icon-opacity: 1;
+  --icon-opacity-hover: 1;
+  --icon-opacity-active: 1;
+  --clickable-icon-radius: var(--plx-r-key);
+
+  --file-line-width: 46rem;
+  --file-margins: 28px 40px;
+  --p-spacing: 0.9rem;
+  --heading-spacing: 1.6em;
+
+  --graph-line: var(--plx-rule);
+  --graph-node: var(--plx-ink-2);
+  --graph-node-unresolved: var(--plx-ink-4);
+  --graph-node-focused: var(--plx-teal);
+  --graph-node-tag: var(--plx-amber);
+  --graph-node-attachment: var(--plx-steel);
+  --graph-text: var(--plx-ink);
+
+  --canvas-background: var(--plx-paper);
+  --canvas-dot-pattern: var(--plx-rule-soft);
+  --canvas-card-label-color: var(--plx-ink-3);
+}
+
+/* critique P2.8: in light, link hover goes darker (contrast rises), not lighter */
+.theme-light { --link-color-hover: var(--plx-teal-deep); --link-external-color-hover: var(--plx-teal-deep); }
+
+/* plates (callouts, figures): light = white sheet on paper; dark overrides in §3 */
+.theme-light { --plx-plate: var(--plx-well); }

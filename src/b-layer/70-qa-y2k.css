@@ -1,0 +1,161 @@
+/* ==========================================================================
+   PLECTICS ALTO · 70 · QA — Blue-steel Y2K fixes
+   Loads after 64-dark-y2k and 68-qa6,
+   so it can correct both without editing them.
+   ========================================================================== */
+
+/* ---------- 1 · Accent colour in Y2K dark ----------
+   How the accent is used in dark (rules for this scheme):
+   - The accent is the LAMP: links, the active tab edge, focus rings, toggles
+     that are on, slider fill, the current tree row, the focused graph node.
+     Never a header, never a large fill, never a status meaning.
+   - From Obsidian's accent setting only the HUE is taken. Lightness and
+     chroma belong to the scheme, so any accent reads on navy (link text
+     >= 4.5:1) and glows like a lamp. Obsidian's stock accent is ~27 %
+     lightness, which is unreadable on the navy page.
+   - Selection stays periwinkle (--plx-blue): a selection must never look
+     like a link.
+   - Amber / red / green keep their meanings and never follow the accent.
+     An accent whose hue sits on amber, red or green makes the lamp read as
+     a status; Style Settings says so.
+
+   Bug A: Obsidian still derived --color-accent-hsl and
+   --interactive-accent-hsl from the raw accent (hsl 173 96 % 27 % here), so
+   flashes, drop targets and plugin washes were a dim teal. Point them at
+   the azure lamp (#66b6ee = hsl 205 80 % 67 %). */
+body.theme-dark:not(.plx6-no-steel):is(:not(.plx6-no-steel), .plx6-y2k-metal) {
+  --color-accent-hsl: 205, 80%, 67%;
+  --interactive-accent-hsl: 205, 80%, 67%;
+}
+
+/* Bug B: "Follow Obsidian accent" (plx-use-accent) did nothing in Y2K: the
+   scheme's azure tokens out-ranked it. In accent mode every azure-derived
+   token now takes the accent's hue at the scheme's own lightness. */
+body.theme-dark:not(.plx6-no-steel):is(:not(.plx6-no-steel), .plx6-y2k-metal).plx-use-accent {
+  --y2k-acc-s: clamp(45%, var(--accent-s), 80%);
+  --y2k-acc: var(--accent-h), var(--y2k-acc-s), 68%;
+
+  --plx-teal:        hsl(var(--y2k-acc));
+  --plx-teal-bright: hsl(var(--accent-h), var(--y2k-acc-s), 80%);
+  --plx-teal-deep:   hsl(var(--accent-h), var(--y2k-acc-s), 90%);
+  --plx-teal-wash:   hsla(var(--y2k-acc), 0.11);
+  --plx-lamp-wash:   hsla(var(--y2k-acc), 0.14);
+  --plx-fill:        hsla(var(--y2k-acc), 0.70);
+  --plx-lcd:         hsl(var(--accent-h), 45%, 21%);
+  --plx-lcd-ink:     hsl(var(--accent-h), 80%, 94%);
+
+  --y2k-lamp-halo:   hsla(var(--y2k-acc), 0.55);
+  --y2k-lamp-soft:   hsla(var(--y2k-acc), 0.26);
+  --y2k-grid-fine:   hsla(var(--y2k-acc), 0.055);
+  --y2k-grid-major:  hsla(var(--y2k-acc), 0.12);
+  --plx-cv-snap:     hsla(var(--y2k-acc), 0.07);
+  --plx-cv-major:    hsla(var(--y2k-acc), 0.12);
+  --plx-cv-fine:     hsla(var(--y2k-acc), 0.035);
+  --canvas-dot-pattern: hsla(var(--y2k-acc), 0.22);
+  --plx-phos-glow:   0 0 4px hsla(var(--y2k-acc), 0.35);
+
+  --color-accent-hsl: var(--y2k-acc);
+  --interactive-accent-hsl: var(--y2k-acc);
+}
+
+/* ---------- 2 · Canvas bottom strip (request: "this at the bottom looks bad") ----------
+   Before: the frame's bottom edge stepped from 16 px to a 54 px see-through
+   plate with an angled join; the card keys sat centred and the readouts were
+   appended after them with no width limit, so in a narrow pane the readouts
+   ran past the pane edge ("ZOOM 1…" clipped) and floated as pale boxes over
+   the navy. After:
+   - bottom edge: thin and even like the left edge, no step, no plate
+     (the frame stays see-through: what you see is what is there);
+   - two compact trays docked in the corners: card keys bottom-left,
+     readouts bottom-right, so they cannot collide;
+   - readouts are dark recessed fields with fixed widths (no jitter while the
+     pointer moves); the snapped value lights azure;
+   - narrow panes: one bottom line; readouts drop out in order: CARDS, ZOOM, SNAP, X/Y (main 71-canvas §6). */
+body.theme-dark:not(.plx6-no-steel):is(:not(.plx6-no-steel), .plx6-y2k-metal) .canvas-wrapper {
+  container-type: inline-size;
+  container-name: plx-canvas;
+  --B1: 12px; --B2: 12px;
+}
+body.theme-dark:not(.plx6-no-steel):is(:not(.plx6-no-steel), .plx6-y2k-metal) .canvas-card-menu {
+  left: 14px !important;
+  right: auto !important;
+  transform: none !important;
+  bottom: 14px !important;
+  padding: 3px;
+  gap: 3px;
+  background: var(--plx-case-hi) !important;
+  border: 1px solid var(--y2k-black) !important;
+  border-radius: 0;
+  box-shadow: var(--y2k-bevel-out), 0 2px 6px var(--y2k-shade-2) !important;
+}
+body.theme-dark:not(.plx6-no-steel):is(:not(.plx6-no-steel), .plx6-y2k-metal) .canvas-card-menu .canvas-card-menu-button { padding: 4px 6px; --icon-size: 16px; }
+
+body.theme-dark:not(.plx6-no-steel):is(:not(.plx6-no-steel), .plx6-y2k-metal) .plx-canvas-hud {
+  left: auto !important;
+  right: 14px !important;
+  bottom: 14px !important;
+  height: auto;
+  padding: 3px !important;
+  gap: 3px;
+  background: var(--plx-case-hi) !important;
+  border: 1px solid var(--y2k-black) !important;
+  border-radius: 0;
+  box-shadow: var(--y2k-bevel-out), 0 2px 6px var(--y2k-shade-2) !important;
+  text-shadow: none !important;
+  font-size: 11.5px;
+}
+body.theme-dark:not(.plx6-no-steel):is(:not(.plx6-no-steel), .plx6-y2k-metal) .plx-canvas-hud > :is(span, span:first-child) {
+  height: 26px;
+  padding: 0 7px;
+  justify-content: space-between;
+  gap: 6px;
+  background: var(--plx-well) !important;
+  color: var(--plx-ink) !important;
+  border: 1px solid var(--y2k-black) !important;
+  border-radius: 0;
+  box-shadow: var(--y2k-bevel-in) !important;
+}
+body.theme-dark:not(.plx6-no-steel):is(:not(.plx6-no-steel), .plx6-y2k-metal) .plx-canvas-hud b { color: var(--plx-ink-3) !important; margin-right: 0; }
+body.theme-dark:not(.plx6-no-steel):is(:not(.plx6-no-steel), .plx6-y2k-metal) .plx-canvas-hud :is(.is-snapped, .is-snapped b),
+body.theme-dark:not(.plx6-no-steel):is(:not(.plx6-no-steel), .plx6-y2k-metal) .plx-canvas-hud > span.is-snapped:first-child { color: var(--plx-teal) !important; }
+
+/* Narrow panes: main Plectics 71-canvas §6 hides readouts in order to keep one bottom line. */
+
+/* ---------- 3 · Canvas edges: the style the user chose always wins (all Plectics-6) ----------
+   Request: "i only want dotted arrows if user selected dotted
+   arrows"; "do not under any circumstances remove whatever minimal
+   functionality there was". 68-qa6 §7 made every line solid with
+   `stroke-dasharray: none`, which also erased Advanced Canvas line styles
+   (data-path = dotted / short-dashed / long-dashed), and its casing stroke
+   and fill turned outline arrowheads into solid or invisible ones.
+   Default stays solid (§7). A chosen style is drawn, tuned to read well:
+     dotted        round dots, 2.5 px, 7 px apart (zoom-scaled)
+     short-dashed  7 / 5 px     long-dashed  16 / 7 px
+     outline heads (triangle / diamond / circle) and thin-triangle: hollow,
+                   stroked in the edge colour, as Advanced Canvas draws them */
+.canvas-edges path.canvas-display-path[data-path="dotted"] {
+  stroke-dasharray: 0.01 calc(7px * var(--zoom-multiplier)) !important;
+  stroke-linecap: round;
+  stroke-width: calc(2.5px * var(--zoom-multiplier));
+}
+.canvas-edges path.canvas-display-path[data-path="short-dashed"] {
+  stroke-dasharray: calc(7px * var(--zoom-multiplier)) calc(5px * var(--zoom-multiplier)) !important;
+  stroke-linecap: butt;
+}
+.canvas-edges path.canvas-display-path[data-path="long-dashed"] {
+  stroke-dasharray: calc(16px * var(--zoom-multiplier)) calc(7px * var(--zoom-multiplier)) !important;
+  stroke-linecap: butt;
+}
+.canvas-edges > g { --plx-edge-c: var(--plx-teal); }
+.canvas-edges > g[class*="mod-canvas-color"] { --plx-edge-c: var(--canvas-color); }
+.canvas-edges > g:is(.is-focused, .is-selected) { --plx-edge-c: var(--plx-blue); }
+.canvas-edges :is([data-arrow="triangle-outline"], [data-arrow="diamond-outline"], [data-arrow="circle-outline"]) polygon {
+  fill: var(--plx-cv-wall, var(--canvas-background)) !important;
+  stroke: var(--plx-edge-c) !important;
+  stroke-width: calc(2px * var(--zoom-multiplier)) !important;
+}
+.canvas-edges [data-arrow="thin-triangle"] polygon {
+  fill: transparent !important;
+  stroke: var(--plx-edge-c) !important;
+  stroke-width: calc(2.5px * var(--zoom-multiplier)) !important;
+}

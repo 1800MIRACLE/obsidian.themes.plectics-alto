@@ -1,0 +1,930 @@
+/* ==========================================================================
+   10 · WORKSPACE CHROME
+   Casing, ribbon, folder tabs, toolbars, keys, wells, menus, dialogs,
+   status line, scrollbars, focus. The instrument body around the paper.
+   ========================================================================== */
+
+/* ---------- Base ---------- */
+body {
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "tnum" 0;
+  background: var(--plx-case-lo);
+}
+.app-container { background: var(--plx-case-lo); }
+
+/* Keyboard focus — one consistent instrument cursor everywhere */
+body :focus-visible {
+  outline: 2px solid var(--plx-teal) !important;
+  outline-offset: 1px;
+  box-shadow: none;
+}
+
+/* ---------- Title bar (custom frame) ---------- */
+.titlebar {
+  background: var(--plx-case);
+  border-bottom: 1px solid var(--plx-rule);
+}
+.titlebar-text {
+  font-family: var(--plx-ui-cond);
+  font-size: var(--plx-fs-label);
+  letter-spacing: var(--plx-track);
+  text-transform: uppercase;
+  color: var(--plx-ink-3);
+  font-weight: 400;
+}
+.titlebar-button-container.mod-right { background: transparent; }
+.titlebar-button { border-radius: 0; color: var(--plx-ink-2); }
+.titlebar-button:hover { background: var(--plx-lcd-2); }
+.titlebar-button.mod-close:hover { background: var(--plx-red); color: #fff; }
+
+/* ---------- Generic KEY (Casio key cap) ----------
+   Used by: buttons, nav action buttons, view actions, ribbon actions.        */
+button:not(.clickable-icon):not(.checkbox-container):not([class*="iconize"]):not(.callout-copy-button):not(.excalidraw *) {
+  font-family: var(--plx-ui);
+  font-size: var(--font-ui-small);
+  font-weight: 500;
+  color: var(--plx-ink);
+  background: var(--plx-key-face);
+  border: 1px solid var(--plx-rule);
+  border-bottom-color: var(--plx-rule-strong);
+  border-radius: var(--plx-r-key);
+  box-shadow: var(--plx-raised);
+  padding: 4px 12px;
+  height: auto;
+  min-height: 26px;
+  transition: background-color 80ms, box-shadow 80ms;
+}
+button:not(.clickable-icon):not(.checkbox-container):not(.callout-copy-button):hover {
+  background: var(--plx-key-face);
+  border-color: var(--plx-rule-strong);
+  box-shadow: var(--plx-raised), inset 0 0 0 100px rgba(255, 255, 255, 0.10);
+}
+.theme-dark button:not(.clickable-icon):not(.checkbox-container):not(.callout-copy-button):hover {
+  box-shadow: var(--plx-raised), inset 0 0 0 100px rgba(255, 255, 255, 0.04);
+}
+button:not(.clickable-icon):not(.checkbox-container):not(.callout-copy-button):active {
+  background: var(--plx-key-face-down);
+  box-shadow: var(--plx-pressed);
+  transform: translateY(0.5px);
+}
+/* Call-to-action key — the "EXE" key: teal face */
+button.mod-cta {
+  color: var(--text-on-accent) !important;
+  background: linear-gradient(180deg, var(--plx-teal-bright), var(--plx-teal)) !important;
+  border-color: color-mix(in srgb, var(--plx-teal) 60%, black) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 1px 0 rgba(0, 0, 0, 0.15) !important;
+}
+/* Destructive key — red only for destructive */
+button.mod-warning {
+  color: #fff !important;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--plx-red) 85%, white), var(--plx-red)) !important;
+  border-color: color-mix(in srgb, var(--plx-red) 60%, black) !important;
+}
+button:disabled, button[disabled] { opacity: 0.5; background-image: var(--plx-hatch), var(--plx-key-face) !important; }
+
+/* Icon keys (toolbar buttons) — flat until hovered, then a key cap */
+.clickable-icon {
+  border: 1px solid transparent;
+  border-radius: var(--plx-r-key);
+  padding: 4px;
+  color: var(--plx-ink-2);
+  transition: none;
+}
+.clickable-icon:hover {
+  background: var(--plx-key-face);
+  border-color: var(--plx-rule);
+  box-shadow: var(--plx-raised);
+  color: var(--plx-ink);
+}
+.clickable-icon:active {
+  background: var(--plx-key-face-down);
+  box-shadow: var(--plx-pressed);
+}
+.clickable-icon.is-active,
+.clickable-icon.mod-active {
+  color: var(--plx-teal);
+  background: var(--plx-lcd);
+  border-color: var(--plx-rule);
+  box-shadow: var(--plx-pressed);
+}
+
+/* ---------- Wells (inputs) ---------- */
+input[type="text"], input[type="search"], input[type="email"], input[type="password"],
+input[type="number"], input[type="url"], input[type="date"], input[type="datetime-local"],
+textarea, .search-input-container input {
+  font-family: var(--plx-ui);
+  background: var(--plx-well);
+  border: 1px solid var(--plx-rule);
+  border-top-color: var(--plx-rule-strong);
+  border-radius: var(--plx-r);
+  box-shadow: var(--plx-recessed);
+  color: var(--plx-ink);
+}
+input:hover, textarea:hover { border-color: var(--plx-rule-strong); }
+input:focus, textarea:focus, input:focus-visible, textarea:focus-visible {
+  border-color: var(--plx-teal) !important;
+  box-shadow: var(--plx-recessed), 0 0 0 1px var(--plx-teal) !important;
+  outline: none !important;
+}
+input::placeholder, textarea::placeholder { color: var(--plx-ink-4); font-style: italic; }
+
+/* Toggle switch → slide switch with a raised knob in a recessed slot */
+/* Geometry comes from Obsidian's own toggle variables, so the knob is
+   always positioned by the app; we only change sizes and surfaces. */
+body {
+  --toggle-width: 34px;
+  --toggle-thumb-width: 15px;
+  --toggle-thumb-height: 14px;
+  --toggle-border-width: 2px;
+  --toggle-radius: var(--plx-r);
+  --toggle-thumb-radius: 2px;
+  --toggle-thumb-color: var(--plx-key-top);
+  --toggle-thumb-shadow: none;
+  --toggle-s-width: 28px;
+  --toggle-s-thumb-width: 12px;
+  --toggle-s-thumb-height: 11px;
+  --toggle-s-border-width: 2px;
+}
+.checkbox-container {
+  background-color: var(--plx-case-lo);
+  box-shadow: inset 0 0 0 1px var(--plx-rule), var(--plx-recessed);
+  transition: background-color 120ms;
+}
+.checkbox-container:hover { box-shadow: inset 0 0 0 1px var(--plx-rule-strong), var(--plx-recessed); }
+.checkbox-container::after {
+  background: var(--plx-key-face);
+  box-shadow: inset 0 0 0 1px var(--plx-rule-strong), inset 0 2px 0 var(--plx-hl);
+}
+.checkbox-container.is-enabled {
+  background-color: var(--plx-teal);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--plx-teal) 55%, black), inset 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+.checkbox-container.is-enabled::after { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--plx-teal) 55%, black), inset 0 2px 0 var(--plx-hl); }
+
+/* Slider — recessed bar, teal fill to the left of a framed square key.
+   CSS can't read the value, so the fill is the thumb's wide box-shadow, clipped by
+   the input (overflow: hidden). The fill is slightly translucent so the track's
+   gradient shades it. Variant (Style Settings): .plx-slider-segmented = LCD cells. */
+body {
+  --plx-slider-h: 16px;
+  --slider-track-height: var(--plx-slider-h);
+  --slider-thumb-height: var(--plx-slider-h);
+  --slider-thumb-width: var(--plx-slider-h);
+  --slider-thumb-y: 0px;
+  --slider-thumb-radius: 0;
+  --slider-thumb-border-width: 0px;
+  --slider-s-thumb-size: 12px;
+  --slider-s-thumb-position: 0px;
+}
+.theme-light { --plx-seg-line: rgba(15, 40, 40, 0.22); --plx-fill: rgba(28, 128, 116, 0.86); --plx-slider-track: linear-gradient(180deg, #e9edec 0%, #cfd6d5 55%, #bcc5c4 100%); }
+/* dark track (segmented sliders, 85-fixes): a recess cut into the scheme's own case
+   (was a fixed warm-brown gradient that showed in every dark scheme) */
+.theme-dark  { --plx-slider-track: linear-gradient(180deg, var(--plx-case-lo) 0%, var(--plx-well) 55%, var(--plx-paper-2) 100%); --plx-seg-line: rgba(255, 255, 255, 0.12); }
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: calc(var(--plx-slider-h) + 2px);
+  min-width: 80px;
+  padding: 0;
+  overflow: hidden;
+  background: var(--plx-slider-track);
+  border: 1px solid var(--plx-rule-strong);
+  border-radius: var(--plx-r);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+}
+body.plx-slider-segmented input[type="range"] {
+  background:
+    repeating-linear-gradient(90deg, transparent 0 19px, var(--plx-seg-line) 19px 20px),
+    var(--plx-slider-track);
+  border-radius: 1px;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: var(--plx-slider-h);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: var(--plx-slider-h);
+  height: var(--plx-slider-h);
+  margin-top: 0;
+  border: none;
+  border-radius: 0;
+  background: var(--plx-key-face);
+  /* double frame (dark · light · dark) + the fill to its left */
+  box-shadow:
+    inset 0 0 0 1px var(--plx-ink-2),
+    inset 0 0 0 2px var(--plx-paper),
+    inset 0 0 0 3px var(--plx-ink-3),
+    -2001px 0 0 2000px var(--plx-fill);
+  cursor: grab;
+}
+input[type="range"]:hover::-webkit-slider-thumb { background: var(--plx-key-top); }
+input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; background: var(--plx-key-face-down); }
+input[type="range"]:focus-visible { outline: none !important; border-color: var(--plx-teal); box-shadow: inset 0 1px 2px rgba(0,0,0,.18), 0 0 0 1px var(--plx-teal); }
+input[type="range"]:disabled { opacity: 0.5; cursor: default; }
+/* small sliders (Style Settings rows, graph controls) */
+.setting-item-control input[type="range"], .graph-controls input[type="range"] { --plx-slider-h: 14px; }
+
+/* ---------- Ribbon — a column of keys on the casing ---------- */
+.workspace-ribbon {
+  background: var(--plx-case);
+  border-inline-end: 1px solid var(--plx-rule) !important;
+  box-shadow: inset -1px 0 0 var(--plx-hl);
+}
+.workspace-ribbon.mod-left { padding-top: 4px; }
+.side-dock-actions, .side-dock-settings { gap: 3px; }
+.side-dock-ribbon-action,
+.workspace-ribbon .clickable-icon {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--plx-key-face);
+  border: 1px solid var(--plx-rule);
+  border-bottom-color: var(--plx-rule-strong);
+  border-radius: var(--plx-r-key);
+  box-shadow: var(--plx-raised);
+  color: var(--plx-ink-2);
+  --icon-size: 15px;
+}
+.side-dock-ribbon-action:hover,
+.workspace-ribbon .clickable-icon:hover { color: var(--plx-teal); border-color: var(--plx-rule-strong); }
+.side-dock-ribbon-action:active { background: var(--plx-key-face-down); box-shadow: var(--plx-pressed); }
+.workspace-ribbon-collapse-btn { margin-top: 2px; }
+.side-dock-settings { border-top: 1px solid var(--plx-rule); padding-top: 6px; box-shadow: inset 0 1px 0 var(--plx-hl); }
+
+/* ---------- Splits & panes ---------- */
+.workspace-split.mod-root { background: var(--plx-case-lo); }
+.workspace-split.mod-left-split,
+.workspace-split.mod-right-split { background: var(--plx-case-hi); }
+.workspace-split.mod-left-split .workspace-tabs,
+.workspace-split.mod-right-split .workspace-tabs { background: var(--plx-case-hi); }
+.workspace-leaf-resize-handle {
+  background: transparent;
+  transition: background-color 120ms;
+}
+.workspace-leaf-resize-handle:hover { background: var(--plx-teal) !important; }
+.mod-left-split .workspace-leaf-resize-handle,
+.mod-right-split .workspace-leaf-resize-handle { border-color: var(--plx-rule) !important; }
+/* gutters between root panes read as the instrument body */
+.workspace-split.mod-root > .workspace-leaf-resize-handle,
+.workspace-split.mod-vertical > * > .workspace-leaf-resize-handle { background: var(--plx-rule); }
+
+/* ---------- TABS — Casio "Sheet1 Sheet2" folder tabs ---------- */
+.workspace-tab-header-container {
+  background: var(--plx-case);
+  border-bottom: 1px solid var(--plx-rule) !important;
+  padding-inline: 4px 2px;
+  height: var(--header-height);
+  box-shadow: inset 0 1px 0 var(--plx-hl);
+}
+.workspace .mod-root .workspace-tab-header-container-inner { padding: 4px 0 0 0; margin: 0; gap: 2px; }
+.mod-root .workspace-tab-header::before,
+.mod-root .workspace-tab-header::after { display: none !important; }
+.mod-root .workspace-tab-header {
+  margin-bottom: -1px;
+  border: 1px solid var(--plx-rule);
+  border-bottom: none;
+  border-radius: var(--plx-r) 0 0 0;
+  background: var(--plx-key-face);
+  box-shadow: inset 0 1px 0 var(--plx-hl);
+  padding: 0;
+  /* Aperture-style angled corner: top-right cut */
+  --plx-cut: 8px;
+  clip-path: var(--plx-clip-tr);
+}
+.mod-root .workspace-tab-header .workspace-tab-header-inner { padding-inline-end: 10px !important; }
+.mod-root .workspace-tab-header:hover { background: var(--plx-lcd-2); }
+.mod-root .workspace-tab-header .workspace-tab-header-inner {
+  padding: 0 6px 0 9px;
+  gap: 5px;
+}
+.mod-root .workspace-tab-header .workspace-tab-header-inner::after { display: none; } /* old dividers */
+.mod-root .workspace-tab-header.is-active {
+  background: var(--plx-case-hi);
+  border-color: var(--plx-rule-strong);
+  box-shadow: inset 0 1px 0 var(--plx-hl);
+  z-index: 2;
+  padding-bottom: 1px; /* covers the strip's bottom rule → tab merges with view header */
+}
+/* active tab of the focused pane: teal key along the top edge */
+.mod-root .workspace-tabs.mod-active .workspace-tab-header.is-active {
+  box-shadow: inset 0 2px 0 var(--plx-teal);
+}
+.workspace-tab-header-inner-title {
+  font-family: var(--plx-ui);
+  font-size: var(--tab-font-size);
+  letter-spacing: 0.01em;
+}
+.workspace-tab-header.is-active .workspace-tab-header-inner-title { font-weight: 600; }
+.workspace-tab-header-inner-icon { --icon-size: 13px; color: var(--plx-ink-3); }
+.workspace-tab-header.is-active .workspace-tab-header-inner-icon { color: var(--plx-teal); }
+.workspace-tab-header-inner-close-button {
+  --icon-size: 12px;
+  border-radius: 1px; padding: 1px;
+  color: var(--plx-ink-3);
+}
+.workspace-tab-header-inner-close-button:hover { background: var(--plx-red); color: #fff; }
+.workspace-tab-header-status-icon { color: var(--plx-teal); } /* pinned/linked marks */
+
+.workspace-tab-header-new-tab, .workspace-tab-header-tab-list, .sidebar-toggle-button {
+  margin-top: 2px;
+}
+.workspace-tab-header-new-tab .clickable-icon,
+.workspace-tab-header-tab-list .clickable-icon { padding: 3px; }
+
+/* Side-dock tab headers (Files / Search / Bookmarks …) — a row of small keys */
+.workspace-split:not(.mod-root) .workspace-tab-header-container { padding-inline: 4px; }
+.workspace-split:not(.mod-root) .workspace-tab-header-container-inner { gap: 2px; padding: 0; margin: 0; align-items: center; }
+.workspace-split:not(.mod-root) .workspace-tab-header {
+  height: 24px; margin: 0;
+  border: 1px solid transparent;
+  border-radius: var(--plx-r-key);
+  padding: 0;
+}
+.workspace-split:not(.mod-root) .workspace-tab-header::before,
+.workspace-split:not(.mod-root) .workspace-tab-header::after { display: none; }
+.workspace-split:not(.mod-root) .workspace-tab-header .workspace-tab-header-inner { padding: 0 5px; }
+.workspace-split:not(.mod-root) .workspace-tab-header:hover {
+  background: var(--plx-key-face); border-color: var(--plx-rule); box-shadow: var(--plx-raised);
+}
+.workspace-split:not(.mod-root) .workspace-tab-header.is-active {
+  background: var(--plx-lcd);
+  border-color: var(--plx-rule);
+  box-shadow: var(--plx-pressed);
+}
+.workspace-split:not(.mod-root) .workspace-tab-header.is-active .workspace-tab-header-inner-icon { color: var(--plx-lcd-ink); }
+
+/* Stacked tabs */
+.workspace-tabs.mod-stacked .workspace-tab-header { border: 1px solid var(--plx-rule); background: var(--plx-key-face); }
+.workspace-tabs.mod-stacked .workspace-tab-header-inner-title { font-family: var(--plx-ui-cond); text-transform: uppercase; letter-spacing: var(--plx-track); font-size: var(--plx-fs-label); }
+
+/* ---------- View header — the toolbar row under the tab ---------- */
+.workspace-leaf-content > .view-header,
+.view-header {
+  background: var(--plx-case-hi);
+  border-bottom: 1px solid var(--plx-rule);
+  height: 32px;
+  padding: 0 6px;
+  gap: 6px;
+}
+.view-header-nav-buttons { gap: 2px; }
+.view-header-nav-buttons .clickable-icon,
+.view-actions .clickable-icon { padding: 3px; --icon-size: 15px; }
+.view-header-nav-buttons .clickable-icon:not(.is-disabled),
+.view-header-nav-buttons button:not(.is-disabled) {
+  background: var(--plx-key-face);
+  border: 1px solid var(--plx-rule);
+  box-shadow: var(--plx-raised);
+}
+.view-header-nav-buttons .clickable-icon.is-disabled { opacity: 0.35; }
+.view-header-title-container { font-family: var(--plx-ui); font-size: 12.5px; }
+.view-header-title { color: var(--plx-ink); font-weight: 600; }
+.view-header-breadcrumb { color: var(--plx-ink-3); font-weight: 400; }
+.view-header-breadcrumb-separator { color: var(--plx-ink-4); padding: 0 3px; }
+.view-header-breadcrumb-separator::before { content: ""; }
+.view-header-title-parent { color: var(--plx-ink-3); }
+/* the paper starts here — inner hairline on the casing */
+.workspace-leaf-content[data-type="markdown"] .view-content { background: var(--plx-paper); }
+
+/* Sidebar "nav header" toolbar strip (Files: new note / new folder / sort …) */
+.nav-header {
+  background: var(--plx-case-hi);
+  border-bottom: 1px solid var(--plx-rule-soft);
+  padding: 4px 6px;
+}
+.nav-buttons-container { justify-content: flex-start; gap: 2px; }
+.nav-action-button {
+  padding: 3px !important;
+  --icon-size: 15px;
+  border: 1px solid var(--plx-rule) !important;
+  background: var(--plx-key-face);
+  box-shadow: var(--plx-raised);
+}
+.nav-action-button:hover { color: var(--plx-teal); }
+.nav-action-button.is-active { background: var(--plx-lcd); box-shadow: var(--plx-pressed); color: var(--plx-lcd-ink); }
+
+/* Sidebar panes: section labels, search fields */
+.workspace-leaf-content .search-input-container input { height: 26px; font-size: 12.5px; }
+.search-input-clear-button { color: var(--plx-ink-3); }
+.search-params { background: var(--plx-case-hi); border-bottom: 1px solid var(--plx-rule-soft); }
+.tree-item-flair, .tree-item-flair-outer .tree-item-flair,
+.search-result-file-matched-text { font-family: var(--plx-mono); }
+.tree-item-flair {
+  font-size: 10.5px; color: var(--plx-ink-3); background: transparent;
+  font-variant-numeric: tabular-nums;
+}
+.search-result-file-matches {
+  background: var(--plx-paper);
+  border: 1px solid var(--plx-rule-soft);
+  border-radius: 0;
+  box-shadow: none;
+  font-size: 12px;
+}
+.search-result-file-match:hover { background: var(--plx-lcd-2); }
+.search-result-file-matched-text { background: var(--text-highlight-bg); color: var(--plx-ink); padding: 0 1px; }
+
+/* Backlinks/outgoing pane headings → instrument labels */
+.tree-item-self.is-clickable.mod-collapsible .tree-item-inner,
+.backlink-pane > .tree-item-self .tree-item-inner,
+.outgoing-link-pane > .tree-item-self .tree-item-inner {
+  /* (file tree keeps its own style in 20-file-tree) */
+}
+.backlink-pane > .tree-item-self,
+.outgoing-link-pane > .tree-item-self,
+.embedded-backlinks .backlink-pane > .tree-item-self {
+  font-family: var(--plx-ui-cond);
+  font-size: var(--plx-fs-label);
+  text-transform: uppercase;
+  letter-spacing: var(--plx-track);
+  color: var(--plx-ink-2);
+  font-weight: 700;
+  border-bottom: 1px solid var(--plx-rule-soft);
+}
+.embedded-backlinks {
+  border-top: 3px double var(--plx-rule);
+  margin-top: 3em;
+  padding-top: 0.5em;
+}
+
+/* ---------- Status bar — Casio status line ("Alg  Standard  Cplx  Rad  ▮▮▮") ---------- */
+.status-bar {
+  background: var(--plx-case);
+  border-top: 1px solid var(--plx-rule) !important;
+  border-inline-start: 1px solid var(--plx-rule) !important;
+  border-radius: 0 !important;
+  box-shadow: inset 0 1px 0 var(--plx-hl);
+  padding: 0 4px;
+  font-family: var(--plx-ui-cond);
+  letter-spacing: 0.03em;
+  gap: 0;
+}
+.status-bar-item {
+  padding: 2px 8px;
+  border-inline-start: 1px solid var(--plx-rule-soft);
+  font-variant-numeric: tabular-nums;
+  color: var(--plx-ink-2);
+}
+.status-bar-item:first-child { border-inline-start: none; }
+.status-bar-item.mod-clickable:hover { background: var(--plx-lcd-2); color: var(--plx-ink); border-radius: 0; }
+.status-bar-item .clickable-icon { padding: 0 2px; }
+.status-bar-item.plugin-word-count,
+.status-bar-item.plugin-editor-status { font-family: var(--plx-mono); font-size: 10.5px; letter-spacing: 0; }
+
+/* ---------- Menus — Casio drop-down: white card, dark rule, inverse selection ---------- */
+.menu {
+  background: var(--plx-paper);
+  border: 1px solid var(--plx-rule-strong);
+  border-radius: var(--plx-r);
+  box-shadow: var(--plx-float);
+  padding: 3px;
+  font-family: var(--plx-ui);
+}
+.menu-item {
+  border-radius: 0;
+  padding: 3px 10px 3px 6px;
+  font-size: 12.5px;
+  min-height: 24px;
+}
+.menu-item.selected:not(.is-disabled):not(.is-label),
+.menu-item:hover:not(.is-disabled):not(.is-label) {
+  background: var(--plx-slate);
+  color: var(--plx-slate-ink);
+}
+.menu-item.selected .menu-item-icon,
+.menu-item:hover:not(.is-disabled) .menu-item-icon { color: var(--plx-slate-ink); }
+.menu-item-icon { color: var(--plx-ink-3); --icon-size: 14px; }
+.menu-item.is-warning { color: var(--plx-red); }
+.menu-item.is-warning .menu-item-icon { color: var(--plx-red); }
+.menu-item.is-warning:hover { background: var(--plx-red) !important; color: #fff !important; }
+.menu-item.is-warning:hover .menu-item-icon { color: #fff !important; }
+.menu-separator { border-bottom: 1px solid var(--plx-rule-soft); margin: 3px -3px; }
+.menu-item.is-label, .menu-group-label {
+  font-family: var(--plx-ui-cond); text-transform: uppercase; letter-spacing: var(--plx-track);
+  font-size: var(--plx-fs-label); color: var(--plx-ink-3);
+}
+.menu-item-title { white-space: nowrap; }
+.suggestion-container {
+  border: 1px solid var(--plx-rule-strong) !important;
+  border-radius: var(--plx-r);
+  box-shadow: var(--plx-float);
+  background: var(--plx-paper);
+}
+
+/* ---------- Dialogs — Casio dialog with slate title band ---------- */
+.modal-bg { background: rgba(28, 33, 35, 0.35) !important; }
+.theme-dark .modal-bg { background: rgba(0, 0, 0, 0.55) !important; }
+.modal {
+  border: 1px solid var(--plx-rule-strong);
+  border-radius: var(--plx-r);
+  box-shadow: var(--plx-float);
+  padding: 0;
+  overflow: hidden;
+}
+.modal:not(.mod-settings) .modal-header,
+.modal:not(.mod-settings) > .modal-title {
+  margin: 0;
+  padding: 7px 40px 7px 12px;
+  background: var(--plx-band);
+  color: var(--plx-slate-ink);
+  font-family: var(--plx-ui);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.modal:not(.mod-settings) .modal-header .modal-title { color: var(--plx-slate-ink); font-size: 13px; padding: 0; margin: 0; }
+.modal:not(.mod-settings) .modal-content { padding: 12px 14px; }
+.modal:not(.mod-settings) .modal-button-container { padding: 0 14px 12px; margin-top: 4px; }
+.modal-close-button {
+  top: 5px; inset-inline-end: 6px;
+  width: 22px; height: 20px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--plx-key-face);
+  border: 1px solid var(--plx-rule-strong);
+  border-radius: 1px;
+  box-shadow: var(--plx-raised);
+  color: var(--plx-ink);
+  --icon-size: 13px;
+}
+.modal-close-button:hover { background: var(--plx-red); color: #fff; }
+.modal.mod-settings .modal-close-button { top: 8px; }
+
+/* Settings window: vertical tabs like the Casio "Math1 / Math2 / Trig" side tabs */
+.vertical-tab-header {
+  background: var(--plx-case);
+  border-inline-end: 1px solid var(--plx-rule);
+  padding: 8px 0 8px 8px;
+}
+.vertical-tab-header-group-title {
+  font-family: var(--plx-ui-cond); text-transform: uppercase; letter-spacing: var(--plx-track);
+  font-size: var(--plx-fs-label); color: var(--plx-ink-3); padding-inline-start: 6px;
+}
+.vertical-tab-nav-item {
+  border-radius: 2px 0 0 3px;
+  border: 1px solid transparent;
+  border-inline-end: none;
+  padding: 4px 8px;
+  margin-inline-end: -1px;
+  font-size: 12.5px;
+  color: var(--plx-ink-2);
+}
+.vertical-tab-nav-item:hover { background: var(--plx-lcd-2); color: var(--plx-ink); }
+.vertical-tab-nav-item.is-active {
+  background: var(--plx-paper);
+  border-color: var(--plx-rule-strong);
+  color: var(--plx-ink);
+  font-weight: 600;
+  position: relative; z-index: 1;
+}
+.vertical-tab-content-container { background: var(--plx-paper); }
+.setting-item { border-top: 1px solid var(--plx-rule-soft); padding: 9px 0; }
+.setting-item-heading .setting-item-name {
+  font-family: var(--plx-serif); font-size: 1.25em; font-weight: 600;
+}
+.setting-item-description { font-size: 12px; color: var(--plx-ink-3); }
+
+/* ---------- Command palette / quick switcher ---------- */
+.prompt {
+  border: 1px solid var(--plx-rule-strong);
+  border-radius: var(--plx-r);
+  box-shadow: var(--plx-float);
+  background: var(--plx-paper);
+  overflow: hidden;
+}
+.prompt-input-container {
+  background: var(--plx-case-hi);
+  border-bottom: 1px solid var(--plx-rule);
+  padding: 6px;
+}
+.prompt-input-container input.prompt-input {
+  font-family: var(--plx-ui);
+  font-size: 14px;
+  background: var(--plx-well);
+  border: 1px solid var(--plx-rule-strong) !important;
+  box-shadow: var(--plx-recessed) !important;
+  padding: 6px 8px;
+  height: auto;
+}
+.prompt-results { padding: 3px; }
+.suggestion-item {
+  border-radius: 0;
+  padding: 4px 10px;
+  font-size: 13px;
+}
+.suggestion-item.is-selected {
+  background: var(--plx-slate);
+  color: var(--plx-slate-ink);
+}
+.suggestion-item.is-selected .suggestion-note,
+.suggestion-item.is-selected .suggestion-flair,
+.suggestion-item.is-selected .suggestion-hotkey { color: var(--plx-slate-ink); opacity: 0.8; }
+.suggestion-note { color: var(--plx-ink-3); font-size: 11.5px; }
+.suggestion-hotkey kbd, .suggestion-hotkey span, kbd {
+  font-family: var(--plx-mono);
+  font-size: 10.5px;
+  background: var(--plx-key-face);
+  border: 1px solid var(--plx-rule);
+  border-bottom-width: 2px;
+  border-radius: 2px;
+  padding: 0 4px;
+  color: var(--plx-ink);
+  box-shadow: inset 0 1px 0 var(--plx-hl);
+}
+.prompt-instructions {
+  border-top: 1px solid var(--plx-rule);
+  background: var(--plx-case-hi);
+  font-family: var(--plx-ui-cond);
+  font-size: var(--plx-fs-label);
+  letter-spacing: 0.03em;
+  color: var(--plx-ink-3);
+  padding: 4px 10px;
+}
+.prompt-instruction-command { font-family: var(--plx-mono); color: var(--plx-ink-2); }
+
+/* ---------- Tooltips, notices ---------- */
+.tooltip {
+  background: var(--plx-slate);
+  color: var(--plx-slate-ink);
+  border: 1px solid color-mix(in srgb, var(--plx-slate) 70%, black);
+  border-radius: 1px;
+  font-family: var(--plx-ui);
+  font-size: 11.5px;
+  padding: 3px 7px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+.tooltip .tooltip-arrow { border-bottom-color: var(--plx-slate) !important; }
+.notice {
+  background: var(--plx-paper);
+  color: var(--plx-ink);
+  border: 1px solid var(--plx-rule-strong);
+  border-inline-start: 3px solid var(--plx-teal);
+  border-radius: var(--plx-r);
+  box-shadow: var(--plx-float);
+  font-family: var(--plx-ui);
+  font-size: 12.5px;
+}
+
+/* ---------- Scrollbars — slim recessed slot, key-cap thumb ---------- */
+body.styled-scrollbars ::-webkit-scrollbar,
+body:not(.native-scrollbars) ::-webkit-scrollbar { width: 11px; height: 11px; background: transparent; }
+body.styled-scrollbars ::-webkit-scrollbar-track,
+body:not(.native-scrollbars) ::-webkit-scrollbar-track { background: transparent; border-inline-start: 1px solid var(--plx-rule-soft); }
+body.styled-scrollbars ::-webkit-scrollbar-thumb,
+body:not(.native-scrollbars) ::-webkit-scrollbar-thumb {
+  background: var(--plx-key-face);
+  border: 1px solid var(--plx-rule);
+  border-radius: 1px;
+  box-shadow: var(--plx-raised);
+  min-height: 28px;
+}
+body.styled-scrollbars ::-webkit-scrollbar-thumb:hover,
+body:not(.native-scrollbars) ::-webkit-scrollbar-thumb:hover { border-color: var(--plx-rule-strong); }
+body.styled-scrollbars ::-webkit-scrollbar-thumb:active,
+body:not(.native-scrollbars) ::-webkit-scrollbar-thumb:active { background: var(--plx-lcd); }
+::-webkit-scrollbar-corner { background: transparent; }
+
+/* ---------- Empty state, graph, misc ---------- */
+.empty-state-title { font-family: var(--plx-serif); font-size: 1.6em; color: var(--plx-ink-3); }
+.empty-state-action { color: var(--plx-teal); font-family: var(--plx-ui); }
+.workspace-drop-overlay::before { border: 2px dashed var(--plx-teal); background: var(--plx-teal-wash); border-radius: 0; }
+.drag-ghost, .drag-ghost-self { background: var(--plx-slate); color: var(--plx-slate-ink); border-radius: 1px; font-family: var(--plx-ui); }
+
+/* Pop-over (hover preview) — a floating sheet with a thin title band */
+.popover.hover-popover {
+  border: 1px solid var(--plx-rule-strong);
+  border-radius: var(--plx-r);
+  box-shadow: var(--plx-float);
+  background: var(--plx-paper);
+}
+.popover.hover-popover::before {
+  content: "PREVIEW";
+  display: inline-block;
+  height: 16px;
+  padding: 1px 14px 1px 8px;
+  clip-path: var(--plx-clip-br);
+  background: var(--plx-band);
+  color: var(--plx-slate-ink);
+  font-family: var(--plx-ui-cond);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+}
+
+/* hotkey chips in the palette: key caps, not pills */
+.suggestion-hotkey, .prompt .suggestion-hotkey {
+  font-family: var(--plx-mono);
+  font-size: 10.5px;
+  border: 1px solid var(--plx-rule);
+  border-bottom-width: 2px;
+  border-radius: 2px;
+  background: var(--plx-key-face);
+  color: var(--plx-ink);
+  padding: 0 5px;
+  box-shadow: inset 0 1px 0 var(--plx-hl);
+}
+.suggestion-item.is-selected .suggestion-hotkey { background: transparent; border-color: rgba(255,255,255,0.35); }
+
+/* Dropdowns: keep Obsidian's chevron background-image; only recolour the face */
+body {
+  --dropdown-background: var(--plx-key-top);
+  --dropdown-background-hover: var(--plx-lcd-2);
+  --dropdown-background-blend-mode: normal;
+  --dropdown-padding: 0 26px 0 9px;
+}
+.dropdown, select.dropdown {
+  font-family: var(--plx-ui);
+  font-size: var(--font-ui-small);
+  color: var(--plx-ink);
+  background-color: var(--dropdown-background);
+  border: 1px solid var(--plx-rule);
+  border-bottom-color: var(--plx-rule-strong);
+  border-radius: var(--plx-r-key);
+  box-shadow: var(--plx-raised);
+  height: 26px;
+}
+.dropdown:hover { background-color: var(--dropdown-background-hover); border-color: var(--plx-rule-strong); }
+.dropdown:focus-visible { box-shadow: var(--plx-raised), 0 0 0 2px var(--plx-teal); }
+
+/* ---------- Collapse markers: [+] collapsed / [-] expanded (semiotic standard §5) ----------
+   Replaces every chevron (tree, headings, callouts, properties, panes). */
+.collapse-icon > svg,
+.collapse-indicator > svg,
+.callout-fold > svg,
+.tree-item-icon.collapse-icon > svg { display: none !important; }
+.collapse-icon::before,
+.collapse-indicator::before,
+.callout-fold::before {
+  content: var(--plx-mark-open);
+  font-family: var(--plx-mono);
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: -0.06em;
+  font-weight: 400;
+  font-style: normal;
+  color: var(--plx-ink-3);
+  white-space: nowrap;
+}
+.collapse-icon.is-collapsed::before,
+.collapse-indicator.is-collapsed::before,
+.is-collapsed > .collapse-icon::before,
+.is-collapsed > .collapse-indicator::before,
+.is-collapsed > .callout-title > .callout-fold::before,
+.callout-fold.is-collapsed::before,
+.metadata-container.is-collapsed .collapse-indicator::before,
+.cm-fold-indicator.is-collapsed .collapse-indicator::before,
+.is-collapsed .heading-collapse-indicator::before {
+  content: var(--plx-mark-closed);
+  color: var(--plx-ink-3); /* the glyph carries the state; teal only on hover (critique P3.14) */
+}
+.collapse-icon:hover::before,
+.collapse-indicator:hover::before,
+.callout-fold:hover::before { color: var(--plx-teal-bright); }
+.collapse-icon, .collapse-indicator, .callout-fold { transform: none !important; }
+
+/* Univers Condensed caps: its kerning collapses word spaces after capitals ("IS THE" → "ISTHE").
+   Turn kerning off wherever the condensed caps face is used. */
+.titlebar-text, .menu-item.is-label, .menu-group-label, .vertical-tab-header-group-title,
+.prompt-instructions, .status-bar, .markdown-embed-title, .metadata-properties-title,
+.workspace-tabs.mod-stacked .workspace-tab-header-inner-title,
+.markdown-rendered :is(h5, h6, th), .cm-header-5, .cm-header-6, .cm-table-widget th,
+.backlink-pane > .tree-item-self, .outgoing-link-pane > .tree-item-self,
+.canvas-node-label, .canvas-group-label, [class*="plx-"], body { font-kerning: none; }
+/* body: Style Settings puts plx- classes on body, so [class*="plx-"] turned
+   kerning off for the whole interface (reading text sets it back, 30-reading).
+   Listing body keeps that look when Style Settings is not installed. */
+
+/* Boxed markers ⊞ ⊟: one style everywhere, always visible, light, spaced from the label */
+.collapse-icon::before, .collapse-indicator::before, .callout-fold::before {
+  font-family: var(--plx-mark-font) !important;
+  font-size: var(--plx-mark-size) !important;
+  letter-spacing: 0 !important;
+  color: var(--plx-ink-4) !important;
+  line-height: 1 !important;
+}
+.collapse-icon:hover::before, .collapse-indicator:hover::before, .callout-fold:hover::before,
+.tree-item-self:hover > .collapse-icon::before { color: var(--plx-teal) !important; }
+/* Obsidian fades some markers until hover (graph controls, settings, headings) — keep them on */
+.collapse-icon, .collapse-indicator, .heading-collapse-indicator,
+.graph-control-section .collapse-icon, .tree-item-self .collapse-icon,
+.cm-fold-indicator .collapse-indicator { opacity: 1 !important; visibility: visible !important; }
+/* space between marker and the title it controls */
+.tree-item-self > .collapse-icon { margin-inline-end: 4px; }
+.graph-control-section > .tree-item-self .collapse-icon,
+.metadata-properties-heading .collapse-indicator,
+.callout-title .callout-fold { margin-inline-end: 5px; }
+
+/* Focus ring only on controls — never on whole panes, documents or the editor surface */
+.markdown-preview-view:focus-visible, .markdown-reading-view:focus-visible, .view-content:focus-visible,
+.workspace-leaf-content:focus-visible, .cm-editor:focus-visible, .cm-content:focus-visible,
+.cm-scroller:focus-visible, .nav-files-container:focus-visible, .workspace-leaf:focus-visible,
+.metadata-container:focus-visible, .canvas-wrapper:focus-visible, .graph-view:focus-visible,
+[contenteditable="true"]:focus-visible { outline: none !important; }
+
+/* ---------- Settings (Obsidian 1.15 grouped layout) — instrument panels ----------
+   content area = casing; each .setting-group = a bordered paper panel with a
+   slate legend chip on its top edge; rows are tight, divided by hairlines. */
+.vertical-tab-content-container, .vertical-tab-content { background: var(--plx-case-hi) !important; }
+.vertical-tab-content { padding: 18px 28px 40px !important; }
+.setting-group { margin: 0 0 18px !important; padding: 0 !important; background: transparent !important; border: none !important; }
+.setting-group > .setting-item-heading,
+.vertical-tab-content > .setting-item-heading {
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  min-height: 0 !important;
+  background: transparent !important;
+}
+.setting-group > .setting-item-heading .setting-item-name,
+.vertical-tab-content > .setting-item-heading .setting-item-name {
+  display: inline-block;
+  font-family: var(--plx-ui-cond) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-kerning: none;
+  color: var(--plx-label-ink) !important;
+  background: var(--plx-label-bg);
+  padding: 3px 18px 3px 9px;
+  border-radius: var(--plx-r) 0 0 0;
+  clip-path: var(--plx-clip-tr);
+  line-height: 1.2;
+}
+.setting-group > .setting-item-heading .setting-item-control:empty { display: none; }
+.setting-items {
+  background: var(--plx-paper) !important;
+  border: 1px solid var(--plx-rule) !important;
+  border-radius: 0 var(--plx-r) var(--plx-r) var(--plx-r) !important;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04) !important;
+  padding: 0 14px !important;
+}
+.setting-group:not(:has(> .setting-item-heading)) > .setting-items { border-radius: var(--plx-r) !important; }
+.setting-items > .setting-item {
+  padding: 9px 0 !important;
+  border-top: 1px solid var(--plx-rule-soft) !important;
+  min-height: 0;
+}
+.setting-items > .setting-item:first-child { border-top: none !important; }
+.setting-item-name { font-family: var(--plx-ui); font-size: 13.5px; font-weight: 500; color: var(--plx-ink); }
+.setting-item-description { font-family: var(--plx-ui); font-size: 12.5px; color: var(--plx-ink-3); padding-top: 2px; line-height: 1.45; }
+.setting-item.mod-navigable:hover { background: var(--plx-lcd-2); margin-inline: -14px; padding-inline: 14px !important; }
+.setting-item.mod-navigable .setting-item-control svg { color: var(--plx-ink-4); }
+.setting-item-control .clickable-icon { color: var(--plx-ink-3); }
+.setting-item-control > .setting-item-info { font-family: var(--plx-mono); }
+/* slider value readouts and numeric fields in mono */
+.setting-item-control .slider-value, .setting-item-control input[type="number"] { font-family: var(--plx-mono); font-variant-numeric: tabular-nums; }
+/* settings search field at the top of the sidebar */
+.vertical-tab-header .search-input-container input { height: 28px; }
+
+/* settings legend chip sits directly on the panel edge */
+.setting-group > .setting-item-heading { line-height: 0; margin-bottom: -1px !important; position: relative; z-index: 1; }
+.setting-group > .setting-item-heading .setting-item-name { line-height: 1.25; }
+/* readable UI sizes */
+.menu-item, .suggestion-item { font-size: 13px; }
+.view-header-title-container { font-size: 13px; }
+.vertical-tab-nav-item { font-size: 13px; }
+
+/* Caps labels: trim the line box to the capital height so text sits optically centred
+   in chips, bands and tabs (CSS text-box, Chromium 133+) */
+.setting-group > .setting-item-heading .setting-item-name,
+.metadata-properties-title, .markdown-embed-title, .canvas-group-label,
+.markdown-rendered pre[class*="language-"]::before, .titlebar-text,
+.workspace-leaf-content[data-type="canvas"] .view-header-title-container::before,
+.workspace-leaf-content[data-type="canvas"] .view-content::before,
+.workspace-leaf-content[data-type="canvas"] .view-content::after,
+.popover.hover-popover::before {
+  text-box: trim-both cap alphabetic;
+}
+
+/* ---------- Scrollbars — Casio / Rhino: a solid gray thumb with arrow boxes ---------- */
+body.styled-scrollbars ::-webkit-scrollbar, body:not(.native-scrollbars) ::-webkit-scrollbar { width: 14px; height: 14px; }
+body.styled-scrollbars ::-webkit-scrollbar-track, body:not(.native-scrollbars) ::-webkit-scrollbar-track {
+  background: var(--plx-case-hi); border-inline-start: 1px solid var(--plx-rule-soft);
+}
+body.styled-scrollbars ::-webkit-scrollbar-thumb, body:not(.native-scrollbars) ::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--plx-ink-4) 70%, var(--plx-case));
+  border: 2px solid var(--plx-case-hi);
+  border-radius: 1px;
+  box-shadow: none;
+  min-height: 32px;
+}
+body.styled-scrollbars ::-webkit-scrollbar-thumb:hover, body:not(.native-scrollbars) ::-webkit-scrollbar-thumb:hover { background: var(--plx-ink-3); }
+body.styled-scrollbars ::-webkit-scrollbar-button:single-button, body:not(.native-scrollbars) ::-webkit-scrollbar-button:single-button {
+  display: block; height: 14px; width: 14px;
+  background-color: var(--plx-case-hi);
+  background-repeat: no-repeat; background-position: center; background-size: 7px 5px;
+}
+body.styled-scrollbars ::-webkit-scrollbar-button:single-button:vertical:decrement,
+body:not(.native-scrollbars) ::-webkit-scrollbar-button:single-button:vertical:decrement {
+  background-image: linear-gradient(to top right, transparent 50%, var(--plx-ink-3) 50%), linear-gradient(to top left, transparent 50%, var(--plx-ink-3) 50%);
+  background-size: 4px 4px, 4px 4px; background-position: calc(50% - 2px) 50%, calc(50% + 2px) 50%;
+}
+body.styled-scrollbars ::-webkit-scrollbar-button:single-button:vertical:increment,
+body:not(.native-scrollbars) ::-webkit-scrollbar-button:single-button:vertical:increment {
+  background-image: linear-gradient(to bottom right, transparent 50%, var(--plx-ink-3) 50%), linear-gradient(to bottom left, transparent 50%, var(--plx-ink-3) 50%);
+  background-size: 4px 4px, 4px 4px; background-position: calc(50% - 2px) 50%, calc(50% + 2px) 50%;
+}
+body.styled-scrollbars ::-webkit-scrollbar-button:horizontal, body:not(.native-scrollbars) ::-webkit-scrollbar-button:horizontal { display: none; }
+/* small panes (sidebars, menus) keep a slimmer bar without buttons */
+:is(.workspace-split:not(.mod-root), .menu, .suggestion-container, .prompt-results) ::-webkit-scrollbar { width: 9px !important; }
+:is(.workspace-split:not(.mod-root), .menu, .suggestion-container, .prompt-results) ::-webkit-scrollbar-button { display: none !important; }

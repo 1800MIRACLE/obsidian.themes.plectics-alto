@@ -1,0 +1,634 @@
+/* ==========================================================================
+   PLECTICS ALTO · 64 · DARK MODE — Blue-steel ("Charcoal Y2K")
+   Alto's only dark palette: lab-instrument software in Enlightenment blue-steel.
+   ALWAYS ON in dark mode. Selectors that used to need the Style Settings
+   class .plx6-dark-y2k now read :not(.plx6-no-steel), which is always true
+   and keeps the same specificity (one class), so no rule changed rank.
+   (A body class plx6-no-steel would switch Blue-steel off, for debugging only.)
+
+   REFERENCES AND WHAT EACH ONE GIVES
+   ─ Enlightenment DR16 "BlueSteel", E17 / Bodhi, FreeBSD + E, IRIX 4Dwm:
+     the COLOUR. The dark end of that range: navy-slate window bodies and
+     indigo-steel frames with a violet cast, deep navy terminal wells with
+     pale grey-blue text; periwinkle only as a selection wash.
+   ─ Steam VGUI (2004–08) and the 2014 library: the CONSTRUCTION. Flat,
+     low-contrast panels; 1px light top/left and dark bottom/right bevels,
+     no gloss; flat tab blocks, the active one only a little lighter with
+     an accent label; small caps section headers followed by a thin rule;
+     dense ~22px rows with a full-width selection bar; dimmed (not hidden)
+     disabled rows.
+   ─ LabVIEW front panels, a Motif SoC debugger "Scope", the UE4 editor:
+     the INSTRUMENT. Raised panels around black DISPLAY WELLS (graph,
+     canvas, code) with a fine grid and thin bright traces; numeric
+     readouts as small recessed fields in mono; tiny saturated accents.
+   ─ Rhino Grasshopper: grey capsules on a dark field, orange/red/green
+     component state lamps (= our amber / red / green).
+
+   MATERIAL PLAN
+     panel   raised flat blue-steel: ribbon, tab strip, view header,
+             sidebars, status line, menus, dialogs, settings
+     well    the NOTE PAGE — a calm deep-navy surface, no texture, no
+             bevel inside it (chrome = instrument, note pages = textbook)
+     scope   black-navy instrument display: graph, canvas wall, code
+             blocks — fine azure grid, bright thin lines
+     readout recessed field + mono digits: status items, tree counts
+     key     flat rectangle, 1px light top/left, 1px dark bottom/right
+     lamp    azure edge / label / faint glow, on the active thing only
+
+   PALETTE (name → hex → role)
+     scope      #090c14  display wells (graph, canvas, code)
+     case-lo    #0e1220  gutters, app background
+     well       #10141f  inputs, recessed readouts
+     page       #171c2a  note surface
+     page-2     #1f2536  table heads, inline code
+     plate      #222839  callouts / figures lifted on the page
+     panel      #232a3c  sidebars (raised chrome body)
+     steel 2–6  #2b3247 #363f5a #434d6c #56628a #6c7aa0  frames, keys, bands
+     ink        #d9dfec  body text (pale grey-blue)
+     ink-2      #b3bbd0  labels / muted        ink-3 #959eb6  faint
+     ink-4      #868fa7  placeholders, disabled
+     azure      #66b6ee  IDENTITY (token --plx-teal): link, active, "you are
+                         here" — the E blue lifted to read on navy
+     periwinkle #a3a9e6  SELECTION only (--plx-blue): a lavender wash
+     amber      #eab352  caution / draft; NOT used for headers (semiotic rule)
+     red        #f0706a  error / destructive only
+     green      #9fd06e  a lit LED: success / complete
+     violet     #c3b4e2  formal objects, low chroma
+   ========================================================================== */
+
+/* ---------- TOKENS (the only raw colours in this file) ---------- */
+body.theme-dark:not(.plx6-no-steel) {
+  /* blue-steel ramp */
+  --y2k-black:  #070910;
+  --y2k-scope:  #090c14;
+  --y2k-s1:     #232a3c;
+  --y2k-s2:     #2b3247;
+  --y2k-s3:     #363f5a;
+  --y2k-s4:     #434d6c;
+  --y2k-s5:     #56628a;
+  --y2k-s6:     #6c7aa0;
+  --y2k-glint:      rgba(200, 212, 245, 0.16);   /* 1px light bevel */
+  --y2k-glint-soft: rgba(200, 212, 245, 0.07);
+  --y2k-shade-1: rgba(0, 0, 0, 0.30);
+  --y2k-shade-2: rgba(0, 0, 0, 0.50);
+  --y2k-shade-3: rgba(0, 0, 0, 0.78);
+  --y2k-lamp-halo: rgba(102, 182, 238, 0.55);
+  --y2k-lamp-soft: rgba(102, 182, 238, 0.26);
+  --y2k-grid-fine:  rgba(102, 182, 238, 0.055);
+  --y2k-grid-major: rgba(102, 182, 238, 0.12);
+  --y2k-grip: rgba(7, 9, 16, 0.60);
+
+  /* the two bevels everything is built from */
+  --y2k-bevel-out: inset 1px 1px 0 var(--y2k-glint), inset -1px -1px 0 var(--y2k-shade-2);
+  --y2k-bevel-in:  inset 1px 1px 0 var(--y2k-shade-2), inset -1px -1px 0 var(--y2k-glint-soft);
+
+  /* identity: Enlightenment azure (a lamp, never a large fill) */
+  --plx-teal:        #66b6ee;
+  --plx-teal-bright: #9bd0f6;
+  --plx-teal-deep:   #cfe7fb;
+  --plx-teal-wash:   rgba(102, 182, 238, 0.11);
+  --plx-lamp-glow:   0 0 6px var(--y2k-lamp-halo);
+  --plx-lamp-wash:   rgba(102, 182, 238, 0.14);
+  --plx-fill:        rgba(102, 182, 238, 0.70);
+
+  --plx-case:     #2b3247;   /* strips: tabs, status, title */
+  --plx-case-hi:  #232a3c;   /* sidebar panels */
+  --plx-case-lo:  #0e1220;
+  --plx-paper:    #171c2a;   /* the note */
+  --plx-paper-2:  #1f2536;
+  --plx-plate:    #222839;
+  --plx-well:     #10141f;
+  --plx-lcd:      #1c3150;   /* active row: full-width azure-dark bar */
+  --plx-lcd-2:    #2d3550;   /* hover */
+  --plx-lcd-ink:  #e3effd;
+  --plx-row:      22px;      /* dense rows */
+
+  --plx-ink:   #d9dfec;
+  --plx-ink-2: #b3bbd0;
+  --plx-ink-3: #959eb6;
+  --plx-ink-4: #868fa7;
+
+  --plx-rule:        #343c54;
+  --plx-rule-soft:   #283048;
+  --plx-rule-strong: #66708e;
+
+  --plx-slate:     #2b3247;
+  --plx-slate-2:   #363f5a;
+  --plx-slate-ink: #eef1fa;
+  --plx-label-bg:  #3a4463;
+  --plx-label-ink: #eef1fa;
+
+  --plx-red:    #f0706a;  --plx-red-wash:    rgba(240, 112, 106, 0.12);
+  --plx-amber:  #eab352;  --plx-amber-wash:  rgba(234, 179, 82, 0.12);
+  --plx-green:  #9fd06e;  --plx-green-wash:  rgba(159, 208, 110, 0.11);
+  --plx-blue:   #a3a9e6;  --plx-blue-wash:   rgba(141, 151, 199, 0.18);   /* periwinkle selection */
+  --plx-violet: #c3b4e2;  --plx-violet-wash: rgba(195, 180, 226, 0.09);
+  --plx-steel:  #a7b2cc;  --plx-steel-wash:  rgba(167, 178, 204, 0.10);
+
+  --plx-tagc-topic:  #74bdf0;
+  --plx-tagc-form:   #aab0f0;
+  --plx-tagc-status: #e8b85f;
+  --plx-tagc-stable: #98d0a2;
+  --plx-tagc-absent: #ec9eac;
+  --plx-tagc-meta:   #aeb6cc;
+
+  --text-highlight-bg:  rgba(234, 179, 82, 0.28);
+  --plx-highlight-edge: rgba(234, 179, 82, 0.60);
+  --text-selection:     rgba(141, 151, 199, 0.36);
+
+  /* flat keys and bands: a barely-there vertical shade, the bevel does the work */
+  --plx-key-top: #3e4763;
+  --plx-key-bot: #343c56;
+  --plx-key-face: linear-gradient(180deg, var(--plx-key-top) 0%, var(--plx-key-bot) 100%);
+  --plx-key-face-down: linear-gradient(180deg, #1a1f2e 0%, #20263a 100%);
+  --plx-band: linear-gradient(180deg, #3d4767 0%, #353e5b 100%);
+  --plx-hl: var(--y2k-glint);
+  --plx-slider-track: linear-gradient(180deg, #0b0e18 0%, #131826 100%);
+  --plx-seg-line: rgba(200, 212, 245, 0.10);
+
+  --plx-raised:   var(--y2k-bevel-out);
+  --plx-pressed:  inset 1px 1px 2px var(--y2k-shade-3), inset -1px -1px 0 var(--y2k-glint-soft);
+  --plx-recessed: var(--y2k-bevel-in);
+  --plx-float:    0 0 0 1px var(--y2k-black), 0 10px 26px rgba(0, 0, 0, 0.60), var(--y2k-bevel-out);
+  --plx-hatch:    repeating-linear-gradient(135deg, transparent 0 3px, rgba(200, 212, 245, 0.06) 3px 4px);
+
+  /* instrument displays: canvas wall and graph are scope wells */
+  --plx-cv-wall: var(--y2k-scope);
+  --plx-cv-snap:  rgba(102, 182, 238, 0.07);
+  --plx-cv-major: rgba(102, 182, 238, 0.12);
+  --plx-cv-fine:  rgba(102, 182, 238, 0.035);
+  --plx-cv-sign: #3a4463;
+  --plx-cv-sign-ink: #eef1fa;
+  --plx-cv-bezel: rgba(54, 63, 90, 0.30);
+  --plx-cv-bezel-edge: rgba(200, 212, 245, 0.10);
+  --canvas-dot-pattern: rgba(102, 182, 238, 0.22);
+  --graph-line: rgba(150, 165, 205, 0.34);
+  --plx-phos: #9bd0f6;
+  --plx-phos-glow: 0 0 4px rgba(102, 182, 238, 0.35);
+  --text-on-accent: #0e1220;
+}
+
+/* ==========================================================================
+   MATERIAL RULES — chrome only, tokens and color-mix() only
+   ========================================================================== */
+
+/* ---------- window title bar: a flat steel strip ---------- */
+body.theme-dark:not(.plx6-no-steel) .titlebar {
+  background: var(--y2k-s2);
+  border-bottom: 1px solid var(--y2k-black);
+  box-shadow: inset 0 1px 0 var(--y2k-glint-soft);
+}
+body.theme-dark:not(.plx6-no-steel) :is(.titlebar-text, .titlebar-button) { color: var(--plx-ink-2); }
+body.theme-dark:not(.plx6-no-steel) .titlebar-button:hover { background: var(--y2k-s3); color: var(--plx-ink); box-shadow: var(--y2k-bevel-out); }
+body.theme-dark:not(.plx6-no-steel) .titlebar-button.mod-close:hover { background: var(--plx-red); color: var(--text-on-accent); }
+
+/* ---------- ribbon: a raised column of flat keys ---------- */
+body.theme-dark:not(.plx6-no-steel) .workspace-ribbon {
+  background: var(--y2k-s2);
+  border-inline-end: 1px solid var(--y2k-black) !important;
+  box-shadow: inset 1px 0 0 var(--y2k-glint-soft);
+}
+body.theme-dark:not(.plx6-no-steel) :is(.side-dock-ribbon-action, .workspace-ribbon .clickable-icon) {
+  background: var(--plx-key-face);
+  border: 1px solid var(--y2k-black);
+  border-radius: 0;
+  box-shadow: var(--y2k-bevel-out);
+  color: var(--plx-ink-2);
+}
+body.theme-dark:not(.plx6-no-steel) :is(.side-dock-ribbon-action, .workspace-ribbon .clickable-icon):hover {
+  color: var(--plx-teal);
+  border-color: var(--y2k-black);
+  background: linear-gradient(180deg, var(--y2k-s4) 0%, var(--y2k-s3) 100%);
+}
+body.theme-dark:not(.plx6-no-steel) :is(.side-dock-ribbon-action, .workspace-ribbon .clickable-icon):active {
+  background: var(--plx-key-face-down);
+  box-shadow: var(--plx-pressed);
+}
+body.theme-dark:not(.plx6-no-steel) .side-dock-settings {
+  border-top: 1px solid var(--y2k-black);
+  box-shadow: inset 0 1px 0 var(--y2k-glint-soft);
+}
+
+/* ---------- gutters between panes ---------- */
+body.theme-dark:not(.plx6-no-steel) .workspace-split.mod-root > .workspace-leaf-resize-handle,
+body.theme-dark:not(.plx6-no-steel) .workspace-split.mod-vertical > * > .workspace-leaf-resize-handle { background: var(--y2k-black); }
+body.theme-dark:not(.plx6-no-steel) :is(.mod-left-split, .mod-right-split) .workspace-leaf-resize-handle { border-color: var(--y2k-black) !important; }
+body.theme-dark:not(.plx6-no-steel) .workspace-leaf-resize-handle:hover { background: var(--plx-teal) !important; }
+
+/* ---------- tab strip: flat blocks; the active one a step lighter with an azure label ---------- */
+body.theme-dark:not(.plx6-no-steel) .workspace-tab-header-container {
+  background: var(--y2k-s1);
+  border-bottom: 1px solid var(--y2k-black) !important;
+  box-shadow: inset 0 1px 0 var(--y2k-glint-soft);
+}
+body.theme-dark:not(.plx6-no-steel) .mod-root .workspace-tab-header {
+  background: var(--y2k-s2);
+  border-color: var(--y2k-black);
+  border-radius: 0;
+  box-shadow: inset 1px 1px 0 var(--y2k-glint-soft);
+}
+body.theme-dark:not(.plx6-no-steel) .mod-root .workspace-tab-header:hover { background: var(--y2k-s3); }
+body.theme-dark:not(.plx6-no-steel) .mod-root .workspace-tab-header.is-active,
+body.theme-dark:not(.plx6-no-steel) .mod-root .workspace-tab-header.is-active:hover {
+  background: var(--y2k-s3);
+  border-color: var(--y2k-black);
+  box-shadow: inset 1px 1px 0 var(--y2k-glint);
+}
+body.theme-dark:not(.plx6-no-steel) .mod-root .workspace-tabs.mod-active .workspace-tab-header.is-active {
+  box-shadow: inset 0 2px 0 var(--plx-teal), inset 1px 0 0 var(--y2k-glint);
+}
+body.theme-dark:not(.plx6-no-steel) .mod-root .workspace-tab-header .workspace-tab-header-inner-title { color: var(--plx-ink-2); }
+body.theme-dark:not(.plx6-no-steel) .mod-root .workspace-tab-header.is-active .workspace-tab-header-inner-title { color: var(--plx-ink); }
+body.theme-dark:not(.plx6-no-steel) .mod-root .workspace-tabs.mod-active .workspace-tab-header.is-active .workspace-tab-header-inner-title { color: var(--plx-teal-bright); }
+body.theme-dark:not(.plx6-no-steel) .workspace-tab-header-inner-close-button:hover { background: var(--plx-red); color: var(--text-on-accent); }
+
+/* side-dock tab keys (Files / Search / Bookmarks) */
+body.theme-dark:not(.plx6-no-steel) .workspace-split:not(.mod-root) .workspace-tab-header { border-radius: 0; }
+body.theme-dark:not(.plx6-no-steel) .workspace-split:not(.mod-root) .workspace-tab-header:hover {
+  background: var(--y2k-s3); border-color: var(--y2k-black); box-shadow: var(--y2k-bevel-out);
+}
+body.theme-dark:not(.plx6-no-steel) .workspace-split:not(.mod-root) .workspace-tab-header.is-active {
+  background: var(--plx-key-face-down);
+  border-color: var(--y2k-black);
+  box-shadow: var(--plx-pressed);
+}
+
+/* lamps: the main dark theme hard-codes a teal halo; re-light in azure */
+body.theme-dark:not(.plx6-no-steel) :is(
+  .workspace-tab-header.is-active .workspace-tab-header-inner-icon,
+  .clickable-icon:is(.is-active, .mod-active) svg,
+  .nav-action-button.is-active svg,
+  .workspace-split:not(.mod-root) .workspace-tab-header.is-active .workspace-tab-header-inner-icon svg
+) {
+  color: var(--plx-teal);
+  filter: drop-shadow(0 0 3px var(--y2k-lamp-halo));
+}
+
+/* ---------- view header: the toolbar panel under the active tab ---------- */
+body.theme-dark:not(.plx6-no-steel) .workspace-split.mod-root .view-header {
+  background: var(--y2k-s3);
+  border-bottom: 1px solid var(--y2k-black);
+  box-shadow: inset 1px 0 0 var(--y2k-glint);
+}
+body.theme-dark:not(.plx6-no-steel) .workspace-split.mod-root .view-header :is(.view-header-breadcrumb, .view-header-title-parent) { color: var(--plx-ink-2); }
+body.theme-dark:not(.plx6-no-steel) .workspace-split.mod-root .view-header .view-header-breadcrumb-separator { color: var(--plx-ink-3); }
+body.theme-dark:not(.plx6-no-steel) .view-header-nav-buttons .clickable-icon:not(.is-disabled) {
+  background: var(--plx-key-face); border-color: var(--y2k-black); border-radius: 0; box-shadow: var(--y2k-bevel-out);
+}
+body.theme-dark:not(.plx6-no-steel) .workspace-split:not(.mod-root) .view-header {
+  background: var(--y2k-s2);
+  border-bottom: 1px solid var(--y2k-black);
+}
+
+/* ---------- sidebars: raised steel panels, flat dense lists ---------- */
+body.theme-dark:not(.plx6-no-steel) .workspace-split:is(.mod-left-split, .mod-right-split) .workspace-leaf-content > .view-content {
+  box-shadow: inset 1px 0 0 var(--y2k-glint-soft);
+}
+body.theme-dark:not(.plx6-no-steel) .nav-header {
+  background: var(--y2k-s2);
+  border-bottom: 1px solid var(--y2k-black);
+  box-shadow: inset 0 1px 0 var(--y2k-glint-soft);
+}
+body.theme-dark:not(.plx6-no-steel) .nav-action-button {
+  background: var(--plx-key-face);
+  border-color: var(--y2k-black) !important;
+  border-radius: 0;
+  box-shadow: var(--y2k-bevel-out);
+}
+body.theme-dark:not(.plx6-no-steel) .nav-action-button.is-active { background: var(--plx-key-face-down); box-shadow: var(--plx-pressed); }
+body.theme-dark:not(.plx6-no-steel) .search-params { background: var(--y2k-s2); border-bottom-color: var(--y2k-black); }
+
+/* root strip ("VAULT —— 475"): a Steam section header — small caps label,
+   a thin rule after it, the count as a recessed mono readout */
+body.theme-dark:not(.plx6-no-steel) .oz-explorer-root-nav-folder-title {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--plx-ink-2);
+  gap: 8px;
+}
+body.theme-dark:not(.plx6-no-steel) .oz-explorer-root-nav-folder-title .tree-item-inner {
+  flex: 0 1 auto;
+}
+body.theme-dark:not(.plx6-no-steel) .oz-explorer-root-nav-folder-title::before {
+  content: "";
+  order: 5;
+  flex: 1 1 auto;
+  align-self: center;
+  height: 1px;
+  background: var(--plx-rule-strong);
+  box-shadow: 0 1px 0 var(--y2k-shade-2);
+}
+body.theme-dark:not(.plx6-no-steel) .oz-explorer-root-nav-folder-title[data-count]::after {
+  color: var(--plx-phos);
+  text-shadow: var(--plx-phos-glow);
+  background: var(--plx-well);
+  box-shadow: var(--y2k-bevel-in);
+  padding: 0 4px;
+}
+
+/* other section headers in the same idiom: menu / settings group labels */
+body.theme-dark:not(.plx6-no-steel) :is(.vertical-tab-header-group-title, .menu-item.is-label, .menu-group-label) {
+  color: var(--plx-ink-3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+body.theme-dark:not(.plx6-no-steel) .vertical-tab-header-group-title::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--plx-rule-strong);
+  margin-inline-end: 8px;
+}
+
+/* active file: full-width azure-dark bar + lamp edge (main dark hard-codes teal) */
+body.theme-dark:not(.plx6-no-steel) :is(.nav-files-container, .workspace-leaf-content[data-type="bookmarks"]) .tree-item-self.is-active {
+  box-shadow: inset 10px 0 8px -8px var(--y2k-lamp-soft), inset 0 1px 0 var(--y2k-glint-soft), inset 0 -1px 0 var(--y2k-shade-2);
+}
+
+/* ---------- status line: a flat steel strip of recessed mono readouts ---------- */
+body.theme-dark:not(.plx6-no-steel) .status-bar {
+  background: var(--y2k-s2);
+  border-top-color: var(--y2k-black) !important;
+  border-inline-start-color: var(--y2k-black) !important;
+  box-shadow: inset 1px 1px 0 var(--y2k-glint-soft);
+  padding: 2px 3px;
+  gap: 3px;
+}
+body.theme-dark:not(.plx6-no-steel) .status-bar-item {
+  color: var(--plx-ink);
+  text-shadow: none;
+  background: var(--plx-well);
+  border-inline-start: none;
+  box-shadow: var(--y2k-bevel-in);
+  font-family: var(--plx-mono);
+  font-size: 10.5px;
+  letter-spacing: 0;
+  padding: 1px 7px;
+}
+body.theme-dark:not(.plx6-no-steel) .status-bar-item:first-child { border-inline-start: none; }
+body.theme-dark:not(.plx6-no-steel) .status-bar-item .svg-icon { color: var(--plx-ink-2); filter: none; }
+body.theme-dark:not(.plx6-no-steel) .status-bar-item.mod-clickable:hover {
+  background: var(--plx-well);
+  color: var(--plx-teal-bright);
+  box-shadow: var(--y2k-bevel-in), inset 0 0 0 1px var(--y2k-lamp-soft);
+}
+
+/* ---------- keys (buttons): flat rectangles, 1px bevel ---------- */
+body.theme-dark:not(.plx6-no-steel) button:not(.clickable-icon):not(.checkbox-container):not([class*="iconize"]):not(.callout-copy-button):not(.excalidraw *) {
+  border-color: var(--y2k-black);
+  border-radius: 0;
+  color: var(--plx-ink);
+}
+body.theme-dark:not(.plx6-no-steel) button:not(.clickable-icon):not(.checkbox-container):not([class*="iconize"]):not(.callout-copy-button):not(.excalidraw *):hover:not(:active) {
+  border-color: var(--y2k-black);
+  background: linear-gradient(180deg, var(--y2k-s4) 0%, var(--y2k-s3) 100%);
+  box-shadow: var(--y2k-bevel-out);
+}
+/* the EXE key: a flat azure face, dark legend */
+body.theme-dark:not(.plx6-no-steel) button.mod-cta {
+  background: linear-gradient(180deg, var(--plx-teal-bright) 0%, var(--plx-teal) 100%) !important;
+  border-color: var(--y2k-black) !important;
+  box-shadow: var(--y2k-bevel-out) !important;
+}
+body.theme-dark:not(.plx6-no-steel) :is(button.mod-warning, button.mod-destructive) {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--plx-red) 80%, var(--plx-slate-ink)) 0%, var(--plx-red) 100%) !important;
+  border-color: var(--y2k-black) !important;
+  box-shadow: var(--y2k-bevel-out) !important;
+}
+body.theme-dark:not(.plx6-no-steel) .clickable-icon:hover {
+  background: var(--y2k-s3);
+  border-color: var(--y2k-black);
+  box-shadow: var(--y2k-bevel-out);
+}
+body.theme-dark:not(.plx6-no-steel) .clickable-icon:is(.is-active, .mod-active) {
+  background: var(--plx-key-face-down);
+  border-color: var(--y2k-black);
+  box-shadow: var(--plx-pressed);
+}
+body.theme-dark:not(.plx6-no-steel) .dropdown {
+  background-color: var(--y2k-s3);
+  border-color: var(--y2k-black);
+  border-radius: 0;
+  box-shadow: var(--y2k-bevel-out);
+}
+body.theme-dark:not(.plx6-no-steel) .dropdown:hover { background-color: var(--y2k-s4); border-color: var(--y2k-black); }
+body.theme-dark:not(.plx6-no-steel) :is(kbd, .suggestion-hotkey, .suggestion-hotkey kbd, .suggestion-hotkey span) {
+  background: var(--plx-key-face);
+  border-color: var(--y2k-black);
+  box-shadow: var(--y2k-bevel-out);
+}
+
+/* ---------- wells: inputs sink into the panel ---------- */
+body.theme-dark:not(.plx6-no-steel) :is(input[type="text"], input[type="search"], input[type="email"], input[type="password"], input[type="number"], input[type="url"], input[type="date"], input[type="datetime-local"], textarea, .search-input-container input) {
+  background: var(--plx-well);
+  border-color: var(--y2k-black);
+  border-radius: 0;
+  box-shadow: var(--y2k-bevel-in);
+}
+body.theme-dark:not(.plx6-no-steel) .checkbox-container {
+  background-color: var(--plx-well);
+  box-shadow: inset 0 0 0 1px var(--y2k-black), var(--y2k-bevel-in);
+}
+body.theme-dark:not(.plx6-no-steel) .checkbox-container.is-enabled {
+  background-color: var(--plx-teal);
+  box-shadow: inset 0 0 0 1px var(--y2k-black), var(--plx-lamp-glow);
+}
+body.theme-dark:not(.plx6-no-steel) .checkbox-container::after {
+  background: var(--plx-key-face);
+  box-shadow: inset 0 0 0 1px var(--y2k-black), inset 1px 1px 0 1px var(--y2k-glint);
+}
+/* the bevelled slot belongs to the segmented LCD slider only; the default fader (68-qa6 §2) draws its own slot */
+body.theme-dark:not(.plx6-no-steel).plx-slider-segmented input[type="range"] { border-color: var(--y2k-black); box-shadow: var(--y2k-bevel-in); }
+
+/* ---------- scrollbars: sunk slot, flat steel thumb with a grip ---------- */
+body.theme-dark:not(.plx6-no-steel):not(.native-scrollbars) ::-webkit-scrollbar-track {
+  background: var(--plx-case-lo);
+  border-inline-start: 1px solid var(--y2k-black);
+}
+body.theme-dark:not(.plx6-no-steel):not(.native-scrollbars) ::-webkit-scrollbar-thumb {
+  background:
+    linear-gradient(var(--y2k-grip), var(--y2k-grip)) center calc(50% - 3px) / 5px 1px no-repeat,
+    linear-gradient(var(--y2k-grip), var(--y2k-grip)) center 50% / 5px 1px no-repeat,
+    linear-gradient(var(--y2k-grip), var(--y2k-grip)) center calc(50% + 3px) / 5px 1px no-repeat,
+    var(--y2k-s4);
+  border: 1px solid var(--y2k-black);
+  border-radius: 0;
+  box-shadow: var(--y2k-bevel-out);
+}
+body.theme-dark:not(.plx6-no-steel):not(.native-scrollbars) ::-webkit-scrollbar-thumb:horizontal {
+  background:
+    linear-gradient(var(--y2k-grip), var(--y2k-grip)) calc(50% - 3px) center / 1px 5px no-repeat,
+    linear-gradient(var(--y2k-grip), var(--y2k-grip)) 50% center / 1px 5px no-repeat,
+    linear-gradient(var(--y2k-grip), var(--y2k-grip)) calc(50% + 3px) center / 1px 5px no-repeat,
+    var(--y2k-s4);
+}
+body.theme-dark:not(.plx6-no-steel):not(.native-scrollbars) ::-webkit-scrollbar-thumb:hover {
+  background:
+    linear-gradient(var(--y2k-grip), var(--y2k-grip)) center calc(50% - 3px) / 5px 1px no-repeat,
+    linear-gradient(var(--y2k-grip), var(--y2k-grip)) center 50% / 5px 1px no-repeat,
+    linear-gradient(var(--y2k-grip), var(--y2k-grip)) center calc(50% + 3px) / 5px 1px no-repeat,
+    var(--y2k-s5);
+}
+body.theme-dark:not(.plx6-no-steel):not(.native-scrollbars) ::-webkit-scrollbar-thumb:active {
+  background: var(--y2k-s3);
+  box-shadow: var(--plx-pressed);
+}
+body.theme-dark:not(.plx6-no-steel):not(.native-scrollbars) ::-webkit-scrollbar-button:single-button {
+  background-color: var(--y2k-s2);
+  box-shadow: var(--y2k-bevel-out);
+}
+
+/* ---------- menus & suggestion lists: raised panels ---------- */
+body.theme-dark:not(.plx6-no-steel) :is(.menu, .suggestion-container) {
+  background: var(--y2k-s1);
+  border-color: var(--y2k-black) !important;
+  border-radius: 0;
+  box-shadow: var(--plx-float);
+}
+body.theme-dark:not(.plx6-no-steel) .menu-separator { border-bottom-color: var(--y2k-black); box-shadow: 0 1px 0 var(--y2k-glint-soft); }
+body.theme-dark:not(.plx6-no-steel) .menu-item.is-disabled { color: var(--plx-ink-4); opacity: 1; }
+
+/* ---------- dialogs: a raised panel with a flat title band ---------- */
+body.theme-dark:not(.plx6-no-steel) .modal-bg { background: color-mix(in srgb, var(--plx-case-lo) 62%, transparent) !important; }
+body.theme-dark:not(.plx6-no-steel) :is(.modal, .prompt) {
+  border: 1px solid var(--y2k-black);
+  border-radius: 0;
+  box-shadow: var(--plx-float);
+}
+body.theme-dark:not(.plx6-no-steel) .modal:not(.mod-settings) :is(.modal-header, > .modal-title) {
+  background: var(--plx-band);
+  border-bottom: 1px solid var(--y2k-black);
+  box-shadow: var(--y2k-bevel-out);
+  color: var(--plx-slate-ink);
+}
+body.theme-dark:not(.plx6-no-steel) .modal:not(.mod-settings) > :is(.modal-close-button, .modal-header-button) {
+  background: var(--plx-key-face);
+  border-color: var(--y2k-black);
+  border-radius: 0;
+  box-shadow: var(--y2k-bevel-out);
+  color: var(--plx-ink);
+}
+body.theme-dark:not(.plx6-no-steel) .modal:not(.mod-settings) > :is(.modal-close-button, .modal-header-button):hover {
+  background: var(--plx-red); border-color: var(--y2k-black); color: var(--text-on-accent);
+}
+
+/* command palette / quick switcher: steel header and footer strips */
+body.theme-dark:not(.plx6-no-steel) .prompt { background: var(--y2k-s1); }
+body.theme-dark:not(.plx6-no-steel) .prompt-input-container {
+  background: var(--y2k-s2);
+  border-bottom: 1px solid var(--y2k-black);
+  box-shadow: var(--y2k-bevel-out);
+}
+body.theme-dark:not(.plx6-no-steel) .prompt-input-container input.prompt-input { border-color: var(--y2k-black) !important; box-shadow: var(--y2k-bevel-in) !important; }
+body.theme-dark:not(.plx6-no-steel) .prompt-instructions {
+  background: var(--y2k-s2);
+  border-top: 1px solid var(--y2k-black);
+  box-shadow: inset 0 1px 0 var(--y2k-glint-soft);
+  color: var(--plx-ink-2);
+}
+
+/* ---------- settings: steel tab column; group panels with small caps legends ---------- */
+body.theme-dark:not(.plx6-no-steel) .vertical-tab-header {
+  background: var(--y2k-s2);
+  border-inline-end: 1px solid var(--y2k-black);
+}
+body.theme-dark:not(.plx6-no-steel) .vertical-tab-nav-item { color: var(--plx-ink); border-radius: 0; }
+body.theme-dark:not(.plx6-no-steel) .vertical-tab-nav-item:hover { background: var(--y2k-s3); color: var(--plx-ink); }
+body.theme-dark:not(.plx6-no-steel) .vertical-tab-nav-item.is-active {
+  background: var(--y2k-s1);
+  border-color: var(--y2k-black);
+  box-shadow: inset 2px 0 0 var(--plx-teal), inset 0 1px 0 var(--y2k-glint-soft);
+  color: var(--plx-teal-bright);
+}
+body.theme-dark:not(.plx6-no-steel) :is(.vertical-tab-content-container, .vertical-tab-content) { background: var(--y2k-s1) !important; }
+body.theme-dark:not(.plx6-no-steel) :is(.setting-group > .setting-item-heading, .vertical-tab-content > .setting-item-heading) .setting-item-name {
+  background: var(--plx-band);
+  box-shadow: var(--y2k-bevel-out);
+}
+body.theme-dark:not(.plx6-no-steel) .setting-items {
+  background: var(--plx-paper) !important;
+  border-color: var(--y2k-black) !important;
+  box-shadow: var(--y2k-bevel-in) !important;
+}
+
+/* ---------- tooltips, notices, hover previews ---------- */
+body.theme-dark:not(.plx6-no-steel) .tooltip {
+  background: var(--y2k-s3);
+  color: var(--plx-slate-ink);
+  border-color: var(--y2k-black);
+  border-radius: 0;
+  box-shadow: var(--y2k-bevel-out), 0 3px 8px var(--y2k-shade-2);
+}
+body.theme-dark:not(.plx6-no-steel) .tooltip .tooltip-arrow { border-bottom-color: var(--y2k-s3) !important; }
+body.theme-dark:not(.plx6-no-steel) .notice {
+  background: var(--y2k-s2);
+  border-color: var(--y2k-black);
+  border-inline-start-color: var(--plx-teal);
+  box-shadow: var(--plx-float);
+  color: var(--plx-ink);
+}
+body.theme-dark:not(.plx6-no-steel) .popover.hover-popover {
+  border-color: var(--y2k-black);
+  border-radius: 0;
+  box-shadow: var(--plx-float);
+}
+
+/* ==========================================================================
+   INSTRUMENT DISPLAYS — graph, canvas, code: black scope wells with a fine
+   grid and bright thin traces. (Displays, not decoration: the note page
+   itself stays a calm, untextured surface.)
+   ========================================================================== */
+body.theme-dark:not(.plx6-no-steel) .workspace-leaf-content:is([data-type="graph"], [data-type="localgraph"]) > .view-content {
+  --plx-paper: var(--y2k-scope);
+  --plx-v-grid-minor-ink: var(--y2k-grid-fine);
+  --plx-v-grid-major-ink: var(--y2k-grid-major);
+  box-shadow: inset 0 2px 6px var(--y2k-shade-3);
+}
+body.theme-dark:not(.plx6-no-steel) .graph-controls:not(.is-close) {
+  background: var(--y2k-s1);
+  border-color: var(--y2k-black);
+  border-radius: 0;
+  box-shadow: var(--plx-float);
+}
+body.theme-dark:not(.plx6-no-steel) .graph-controls.is-close {
+  background: var(--y2k-s2);
+  border: 1px solid var(--y2k-black);
+  box-shadow: var(--y2k-bevel-out);
+}
+body.theme-dark:not(.plx6-no-steel) .canvas-wrapper { box-shadow: inset 0 2px 6px var(--y2k-shade-3); }
+body.theme-dark:not(.plx6-no-steel) .canvas-control-group {
+  border: 1px solid var(--y2k-black);
+  border-radius: 0;
+  box-shadow: 0 2px 6px var(--y2k-shade-2);
+}
+body.theme-dark:not(.plx6-no-steel) .canvas-control-item {
+  background: var(--plx-key-face);
+  box-shadow: var(--y2k-bevel-out);
+  color: var(--plx-ink-2);
+}
+body.theme-dark:not(.plx6-no-steel) .canvas-control-item:hover { color: var(--plx-teal); }
+body.theme-dark:not(.plx6-no-steel) .canvas-node-container { box-shadow: 0 0 0 1px var(--y2k-black), 0 2px 6px var(--y2k-shade-2) !important; }
+
+/* code blocks: a small display well set into the page */
+body.theme-dark:not(.plx6-no-steel) :is(.markdown-rendered pre, .HyperMD-codeblock) {
+  background: var(--y2k-scope) !important;
+}
+body.theme-dark:not(.plx6-no-steel) .markdown-rendered pre {
+  border-color: var(--y2k-black);
+  box-shadow: var(--y2k-bevel-in);
+}
+
+/* canvas coordinate readout: LabVIEW numeric indicators — small recessed
+   light fields with dark digits, tinted blue-grey to sit in the steel */
+body.theme-dark:not(.plx6-no-steel) .plx-canvas-hud > :is(span, span:first-child) {
+  background: var(--plx-ink) !important;
+  color: var(--plx-case-lo) !important;
+  border-color: var(--y2k-black) !important;
+  border-radius: 0;
+  box-shadow: inset 1px 1px 0 var(--y2k-shade-2), inset -1px -1px 0 var(--y2k-glint) !important;
+}
+body.theme-dark:not(.plx6-no-steel) .plx-canvas-hud b { color: var(--y2k-s3) !important; }
+body.theme-dark:not(.plx6-no-steel) .plx-canvas-hud .is-snapped,
+body.theme-dark:not(.plx6-no-steel) .plx-canvas-hud .is-snapped b { color: color-mix(in srgb, var(--plx-teal) 40%, var(--y2k-black)) !important; }

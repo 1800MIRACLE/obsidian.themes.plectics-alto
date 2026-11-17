@@ -1,0 +1,47 @@
+/* ==========================================================================
+   35 · TYPED TAGS — base look. Families: b-layer/84-tag-options.css
+   Families differ ONLY by colour (same shape, border, weight and contrast):
+     TOPIC   teal        #information-theory
+     TYPE    blue-violet #type/article
+     STATUS  amber       #status/draft
+     STABLE  green       #status/stable
+     ABSENT  rose        #status/empty, #status/trash
+     META    slate gray  #meta/...
+   Each hue is chosen at matched lightness so no family reads louder.
+   Tags in the Properties box are coloured by the Typed Pages plugin.
+   ========================================================================== */
+
+.theme-light {
+  --plx-tagc-topic:  #1f6f6a;
+  --plx-tagc-form:   #4f5aa0;
+  --plx-tagc-status: #8a6414;
+  --plx-tagc-stable: #3a7348;
+  --plx-tagc-absent: #9a4b5a;
+  --plx-tagc-meta:   #5c6670;
+}
+.theme-dark {
+  --plx-tagc-topic:  #6cc3bb;
+  --plx-tagc-form:   #a3acf0;
+  --plx-tagc-status: #e6b25e;
+  --plx-tagc-stable: #8fcb9c;
+  --plx-tagc-absent: #ea98a7;
+  --plx-tagc-meta:   #aeb6be;
+}
+body { --plx-tag-h: var(--plx-tagc-topic); }
+body:not(.plx-tags-plain) a.tag,
+body:not(.plx-tags-plain) .cm-hashtag {
+  color: var(--plx-tag-h);
+  background: color-mix(in srgb, var(--plx-tag-h) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--plx-tag-h) 42%, transparent);
+  border-radius: 2px;
+  font-family: var(--plx-mono);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  text-decoration: none;
+}
+body:not(.plx-tags-plain) a.tag:hover { background: color-mix(in srgb, var(--plx-tag-h) 18%, transparent); }
+/* live preview splits a tag into "#" + name: keep the seam invisible */
+body:not(.plx-tags-plain) .cm-hashtag-begin { border-inline-end: none; border-radius: 2px 0 0 2px; }
+body:not(.plx-tags-plain) .cm-hashtag-end { border-inline-start: none; border-radius: 0 2px 2px 0; }
+/* The family rules (type/, status/, meta/, author/) are in b-layer/84-tag-options.css. */

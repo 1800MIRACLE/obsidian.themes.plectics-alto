@@ -1,0 +1,68 @@
+/* ==========================================================================
+   PLECTICS ALTO · 81 · AUDIT FIXES, A4 (options and mode matrix)
+   A4-02 (a stray U+0001 made --plx-eink invalid) is fixed at the source:
+   a-base/00-tokens.css:119 and 66-dark-variants.css:23.
+   A4-10 (CMU Serif showed Constantia) is fixed in a-base/60-plugins.css.
+   ========================================================================== */
+
+/* A4-02 Blue-steel gets its own display tokens, so no hidden palette leaks
+   into its readouts */
+body.theme-dark:not(.plx6-no-steel) {
+  --plx-eink: #0d1220;
+  --plx-eink-ink: #cfe3f7;
+  --plx-eink-rule: rgba(207, 227, 247, 0.16);
+}
+
+/* A4-03 / A4-04 "Follow Obsidian accent" lost to every dark palette (and to
+   cyan) because those rules come later with the same weight. The accent is
+   an explicit choice: it wins over palette and cyan, page and chrome alike.
+   A4-05 lightness is clamped so links stay >= 4.5:1 (light <= 36 %, dark 66 %). */
+body.theme-light.plx-use-accent.plx-use-accent,
+body.theme-light.plx-use-accent .workspace-leaf-content {
+  --plx-teal: hsl(var(--accent-h), calc(var(--accent-s) * 0.7), min(calc(var(--accent-l) * 0.8), 36%));
+  --plx-teal-bright: hsl(var(--accent-h), calc(var(--accent-s) * 0.7), min(var(--accent-l), 44%));
+  --plx-teal-deep: hsl(var(--accent-h), calc(var(--accent-s) * 0.7), 24%);
+  --plx-teal-wash: hsla(var(--accent-h), 40%, 40%, 0.08);
+  --plx-lcd: hsl(var(--accent-h), 32%, 90%);
+  --plx-lcd-ink: hsl(var(--accent-h), 50%, 20%);
+}
+body.theme-dark.plx-use-accent.plx-use-accent,
+body.theme-dark.plx-use-accent:not(.plx6-no-steel) .workspace-leaf-content:is([data-type="markdown"], [data-type="canvas"]) {
+  --plx-teal: hsl(var(--accent-h), calc(var(--accent-s) * 0.55), 66%);
+  --plx-teal-bright: hsl(var(--accent-h), calc(var(--accent-s) * 0.6), 76%);
+  --plx-teal-wash: hsla(var(--accent-h), 40%, 55%, 0.12);
+}
+
+/* A4-06 "Hide tree connector lines" lost to the rule that draws them */
+body.plx-no-tree-lines :is(.nav-files-container, .workspace-leaf-content) .tree-item-children > .tree-item::before,
+body.plx-no-tree-lines :is(.nav-files-container, .workspace-leaf-content) .tree-item-children > .tree-item::after { content: none !important; display: none !important; }
+
+/* A4-07 "Hide file-type icons" lost to the Farm-Fresh row icons */
+body.plx-no-file-icons .nav-files-container :is(.nav-file-title, .nav-folder-title)::before { content: none !important; display: none !important; }
+
+/* A4-08 "Use Farm-Fresh" did not win over Iconize on tabs: Iconize puts a
+   plain svg (no .svg-icon class) in the tab icon slot */
+body.plx-ff.plx-ff-iconize-hide .workspace-tab-header-inner-icon > svg:not(.svg-icon) { display: none !important; }
+body.plx-ff.plx-ff-iconize-hide .workspace-tab-header[data-type="markdown"] .workspace-tab-header-inner-icon:has(> svg:not(.svg-icon)) {
+  min-width: 16px; min-height: 16px;
+  background: var(--ff-page_white_text) center / 16px 16px no-repeat;
+}
+
+/* A4-09 "Properties text size" did nothing in the default Panel layout */
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) .metadata-property-key-input:not(#plx6) { font-size: calc(var(--plx-prop-fs, 13px) * 0.81) !important; }
+body:not(.plx-props-ledger, .plx-props-strip, .plx-props-margin, .plx-props-lcd, .plx-props-tucked) :is(.metadata-property-value input:not([type="date"]):not([type="datetime-local"]):not([type="number"]), .metadata-property-value .metadata-input-longtext, .metadata-property-value .metadata-input-text:not(.mod-date):not(.mod-datetime), .multi-select-input):not(#plx6) {
+  font-size: calc(var(--plx-prop-fs, 13px) + 0.5px) !important;
+}
+
+/* A4-12 the Metal preview lit "Metal" even where it cannot apply */
+body:not(.theme-dark) .modal.mod-settings .setting-item[data-id="plx6-y2k-metal"] > .setting-item-info::before,
+body:not(.theme-dark) .modal.mod-settings .setting-item[data-id="plx6-y2k-metal"] > .setting-item-info::after { opacity: 0.5 !important; outline-color: transparent !important; }
+
+/* A4-16 small text under 4.5:1. Rows that cannot apply now keep readable
+   words; only their control is dimmed. Small notes use ink-3. */
+.modal.mod-settings .setting-item[data-id] { opacity: 1 !important; }
+.modal.mod-settings .style-settings-container .setting-item-description small,
+body.plx-props-strip .metadata-property-key-input,
+.theme-light.plx-props-lcd .metadata-property-key-input { color: var(--plx-ink-3) !important; }
+
+

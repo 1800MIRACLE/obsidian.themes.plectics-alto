@@ -1,0 +1,482 @@
+/* ==========================================================================
+   30 · READING — the paper
+   Wiki-style article: Garamond titles with rules, Plex body, dotted
+   reference links, wikitable tables, recessed code plates, embeds as
+   transclusion panels. Applies to Reading view and Live Preview.
+   ========================================================================== */
+
+.markdown-rendered,
+.markdown-source-view.mod-cm6 .cm-scroller {
+  font-size: var(--font-text-size);
+  font-variant-numeric: oldstyle-nums proportional-nums;
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+}
+.markdown-rendered table, .markdown-rendered code, .markdown-rendered pre { font-variant-numeric: lining-nums tabular-nums; }
+
+/* ---------- Inline title — article title ---------- */
+.inline-title {
+  font-family: var(--plx-serif);
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  line-height: 1.08;
+  margin-bottom: 0.15em !important;
+  padding-bottom: 0.28em;
+  border-bottom: 1px solid var(--plx-rule);
+  position: relative;
+}
+/* thin second rule under the title: masthead double-rule */
+.inline-title::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -4px;
+  border-bottom: 1px solid var(--plx-rule-soft);
+}
+
+/* ---------- Headings ---------- */
+.markdown-rendered h1, .markdown-rendered h2, .markdown-rendered h3, .markdown-rendered h4,
+.HyperMD-header-1, .HyperMD-header-2, .HyperMD-header-3, .HyperMD-header-4 {
+  font-feature-settings: "liga", "onum";
+  letter-spacing: -0.005em;
+}
+/* h1, h2 — Wikipedia-style section rules */
+.markdown-rendered h1 { border-bottom: 1px solid var(--plx-rule); padding-bottom: 0.12em; margin-top: 1.5em; }
+.markdown-rendered h2 { border-bottom: 1px solid var(--plx-rule-soft); padding-bottom: 0.1em; margin-top: 1.4em; }
+.cm-line.HyperMD-header-1 { border-bottom: 1px solid var(--plx-rule); padding-bottom: 2px !important; }
+.cm-line.HyperMD-header-2 { border-bottom: 1px solid var(--plx-rule-soft); padding-bottom: 2px !important; }
+/* h4 — run-in paragraph head feel: Garamond small caps */
+.markdown-rendered h4, .cm-header-4 { font-variant: small-caps; letter-spacing: 0.02em; }
+/* h5, h6 — instrument labels (condensed caps) */
+.markdown-rendered h5, .markdown-rendered h6, .cm-header-5, .cm-header-6 {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.markdown-rendered h5 { margin-bottom: 0.2em; }
+/* § mark on hover — section anchor */
+.markdown-rendered :is(h1, h2, h3):hover::after {
+  content: none;
+  color: var(--plx-ink-4);
+  font-weight: 400;
+  font-size: 0.7em;
+}
+.markdown-rendered :is(h1,h2,h3,h4,h5,h6) .heading-collapse-indicator { color: var(--plx-ink-4); }
+
+/* ---------- Paragraph texture ---------- */
+.markdown-rendered p, .markdown-rendered li { hyphens: auto; }
+.markdown-rendered strong, .cm-strong { color: var(--plx-ink); font-weight: 600; }
+.markdown-rendered em, .cm-em { font-family: inherit; }
+mark, .markdown-rendered mark, .cm-highlight {
+  background: var(--text-highlight-bg);
+  color: inherit;
+  border-radius: 0;
+  padding: 0 1px;
+  box-shadow: inset 0 -0.15em 0 rgba(170, 140, 30, 0.25);
+}
+del, .cm-strikethrough { text-decoration-color: var(--plx-red); text-decoration-thickness: 1px; color: var(--plx-ink-3); }
+sub, sup { font-size: 0.72em; }
+
+/* ---------- Links — semiotics: dotted = pointer, dashed red = not yet existing ---------- */
+.markdown-rendered a.internal-link,
+.cm-hmd-internal-link .cm-underline,
+.cm-s-obsidian span.cm-hmd-internal-link {
+  color: var(--plx-teal);
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--plx-teal) 60%, transparent);
+}
+.markdown-rendered a.internal-link:hover,
+.cm-hmd-internal-link .cm-underline:hover {
+  color: var(--plx-teal-bright);
+  text-decoration-style: solid;
+  background: var(--plx-teal-wash);
+}
+.markdown-rendered a.internal-link.is-unresolved,
+.cm-hmd-internal-link.is-unresolved .cm-underline,
+.is-unresolved {
+  color: var(--plx-red);
+  opacity: 1;
+  text-decoration-style: dashed;
+  text-decoration-color: color-mix(in srgb, var(--plx-red) 55%, transparent);
+}
+.markdown-rendered a.external-link,
+.cm-link .cm-underline, .cm-url {
+  color: var(--plx-teal);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--plx-teal) 45%, transparent);
+}
+/* external link mark: a small ↗ instead of Obsidian's icon */
+.markdown-rendered a.external-link {
+  background-image: none !important;
+  padding-inline-end: 0;
+}
+.markdown-rendered a.external-link::after {
+  content: "↗";
+  font-family: var(--plx-ui);
+  font-size: 0.7em;
+  vertical-align: 0.35em;
+  margin-inline-start: 1px;
+  color: var(--plx-ink-3);
+  text-decoration: none;
+  display: inline-block;
+}
+.markdown-rendered a.external-link:hover { background: var(--plx-teal-wash); }
+
+/* ---------- Tags — key-cap labels ---------- */
+a.tag, .cm-hashtag {
+  font-family: var(--plx-mono);
+  font-size: 0.76em;
+  letter-spacing: 0;
+  border: 1px solid var(--plx-rule);
+  border-radius: 1px;
+  background: var(--plx-paper-2);
+  color: var(--plx-ink-2);
+  padding: 0 0.42em;
+  text-decoration: none;
+  vertical-align: 0.08em;
+}
+.cm-hashtag-begin { border-inline-end: none; padding-inline-end: 0; border-radius: 1px 0 0 1px; }
+.cm-hashtag-end { border-inline-start: none; padding-inline-start: 0; border-radius: 0 1px 1px 0; }
+a.tag:hover { border-color: var(--plx-teal); color: var(--plx-teal); background: var(--plx-teal-wash); }
+
+/* ---------- Lists, tasks ---------- */
+.markdown-rendered ul > li::marker { color: var(--plx-ink-3); }
+.markdown-rendered ol > li::marker { color: var(--plx-ink-3); font-family: var(--plx-ui); font-size: 0.9em; font-variant-numeric: tabular-nums; }
+/* square bullets — instrument, not soft */
+.list-bullet::after { border-radius: 0 !important; width: 5px; height: 5px; background-color: var(--plx-ink-3); }
+.markdown-rendered ul ul .list-bullet::after, .cm-formatting-list-ul + * .list-bullet::after { background: transparent; border: 1px solid var(--plx-ink-3); width: 4px; height: 4px; }
+.markdown-rendered ul > li > .list-bullet { }
+/* indentation guides in lists */
+.markdown-rendered.show-indentation-guide li > ul::before,
+.markdown-rendered.show-indentation-guide li > ol::before { border-inline-end: 1px solid var(--plx-rule-soft); }
+
+/* checkboxes: □ open / ■ done (semiotic standard) */
+input[type="checkbox"], .task-list-item-checkbox {
+  border-radius: 1px !important;
+  border: 1px solid var(--plx-rule-strong);
+  background: var(--plx-well);
+  box-shadow: var(--plx-recessed);
+  width: 13px; height: 13px;
+}
+input[type="checkbox"]:checked {
+  background-color: var(--plx-teal);
+  border-color: color-mix(in srgb, var(--plx-teal) 60%, black);
+  box-shadow: none;
+}
+.markdown-rendered li[data-task="-"], .HyperMD-task-line[data-task="-"] { color: var(--plx-ink-3); text-decoration: line-through; text-decoration-color: var(--plx-ink-4); }
+.markdown-rendered li[data-task="-"] > input, .HyperMD-task-line[data-task="-"] input { background-image: var(--plx-hatch); }
+
+/* ---------- Tables — wikitable ---------- */
+.markdown-rendered table {
+  border-collapse: collapse;
+  border: 1px solid var(--plx-rule-strong);
+  background: var(--plx-paper);
+  font-size: 0.92em;
+  margin: 1em 0;
+  min-width: 40%;
+}
+.markdown-rendered th, .markdown-rendered td {
+  border: 1px solid var(--plx-rule);
+  padding: 4px 9px;
+  line-height: 1.4;
+}
+.markdown-rendered thead th, .markdown-rendered th {
+  background: var(--plx-paper-2);
+  font-family: var(--plx-ui-cond);
+  font-size: 0.82em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--plx-ink);
+  border-bottom: 2px solid var(--plx-rule-strong);
+}
+.markdown-rendered tbody tr:hover { background: var(--plx-teal-wash); }
+.markdown-rendered td[align="right"], .markdown-rendered td[style*="right"] { font-family: var(--plx-mono); font-size: 0.92em; }
+/* Live Preview table widget */
+.cm-table-widget table { border: 1px solid var(--plx-rule-strong); }
+.cm-table-widget th { font-family: var(--plx-ui-cond); text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.82em; background: var(--plx-paper-2); }
+
+/* ---------- Code — a recessed display plate with a label ---------- */
+.markdown-rendered pre,
+.HyperMD-codeblock {
+  background: var(--plx-paper-2) !important;
+}
+.markdown-rendered pre {
+  border: 1px solid var(--plx-rule);
+  border-top: 1px solid var(--plx-rule-strong);
+  border-radius: var(--plx-r);
+  box-shadow: var(--plx-recessed);
+  padding: 1.6em 1em 0.8em;
+  position: relative;
+  font-size: 0.86em;
+  line-height: 1.55;
+}
+/* language label, top-left, like a panel legend */
+.markdown-rendered pre[class*="language-"]::before {
+  content: "code";
+  position: absolute; top: 0; left: 0;
+  padding: 1px 8px;
+  font-family: var(--plx-ui-cond);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--plx-slate-ink);
+  background: var(--plx-slate-2);
+  padding-inline-end: 14px;
+  border-radius: var(--plx-r) 0 0 0;
+  clip-path: var(--plx-clip-br);
+}
+.markdown-rendered pre.language-python::before { content: "python"; }
+.markdown-rendered pre.language-js::before, .markdown-rendered pre.language-javascript::before { content: "javascript"; }
+.markdown-rendered pre.language-ts::before, .markdown-rendered pre.language-typescript::before { content: "typescript"; }
+.markdown-rendered pre.language-bash::before, .markdown-rendered pre.language-sh::before, .markdown-rendered pre.language-shell::before { content: "shell"; }
+.markdown-rendered pre.language-css::before { content: "css"; }
+.markdown-rendered pre.language-json::before { content: "json"; }
+.markdown-rendered pre.language-latex::before, .markdown-rendered pre.language-tex::before { content: "tex"; }
+.markdown-rendered pre.language-r::before { content: "r"; }
+.markdown-rendered pre.language-julia::before { content: "julia"; }
+.markdown-rendered pre.language-cpp::before, .markdown-rendered pre.language-c::before { content: "c / c++"; }
+.markdown-rendered pre.language-rust::before { content: "rust"; }
+.markdown-rendered pre.language-yaml::before, .markdown-rendered pre.language-yml::before { content: "yaml"; }
+.markdown-rendered pre.language-md::before, .markdown-rendered pre.language-markdown::before { content: "markdown"; }
+.markdown-rendered pre.language-html::before { content: "html"; }
+.markdown-rendered pre.language-sql::before { content: "sql"; }
+.markdown-rendered pre:not([class*="language-"]) { padding-top: 0.8em; }
+.markdown-rendered pre .copy-code-button {
+  font-family: var(--plx-ui-cond); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+  background: var(--plx-key-face); border: 1px solid var(--plx-rule); border-radius: 2px; box-shadow: var(--plx-raised);
+  color: var(--plx-ink-2); padding: 1px 6px; margin: 4px; top: 0;
+}
+.markdown-rendered pre .copy-code-button:hover { color: var(--plx-teal); }
+/* Live preview code block: bracket lines as plate edges */
+.HyperMD-codeblock-begin { border-top: 1px solid var(--plx-rule-strong); border-radius: 0 !important; }
+.HyperMD-codeblock-end { border-bottom: 1px solid var(--plx-rule); border-radius: 0 !important; }
+.HyperMD-codeblock { border-inline: 1px solid var(--plx-rule-soft); }
+.cm-s-obsidian .HyperMD-codeblock .code-block-flair { font-family: var(--plx-ui-cond); text-transform: uppercase; letter-spacing: 0.08em; font-size: 10px; color: var(--plx-ink-3); }
+
+/* inline code */
+.markdown-rendered :not(pre) > code,
+.cm-s-obsidian span.cm-inline-code {
+  font-family: var(--plx-mono);
+  font-size: 0.84em;
+  background: var(--plx-paper-2);
+  border: 1px solid var(--plx-rule-soft);
+  border-radius: 1px;
+  padding: 0.05em 0.3em;
+  color: var(--plx-ink);
+}
+
+/* ---------- Blockquote — quotation, Garamond ---------- */
+.markdown-rendered blockquote {
+  font-family: var(--plx-serif);
+  font-size: 1.12em;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--plx-ink-2);
+  border-inline-start: 2px solid var(--plx-rule-strong);
+  padding: 0.1em 0 0.1em 1.1em;
+  margin: 1.2em 1.5em 1.2em 0.4em;
+}
+.HyperMD-quote { font-family: var(--plx-serif); font-size: 1.08em; font-style: italic; color: var(--plx-ink-2); }
+.HyperMD-quote::before { border-inline-start: 2px solid var(--plx-rule-strong) !important; }
+
+/* ---------- Horizontal rule — a centred three-dot fleuron ---------- */
+.markdown-rendered hr {
+  border: none;
+  border-top: 1px solid var(--plx-rule);
+  height: 0;
+  margin: 2em 0;
+  overflow: visible;
+  text-align: center;
+}
+.markdown-rendered hr::after {
+  content: "◆";
+  position: relative; top: -0.72em;
+  padding: 0 0.6em;
+  background: var(--plx-paper);
+  color: var(--plx-ink-4);
+  font-size: 0.75em;
+}
+.hr .cm-line hr, .markdown-source-view .hr hr { border-top: 1px solid var(--plx-rule); }
+
+/* ---------- Footnotes & references ---------- */
+.markdown-rendered sup.footnote-ref, .footnote-link, .cm-footref {
+  font-family: var(--plx-ui);
+  font-size: 0.7em;
+}
+.markdown-rendered .footnote-link, .markdown-rendered sup a {
+  color: var(--plx-teal);
+  text-decoration: none;
+}
+.markdown-rendered sup.footnote-ref a::before { content: "["; color: var(--plx-ink-4); }
+.markdown-rendered sup.footnote-ref a::after { content: "]"; color: var(--plx-ink-4); }
+.markdown-rendered section.footnotes {
+  border-top: 1px solid var(--plx-rule);
+  margin-top: 2.5em;
+  padding-top: 0.6em;
+  font-size: 0.86em;
+  color: var(--plx-ink-2);
+}
+.markdown-rendered section.footnotes::before {
+  content: "References";
+  display: block;
+  font-family: var(--plx-serif);
+  font-size: 1.35em;
+  color: var(--plx-ink);
+  margin-bottom: 0.3em;
+}
+.markdown-rendered .footnotes hr { display: none; }
+.markdown-rendered .footnotes ol li::marker { font-family: var(--plx-mono); color: var(--plx-ink-3); }
+.footnote-backref { color: var(--plx-teal); }
+
+/* ---------- Embeds / transclusions — a panel with a label strip ---------- */
+.markdown-embed {
+  border: 1px solid var(--plx-rule);
+  border-inline-start: 3px solid var(--plx-teal);
+  border-radius: 0;
+  background: var(--plx-paper);
+  padding: 0;
+  margin: 1em 0;
+}
+.markdown-embed .markdown-embed-content { padding: 0.2em 1.1em 0.6em; max-height: 32em; }
+.markdown-embed .markdown-preview-view { padding: 0; }
+.markdown-embed-title {
+  display: inline-block !important;
+  width: auto !important;
+  height: auto;
+  padding: 2px 16px 2px 10px;
+  margin: 0;
+  clip-path: var(--plx-clip-br);
+  font-family: var(--plx-ui-cond);
+  font-size: var(--plx-fs-label);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--plx-track);
+  color: var(--plx-ink-2);
+  background: var(--plx-case-hi);
+  border-bottom: 1px solid var(--plx-rule-soft);
+  text-align: start;
+}
+.markdown-embed .inline-title { font-size: 1.6em; border: none; }
+.markdown-embed .inline-title::after { display: none; }
+.markdown-embed-link { color: var(--plx-ink-3); top: 0; padding: 2px; }
+.markdown-embed-link:hover { color: var(--plx-teal); }
+.internal-embed.file-embed { border: 1px solid var(--plx-rule); border-radius: 0; background: var(--plx-paper-2); }
+/* image embeds: plate with hairline */
+.markdown-rendered img:not([width]), .image-embed img { border: 1px solid var(--plx-rule-soft); }
+.image-embed[alt]:not([alt$=".png"]):not([alt$=".jpg"]):not([alt$=".jpeg"]):not([alt$=".gif"]):not([alt$=".svg"]):not([alt$=".webp"])::after {
+  content: attr(alt);
+  display: block;
+  font-family: var(--plx-ui);
+  font-size: 0.82em;
+  color: var(--plx-ink-2);
+  padding: 3px 0 0;
+  border-top: 1px solid var(--plx-rule-soft);
+}
+
+/* ---------- Math ---------- */
+.math-block, mjx-container[display="true"] { margin: 1.1em 0; }
+mjx-container { color: var(--plx-ink); }
+.markdown-rendered .math-block { padding: 0.3em 0; }
+
+/* ---------- Mermaid / diagrams in instrument palette ---------- */
+.markdown-rendered .mermaid { font-family: var(--plx-ui) !important; }
+.mermaid .node rect, .mermaid .node polygon, .mermaid .node circle, .mermaid .node path {
+  fill: var(--plx-paper-2) !important; stroke: var(--plx-rule-strong) !important; stroke-width: 1px !important;
+}
+.mermaid .edgePath .path, .mermaid .flowchart-link { stroke: var(--plx-ink-2) !important; stroke-width: 1px !important; }
+.mermaid .arrowheadPath, .mermaid marker path { fill: var(--plx-ink-2) !important; stroke: none !important; }
+.mermaid .edgeLabel, .mermaid .edgeLabel rect, .mermaid .labelBkg { background: var(--plx-paper) !important; fill: var(--plx-paper) !important; color: var(--plx-ink-2) !important; }
+.mermaid .nodeLabel, .mermaid .label { color: var(--plx-ink) !important; font-family: var(--plx-ui) !important; }
+
+/* ---------- Source mode / editor niceties ---------- */
+.cm-s-obsidian .cm-formatting, .cm-formatting-header { color: var(--plx-ink-4) !important; }
+.markdown-source-view.mod-cm6 .cm-gutters { background: transparent; border-inline-end: 1px solid var(--plx-rule-soft); }
+.cm-lineNumbers .cm-gutterElement { font-family: var(--plx-mono); font-size: 10.5px; color: var(--plx-ink-4); }
+.cm-active.cm-line { background: transparent; }
+.markdown-source-view.mod-cm6 .cm-cursor { border-left: 2px solid var(--plx-teal); }
+.cm-fold-indicator .collapse-indicator { color: var(--plx-ink-4); }
+.markdown-source-view.mod-cm6 .cm-embed-block:not(.cm-table-widget):hover { box-shadow: 0 0 0 1px var(--plx-rule) !important; border-radius: 0 !important; }
+.edit-block-button { border-radius: 2px; }
+
+/* print / PDF: paper only */
+@media print {
+  .inline-title::after { display: none; }
+  .markdown-rendered { font-family: var(--plx-text-serif); }
+}
+
+/* cancelled task [-]: hatched box with a dash, not a teal check (semiotic: hatched = absent) */
+.markdown-rendered li[data-task="-"] > input[type="checkbox"],
+.markdown-rendered li[data-task="-"] > p > input[type="checkbox"],
+.HyperMD-task-line[data-task="-"] input[type="checkbox"] {
+  background-color: var(--plx-paper-2) !important;
+  background-image: var(--plx-hatch) !important;
+  border-color: var(--plx-ink-4) !important;
+}
+.markdown-rendered li[data-task="-"] input[type="checkbox"]::after,
+.HyperMD-task-line[data-task="-"] input[type="checkbox"]::after {
+  -webkit-mask-image: none !important;
+  background: var(--plx-ink-3) !important;
+  width: 7px !important; height: 1.5px !important;
+  inset: 0 !important; margin: auto !important;
+  position: absolute; content: "";
+}
+
+/* Table type scale: header caps sized so their cap height matches the cells' cap height */
+.markdown-rendered table, .cm-table-widget table { font-size: 0.88em; }            /* ≈ 13.2px cells */
+.markdown-rendered th, .markdown-rendered thead th,
+.cm-table-widget th {
+  font-size: 0.94em !important;                                                    /* ≈ 12.4px caps */
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+  vertical-align: bottom;
+}
+.markdown-rendered td, .cm-table-widget td { line-height: 1.45; vertical-align: baseline; }
+.markdown-rendered td[align="right"], .markdown-rendered td[style*="right"] { font-size: 0.95em; }
+
+.markdown-rendered pre.language-text::before, .markdown-rendered pre.language-txt::before, .markdown-rendered pre.language-plain::before { content: "text"; }
+.markdown-rendered pre.language-mermaid::before { content: "mermaid"; }
+.markdown-rendered pre.language-base::before { content: "base"; }
+.markdown-rendered pre.language-dataview::before { content: "dataview"; }
+.markdown-rendered pre.language-ts::before { content: "typescript"; }
+/* headings next to a floated infobox: rule stops at the float (Wikipedia behaviour) */
+.markdown-rendered :is(h1, h2) { display: flow-root; }
+/* math sits in the CMU text face family: slightly larger display maths */
+.markdown-rendered mjx-container[display="true"] { font-size: 1.04em; }
+
+/* ---------- Relative sizes: one x-height for every reading face ----------
+   The Font size slider sets the base; font-size-adjust then scales each face
+   so its lowercase is 0.5 of that size — CMU Serif, Plex, Georgia … read alike.
+   Headings, code and maths keep their own designed proportions. */
+.markdown-preview-view, .markdown-source-view.mod-cm6 .cm-content { font-size-adjust: 0.5; line-height: 1.62; }
+.markdown-rendered :is(h1, h2, h3, h4, h5, h6), .inline-title, .cm-line:is(.HyperMD-header-1, .HyperMD-header-2, .HyperMD-header-3, .HyperMD-header-4, .HyperMD-header-5, .HyperMD-header-6),
+.markdown-rendered :is(code, pre, kbd), .cm-inline-code, .HyperMD-codeblock, mjx-container, .math, .callout-title,
+.metadata-container, a.tag, .cm-hashtag, .markdown-rendered th { font-size-adjust: none; }
+/* comfortable paragraph rhythm */
+.markdown-rendered p { margin-block: 0 0.85em; }
+.markdown-rendered li { margin-block: 0.12em; }
+
+/* Quotations — readable: reading face upright, a hair larger; one Garamond mark */
+.markdown-rendered blockquote {
+  font-family: var(--plx-quote-font);
+  font-style: var(--plx-quote-style);
+  font-size: 1.03em;
+  line-height: 1.6;
+  color: var(--plx-ink-2);
+  position: relative;
+  padding-inline-start: 1.7em;
+}
+.markdown-rendered blockquote::before {
+  content: "“";
+  position: absolute;
+  left: 0.35em; top: 0.02em;
+  font-family: var(--plx-serif);
+  font-size: 1.9em;
+  line-height: 1;
+  color: var(--plx-ink-4);
+}
+.markdown-rendered blockquote em, .markdown-rendered blockquote i { font-style: italic; }
+.HyperMD-quote { font-family: var(--plx-quote-font) !important; font-style: var(--plx-quote-style) !important; font-size: 1.03em !important; }

@@ -1,0 +1,212 @@
+/* ==========================================================================
+   85 · QA FIXES
+   Loads after every other module (incl. 80-page-types). Each rule says what
+   was wrong. Only --plx-* tokens / Obsidian variables. Grouped by surface.
+   ========================================================================== */
+
+/* ---------- Title bar ---------- */
+/* Window title was ink-3 at Obsidian's 0.85 opacity on the casing:
+   2.9:1 light. Use the label ink at full strength (≥ 4.5:1 both modes). */
+.titlebar-text { color: var(--plx-ink-2); opacity: 1; }
+
+/* ---------- Root tabs ---------- */
+/* Obsidian's `.workspace .mod-root .workspace-tab-header` (padding 1px 4px 4px)
+   out-ranked the theme's `padding: 0`, so inactive tabs got 4px bottom padding
+   and their titles sat 1.5px higher than the active tab's. One padding for all. */
+.workspace .mod-root .workspace-tab-header { padding: 0; }
+.workspace .mod-root .workspace-tab-header.is-active { padding-bottom: 1px; }
+
+/* ---------- View header ---------- */
+/* Breadcrumb parent was ink-3 on the case-hi toolbar: 4.1:1 light. */
+.view-header-breadcrumb,
+.view-header-title-parent { color: var(--plx-ink-2); }
+.view-header-breadcrumb-separator { color: var(--plx-ink-3); }
+
+/* ---------- Inputs ---------- */
+/* Placeholders were ink-4 (2.5:1 light) — unreadable hint text. */
+input::placeholder, textarea::placeholder,
+.cm-placeholder { color: var(--plx-ink-3); }
+
+/* ---------- Editor (Live Preview) ---------- */
+/* Ordered-list numbers inherited the faint `.cm-formatting` ink-4 (2.5:1
+   light, 3.4:1 dark); in reading view they are ink-3 UI numerals. Match. */
+.markdown-source-view.mod-cm6 .cm-formatting-list-ol,
+.markdown-source-view.mod-cm6 .list-number { color: var(--plx-ink-3) !important; }
+.markdown-source-view.mod-cm6.is-live-preview .list-number {
+  font-family: var(--plx-ui);
+  font-variant-numeric: tabular-nums;
+}
+/* Live Preview quotes ignored the theme's quote style: Obsidian's
+   `.is-live-preview .HyperMD-quote { font-style: var(--blockquote-style) }`
+   out-ranks the theme rule. Follow the quote token like reading view. */
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote { font-style: var(--plx-quote-style); }
+
+/* ---------- Reading view ---------- */
+/* Code in blocks was 10.4px: `pre` 0.86em × Obsidian's `code` 0.86em
+   compounded. Live Preview shows 0.86em once; match it. */
+.markdown-rendered pre > code { font-size: inherit; }
+/* Footnote refs rendered "[[1]]" at 6.9px: Obsidian 1.15 already prints the
+   brackets, the theme added a second pair, and 0.7em was applied to both the
+   <sup> and its link. */
+.markdown-rendered sup.footnote-ref a::before,
+.markdown-rendered sup.footnote-ref a::after { content: none; }
+.markdown-rendered sup.footnote-ref .footnote-link { font-size: 1em; }
+
+/* ---------- Obsidian 1.15 variables the tokens did not map ---------- */
+/* 1.15 draws hotkeys, pills and hovered property rows from these; defaults
+   were pills (2em radius) and 6px rounding — "nothing pill-shaped". */
+body {
+  --hotkey-radius: 2px;
+  --hotkey-font: var(--plx-mono);
+  --hotkey-font-size: 10.5px;
+  --hotkey-background: var(--plx-key-top);
+  --pill-radius: 1px;
+  --metadata-property-radius-hover: 0;
+  --metadata-property-radius-focus: 0;
+}
+
+/* ---------- Menus & suggestion lists (dark) ---------- */
+/* Dark --plx-slate (#10161a) is darker than the dark paper the menu sits on,
+   so the "inverse slate band" for the selected/hovered item was ~1.1:1 —
+   the selection was nearly invisible. Use the dark filled-label slate. */
+.theme-dark .menu-item.selected:not(.is-disabled):not(.is-label),
+.theme-dark .menu-item:hover:not(.is-disabled):not(.is-label),
+.theme-dark .suggestion-item.is-selected {
+  background: var(--plx-label-bg);
+  color: var(--plx-label-ink);
+}
+
+/* ---------- Command palette ---------- */
+/* Rows with a hotkey were 29px, rows without 25px (key cap line-height):
+   the list jittered. Fix the cap's height so every row is the same. */
+.suggestion-item.mod-complex .suggestion-hotkey {
+  line-height: 14px;
+  padding: 0 5px;
+  margin-block: -2px;
+}
+.suggestion-item.mod-complex .suggestion-aux { align-items: center; }
+
+/* ---------- Dialogs ---------- */
+/* Obsidian 1.15 renamed the dialog close box to `.modal-header-button`; the
+   theme still styled `.modal-close-button`, so in light mode the close ✕ was
+   ink-2 on the dark slate band (≈1.2:1, invisible). Key-cap close box again. */
+.modal:not(.mod-settings) > .modal-header-button {
+  top: 5px; inset-inline-end: 6px;
+  width: 22px; height: 20px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--plx-key-face);
+  border: 1px solid var(--plx-rule-strong);
+  border-radius: 1px;
+  box-shadow: var(--plx-raised);
+  color: var(--plx-ink);
+  --icon-size: 13px;
+  z-index: 2;
+}
+.modal:not(.mod-settings) > .modal-header-button:hover {
+  background: var(--plx-red); border-color: var(--plx-red); color: var(--text-on-accent);
+}
+/* 1.15 marks destructive confirms as `.mod-cta.mod-destructive` (Delete file…):
+   they rendered as the teal EXE key. Destructive is red only. */
+button.mod-destructive {
+  color: var(--text-on-accent) !important;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--plx-red) 85%, white), var(--plx-red)) !important;
+  border-color: color-mix(in srgb, var(--plx-red) 60%, black) !important;
+}
+/* Dark: the CTA / destructive faces are light (cyan / salmon), and near-white
+   text on them was 2–3:1. Print the legend in dark ink instead. */
+.theme-dark button.mod-cta,
+.theme-dark button.mod-warning,
+.theme-dark button.mod-destructive { color: var(--plx-paper) !important; }
+
+/* ---------- Tooltips ---------- */
+/* Dark: slate tooltip with a slate-on-black border had no visible edge on
+   the dark casing. Give it the ordinary rule. */
+.theme-dark .tooltip { border-color: var(--plx-rule); }
+
+/* ---------- Hover preview (page preview popover) ---------- */
+/* The popover is a flex row in 1.15, so the "PREVIEW" chip (::before) became
+   a 65px flex column and pushed the whole note to the right. Pin the chip
+   to the top-left corner instead, out of the flow. */
+.popover.hover-popover::before {
+  position: absolute; top: 0; left: 0; z-index: 3;
+  pointer-events: none;
+}
+
+/* ---------- Sliders ---------- */
+/* Obsidian 1.15 paints its own opaque fill on `input.slider`
+   (background-image: linear-gradient(--slider-fill-ratio)), which out-ranks the
+   theme's track and doubles the theme's translucent thumb-shadow fill
+   (two-tone fill, and the track gradient disappears under it). */
+input[type="range"].slider { background-image: var(--plx-slider-track); }
+body.plx-slider-segmented input[type="range"].slider {
+  background-image: repeating-linear-gradient(90deg, transparent 0 19px, var(--plx-seg-line) 19px 20px), var(--plx-slider-track);
+}
+
+/* ---------- Panes in the root area ---------- */
+/* Outline, Bookmarks, Tags, All properties put their toolbar (.nav-header)
+   before the view header in the DOM; opened as a tab in the main area the
+   key row sat above the breadcrumb strip. Header first, then its toolbar. */
+.workspace-leaf-content > .view-header { order: -1; }
+
+/* ---------- Fold markers ⊞ / ⊟ ---------- */
+/* Light: ink-4 markers were 2.5:1 on paper (≈2.2:1 on the casing) — under
+   3:1 for an interactive glyph. Keep them light, one step darker. Dark is 3.6:1. */
+.theme-light .collapse-icon::before,
+.theme-light .collapse-indicator::before,
+.theme-light .callout-fold::before {
+  color: color-mix(in srgb, var(--plx-ink-3) 60%, var(--plx-ink-4)) !important;
+}
+.theme-light .collapse-icon:hover::before, .theme-light .collapse-indicator:hover::before,
+.theme-light .callout-fold:hover::before,
+.theme-light .tree-item-self:hover > .collapse-icon::before { color: var(--plx-teal) !important; }
+/* Style Settings still drew its own chevron: every fold uses ⊞ / ⊟. */
+.style-settings-collapse-indicator > svg { display: none; }
+.style-settings-collapse-indicator::before {
+  content: var(--plx-mark-open);
+  font-family: var(--plx-mark-font);
+  font-size: var(--plx-mark-size);
+  line-height: 1;
+  color: var(--plx-ink-3);
+}
+.is-collapsed > .setting-item-info .style-settings-collapse-indicator::before,
+.style-settings-heading.is-collapsed .style-settings-collapse-indicator::before { content: var(--plx-mark-closed); }
+.style-settings-heading:hover .style-settings-collapse-indicator::before { color: var(--plx-teal); }
+
+/* ---------- Prompt footer ---------- */
+/* Quick-switcher / palette key hints were ink-3 on the case-hi strip: 4.1:1. */
+.prompt-instructions { color: var(--plx-ink-2); }
+
+/* ---------- Properties ---------- */
+/* "+ ADD PROPERTY" was 9.5px ink-4 (2.5:1) — the only way to add a property. */
+.metadata-add-button { color: var(--plx-ink-3) !important; font-size: 10px !important; }
+
+/* ---------- Excalidraw ---------- */
+/* The generic key-cap `button` rule (10-workspace) reached Excalidraw's own
+   island buttons: padding 4px 12px + height:auto stretched the main-menu
+   trigger to 73px and undo/redo to 53×37 key caps. Give Excalidraw back its
+   geometry and surfaces (its own variables) — the canvas UI stays Excalidraw's.
+   Better fix at the source: exclude `.excalidraw *` in the 10-workspace selector. */
+.excalidraw button:is(.dropdown-menu-button, .ToolIcon_type_button):not(.clickable-icon):not(.checkbox-container):not(.callout-copy-button) {
+  min-height: 0;
+  padding: 0;
+  height: var(--default-button-size, 2rem);
+  font: inherit;
+  color: var(--icon-fill-color, inherit);
+  background: var(--island-bg-color, transparent);
+  border: none;
+  border-radius: var(--border-radius-lg, 0.5rem);
+  box-shadow: none;
+  transform: none;
+}
+.excalidraw button.dropdown-menu-button:not(.clickable-icon):not(.checkbox-container):not(.callout-copy-button) {
+  width: var(--lg-button-size, 2.25rem);
+  height: var(--lg-button-size, 2.25rem);
+  box-shadow: var(--shadow-island, none);
+}
+.excalidraw button:is(.dropdown-menu-button, .ToolIcon_type_button):not(.clickable-icon):not(.checkbox-container):not(.callout-copy-button):hover {
+  background: var(--button-hover-bg, var(--island-bg-color));
+  box-shadow: none;
+}
+/* the theme's hatched "disabled key" face (with !important) showed on
+   Excalidraw's disabled undo/redo — dark blobs on the white island in dark mode. */
+.excalidraw button:disabled, .excalidraw button[disabled] { background-image: none !important; }

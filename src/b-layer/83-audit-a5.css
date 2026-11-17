@@ -1,0 +1,67 @@
+/* ==========================================================================
+   PLECTICS ALTO · 83 · AUDIT FIXES, A5 (static + interaction) and leftovers
+   A5-02 (--plx-track meant both "label tracking" and the slider track
+   gradient; the gradient won on body, voiding all 41 letter-spacing
+   declarations) is fixed at the source: the slider token is now
+   --plx-slider-track (a-base 10-workspace, 85-fixes; b-layer 64, 65).
+   A5-03 (U+0001 in --plx-eink) was fixed with A4-02.
+   ========================================================================== */
+
+/* A5-01 Tab into a right-aligned (mono) cell showed a 14 px horizontal
+   scrollbar inside the cell editor: the cell never scrolls sideways */
+.markdown-source-view.mod-cm6 .cm-table-widget td .cm-scroller:not(#plx6) {
+  overflow-x: hidden !important;
+  scrollbar-width: none;
+}
+.markdown-source-view.mod-cm6 .cm-table-widget td .cm-scroller::-webkit-scrollbar { display: none; }
+
+/* A5-04 folder rows thinned from 500 to 400 on hover (Obsidian's hover
+   weight out-ranked the theme), so the label reflowed under the pointer */
+body { --nav-item-weight-hover: inherit; }
+body:not(.is-grabbing) .nav-files-container .tree-item-self.is-clickable:hover { font-weight: inherit; }
+
+/* A5-14 / A1-17 Univers set "Audit Table" as "AuditTable" (the space sits
+   under the T): a touch of word space in property values */
+.metadata-property-value :is(.metadata-input-longtext, .metadata-input-text, input) { word-spacing: 0.06em; }
+
+/* ---------- leftovers from A1 (Live Preview matches Reading view) ---------- */
+
+/* A1-16 external links: the same small ↗ as Reading view */
+.markdown-source-view.mod-cm6 .external-link:not(#plx6) {
+  background-image: none !important;
+  width: auto;
+  padding-inline-end: 0;
+}
+.markdown-source-view.mod-cm6 .cm-link .external-link::after,
+.markdown-source-view.mod-cm6 .cm-url + .external-link::after {
+  content: "↗";
+  font-family: var(--plx-ui);
+  font-size: 0.7em;
+  vertical-align: 0.35em;
+  color: var(--plx-ink-3);
+}
+/* A1-16 horizontal rule: the same centred ◆ as Reading view */
+.markdown-source-view.mod-cm6 .hr { position: relative; }
+.markdown-source-view.mod-cm6 .hr:not(.cm-active)::after {
+  content: "◆";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -54%);
+  padding: 0 0.6em;
+  background: var(--plx-paper);
+  color: var(--plx-ink-4);
+  font-size: 0.75em;
+  pointer-events: none;
+}
+
+/* ---------- leftover from A4-17: grid and gradient follow the identity colour ----------
+   The engineering grid and cover gradient were hard-coded teal. */
+.theme-dark:not(.plx6-no-steel) {
+  --plx-grid-minor: color-mix(in srgb, var(--plx-teal) 6%, transparent);
+  --plx-grid-major: color-mix(in srgb, var(--plx-teal) 12%, transparent);
+  --plx-grad-a: color-mix(in srgb, var(--plx-teal) 16%, transparent);
+  --plx-grad-b: color-mix(in srgb, var(--plx-teal) 6%, transparent);
+  --plx-grad-c: transparent;
+  --plx-dither: color-mix(in srgb, var(--plx-teal) 10%, transparent);
+}

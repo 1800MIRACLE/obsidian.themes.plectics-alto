@@ -1,0 +1,230 @@
+/* ==========================================================================
+   PLECTICS ALTO · 80 · AUDIT FIXES (loads last)
+   Fixes for findings from the read-only audit agents (2026-11-15). Each rule
+   names its finding ID; the auditors report, only this file fixes.
+   Specificity: rules that must beat 72-controls use the same :not(#plx6)
+   ID-weight pattern.
+   ========================================================================== */
+
+/* ---------- A2 · workspace chrome ---------- */
+
+/* A2-01 Style Settings section-band keys (reset, export) were blank in light:
+   72 §2 painted a light key face under the band's light slate-ink icon
+   (1.05:1). On a band the keys are transparent icons, like the band's text. */
+.modal.mod-settings .style-settings-heading[data-level="0"] .setting-item-control > .clickable-icon:not(#plx6) {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  color: var(--plx-slate-ink) !important;
+}
+.modal.mod-settings .style-settings-heading[data-level="0"] .setting-item-control > .clickable-icon:not(#plx6):hover {
+  border-color: color-mix(in srgb, var(--plx-slate-ink) 45%, transparent) !important;
+  color: var(--plx-teal-bright, var(--plx-slate-ink)) !important;
+}
+
+/* A2-02 Chicago "System 7" promised Chicago on dialog buttons, but 72 §1
+   set the UI face with ID weight. Now System 7 wins for dialog keys. */
+body.plx-chicago-system7 :is(.modal, .prompt) button:not(#plx6, .clickable-icon, .checkbox-container) {
+  font-family: var(--plx6-chicago) !important;
+  font-weight: 400 !important;
+  font-synthesis: none;
+  font-size: 12px !important;
+  letter-spacing: 0;
+}
+
+/* A2-03 Obsidian 1.15 moved Help/Settings out of the ribbon; the now-empty
+   .side-dock-settings still drew a 1 px rule and 6 px padding. */
+.side-dock-settings:empty,
+.side-dock-settings:not(:has(*)) { display: none !important; }
+
+/* A2-04 Farm-Fresh "Everywhere": menu label column was jagged (16 px FF icons
+   next to 14 px line icons). One fixed 16 px icon column, icons centred. */
+body.plx-ff.plx-ff-all .menu .menu-item-icon {
+  flex: 0 0 16px;
+  width: 16px;
+  min-width: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+/* A2-05 menu items without an icon (e.g. Kanban's "New kanban board", whose
+   Lucide icon no longer exists) kept no icon slot, so their label started
+   14 px left of the others. Empty icons keep the slot. */
+.menu .menu-item-icon:empty { width: var(--icon-size, 14px); min-width: var(--icon-size, 14px); }
+body.plx-ff.plx-ff-all .menu .menu-item-icon:empty { width: 16px; min-width: 16px; }
+
+/* A2-06 the ribbon's sidebar toggle key was 28×24 under 28×28 keys */
+body .workspace-ribbon .sidebar-toggle-button.mod-left .clickable-icon:not(#plx6) {
+  height: var(--plx6-h-xl, 28px) !important;
+  width: var(--plx6-h-xl, 28px);
+}
+/* A2-13 ribbon key pitch on the 4 px grid (was a 3 px gap) */
+.side-dock-actions, .side-dock-settings { gap: var(--plx6-gap, 4px) !important; }
+
+/* A2-07 Settings is chrome (instrument), not page (textbook): every setting
+   description in the Settings window uses the UI face, like the Plectics-6
+   panel. (50-properties grouped .setting-item-description with the small
+   serif used for footnotes and captions.) */
+:is(.modal, .modal.mod-settings) .setting-item-description:not(#plx6) {
+  font-family: var(--plx-ui) !important;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--plx-ink-3);
+}
+
+/* A2-08 Farm-Fresh missed the Tags pane's "Show nested tags" key */
+body.plx-ff :is(.nav-buttons-container, .nav-header) svg.svg-icon.lucide-folder-tree {
+  background: var(--ff-sitemap_color) center / var(--ff-size, 16px) var(--ff-size, 16px) no-repeat;
+  width: var(--ff-size, 16px);
+  height: var(--ff-size, 16px);
+}
+body.plx-ff :is(.nav-buttons-container, .nav-header) svg.svg-icon.lucide-folder-tree > * { visibility: hidden; }
+
+/* A2-09 dropdown labels sat at the right: Obsidian's search-sort dropdown
+   keeps text-align-last: end under the theme's key face */
+:is(select.dropdown, .dropdown):not(#plx6) { text-align-last: start; }
+
+/* A2-10 search and backlink matches switched to monospace mid-sentence; keep
+   the highlight, keep the sentence's face */
+.search-result-file-matched-text { font-family: inherit !important; }
+
+/* A2-11 the keyboard-focus dotted outline was drawn over the active row's
+   lamp and chamfer foot: on the active row, focus is shown by the row itself */
+.nav-files-container .tree-item-self.is-active.has-focus { outline: none !important; }
+
+/* A2-12 colour swatches: square, on the 20 px module, with a well bevel */
+input[type="color"]:not(#plx6) {
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+  width: var(--plx6-h, 20px);
+  height: var(--plx6-h, 20px);
+  min-width: 0;
+  padding: 2px;
+  border: 1px solid var(--plx6-edge, var(--plx-rule-strong));
+  border-radius: 0;
+  background: var(--plx-well);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+input[type="color"]:not(#plx6)::-webkit-color-swatch-wrapper { padding: 0; }
+input[type="color"]:not(#plx6)::-webkit-color-swatch { border: 0; border-radius: 0; }
+
+/* A2-13 sizes back on the module (16 / 20 / 22 / 24 / 28) */
+/* search fields: 24 everywhere they sit in a pane or panel */
+.search-input-container input:not(#plx6) { height: var(--plx6-h-l, 24px); min-height: 0; }
+/* the prompt (command palette, quick switcher) input is the one large field: 28 */
+.prompt .prompt-input-container input.prompt-input:not(#plx6) { height: var(--plx6-h-xl, 28px); min-height: 0; padding-block: 0; }
+/* settings nav items: one 24 px row */
+.vertical-tab-nav-item:not(#plx6) {
+  box-sizing: border-box;
+  min-height: var(--plx6-h-l, 24px);
+  height: var(--plx6-h-l, 24px);
+  padding-block: 0;
+  display: flex;
+  align-items: center;
+}
+/* vault profile keys (help, settings): toolbar keys */
+.workspace-drawer-vault-actions .clickable-icon:not(#plx6) {
+  box-sizing: border-box;
+  width: var(--plx6-key, 22px);
+  height: var(--plx6-key, 22px);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+/* hotkey chips: one 20 px height, set or blank */
+.setting-hotkey:not(#plx6) {
+  box-sizing: border-box;
+  height: var(--plx6-h, 20px);
+  min-height: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 6px;
+  line-height: 1;
+}
+
+/* ---------- A3 · views and plugins ---------- */
+
+/* A3-01 a selected card was barely marked in dark, and a selected COLOURED
+   card not at all: the themed-border rule (71 §3) and the Y2K card shadow
+   (64/65, !important) out-ranked the selection rule. Selection now wins
+   everywhere: selection-blue border + 1 px edge + a 4 px wash ring. */
+.canvas-node:is(.is-selected, .is-focused) > .canvas-node-container:not(#plx6) {
+  border-color: var(--plx-blue) !important;
+  box-shadow: 0 0 0 1px var(--plx-blue), 0 0 0 4px color-mix(in srgb, var(--plx-blue) 24%, transparent) !important;
+}
+/* group frames are frames, not cards: no Y2K card shadow on them */
+body.theme-dark:not(.plx6-no-steel) .canvas-node-group:not(.is-selected, .is-focused) > .canvas-node-container:not(#plx6) { box-shadow: none !important; }
+
+/* A3-12 Blue-steel: a selected edge (pale lavender) looked like an
+   unselected one (pale azure). Selected edges are drawn in ink white. */
+body.theme-dark:not(.plx6-no-steel) .canvas-edges > g:is(.is-focused, .is-selected) { --plx-edge-c: var(--plx-ink); }
+body.theme-dark:not(.plx6-no-steel) .canvas-edges > g:is(.is-focused, .is-selected) path.canvas-display-path:not(#plx6) { stroke: var(--plx-ink) !important; }
+body.theme-dark:not(.plx6-no-steel) .canvas-edges > g:is(.is-focused, .is-selected) polygon.canvas-path-end:not(#plx6) { fill: var(--plx-ink) !important; }
+
+/* A3-02 short panes: the control column ran into the bottom readouts.
+   The canvas is a SIZE container (name plx-canvas, as in 71 §6), so the
+   readouts can also react to height: below 340 px they step aside. */
+.canvas-wrapper { container-type: size !important; container-name: plx-canvas; }
+@container plx-canvas (max-height: 340px) { .plx-canvas-hud { display: none !important; } }
+
+/* A3-05 the floating status bar covered the bottom of the readouts: the
+   whole bottom line (card keys left, readouts right) sits above it */
+body:not(.is-mobile) .canvas-wrapper .canvas-card-menu:not(#plx6),
+body:not(.is-mobile) .canvas-wrapper .plx-canvas-hud:not(#plx6) { bottom: 34px !important; }
+
+/* A3-04 a 1 px gap between a group's label band and its frame (70-views
+   lifted the label by 1 px × zoom; 71 §4 never reset it) */
+.canvas-node-group > .canvas-group-label:not([contenteditable="true"]) { top: 0 !important; }
+
+/* A3-14 (long group labels: no ellipsis; display:block broke the label's vertical centring, so left as flex) */
+/* A3-14 light canvas: the card keys bottom-left had no tray (text showed
+   between the keys); give them the same tray as dark */
+.theme-light .canvas-wrapper .canvas-card-menu {
+  background: var(--plx-case-hi) !important;
+  border: 1px solid var(--plx-rule) !important;
+  padding: 2px !important;
+}
+
+/* A3-06 editing a card did not look like the card: same paper, size and
+   padding as the preview */
+.canvas-node-content .markdown-source-view,
+.canvas-node-content .markdown-source-view .cm-scroller { background: var(--plx-paper) !important; }
+.canvas-node-content .markdown-source-view.mod-cm6 .cm-scroller { padding: 8px 14px !important; }
+.canvas-node-content .markdown-source-view.mod-cm6 { font-size: inherit !important; }
+
+/* A3-11 outline arrowheads were filled with the wall colour (a pale patch
+   inside tinted groups); the edge casing showed as a pale band through
+   groups; uncoloured and coloured filled heads had different outlines */
+.canvas-edges :is([data-arrow="triangle-outline"], [data-arrow="diamond-outline"], [data-arrow="circle-outline"]) polygon:not(#plx6) { fill: transparent !important; }
+.theme-light .canvas-edges path.canvas-interaction-path { stroke-opacity: 0.45 !important; }
+.canvas-edges > g:not([class*="mod-canvas-color"]) polygon.canvas-path-end:not([data-arrow]) {
+  stroke: var(--plx-cv-wall, var(--plx-paper)) !important;
+  stroke-width: calc(1.5px * var(--zoom-multiplier)) !important;
+  paint-order: stroke fill;
+}
+
+/* A3-07 Calendar: the plugin rotates the "next month" key 180°, so its
+   bevel was drawn upside down. Turn the key back, mirror only the arrow. */
+#calendar-container .arrow:is(.right, [class*="right"]) { transform: none !important; }
+#calendar-container .arrow:is(.right, [class*="right"]) svg { transform: scaleX(-1); }
+
+/* A3-08 Widgets countdown digits were Garamond old-style figures in an h3 */
+.Countdown_Item :is(h1, h2, h3, h4) {
+  font-family: var(--plx-mono) !important;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.Countdown_Item { border-radius: var(--plx-r) !important; border-color: var(--plx-rule) !important; }
+
+/* A3-09 Excalidraw light panels got the dark-mode black ring + heavy shadow */
+.excalidraw:not(.theme--dark) :is(.Island, .App-toolbar) {
+  box-shadow: 0 0 0 1px var(--plx-rule), 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* A3-10 Univers kerning ate the space before "-" and "T" in Bases cells and
+   the Agent Client (the theme already turns kerning off for Univers chrome) */
+:is(.bases-view, .bases-rendered-value, [class*="agent-client"]) :is(.markdown-rendered, *) { font-kerning: none; }
