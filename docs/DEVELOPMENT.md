@@ -26,9 +26,13 @@ python -I buildalto.py --to <vault>  dist/ + that vault only
 | `src/b-layer/58-alto-fonts.css` | `fonts/build/gen_fontcss.py`, from `fonts/web/*.woff2` (`fonts/build/make_web_subsets.py`). See [fonts/README.md](../fonts/README.md). |
 | `src/b-layer/63-farmfresh.css` | `gen_farmfresh.py`, from `icons/farm-fresh/{16,32}/` and the composed icons in `ff-compose/out/` |
 
+The icon generator omits PNG text metadata from embedded copies to reduce CSS loading size. Image, transparency and colour-profile chunks are unchanged; the original PNGs and licence notices are retained.
+
+After building, `python -I export_repos.py <alto-clone> <icons-clone>` copies release files and stages both repositories without committing or pushing. It refreshes both installation ZIPs using `package.py` and preserves the Icons repository's own README.
+
 ## Checks
 
-- `python -m unittest test_buildalto`: build destinations, bad flags, a clone with no local vaults, the theme name, braces in every source file, and both variants (no icons in Plectics Alto; no `body.plx-ff` left in Plectics Alto Icons).
+- `python -m unittest test_buildalto test_export_repos`: build destinations, bad flags, a clone with no local vaults, the theme name, source braces, both variants, unchanged PNG rendering chunks, and export/ZIP regression checks in temporary repositories.
 
 ## Folder layout
 
